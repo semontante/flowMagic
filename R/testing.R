@@ -1,0 +1,308 @@
+
+
+#' magicPred_hierarchy
+#' 
+#' function to predict the gates on the ungated .fcs samples.
+#' @param list_test_sets contains the list of root dataframe for each ungated fcs file imported.
+#' @param list_models_local contains the optimized local models pre-generated using the magicTrain_local function.
+#' @param df_tree contains the info related to the populations hierarchy.
+#' @param magic_model Global trained model.
+#' @param list_local_train contains the local training sets (gated data of the sample manually gated).
+#' @param n_cores Number of cores to use. Default to 1.
+#' @return List of Dataframes.
+#' @export
+#' @examples 
+#' \donttest{magicPred_hierarchy()}
+
+
+magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,magic_model,list_local_train,n_cores=1){
+  n_samples<-length(list_test_sets)
+  name_samples<-names(list_test_sets)
+  start<-Sys.time()
+  list_gated_data<-mclapply(1:n_samples,function(i){
+    sample_name<-name_samples[i]
+    sample_name<-strsplit(sample_name,".fcs")[[1]]
+    print(sprintf("########## gating sample %s #########",sample_name))
+    root_sample_i<-list_test_sets[[i]]
+    all_levels<-names(list_models_local)
+    list_gated_data_sample_i<-list() # gated data with the correct dims
+    list_temp_gated_data_all_dims<-list() # gated data with all dims
+    for(level in all_levels){
+      print(sprintf("########## gating pops in level %s #########",level))
+      current_level<-list_models_local[[level]]
+      all_pops_current_level<-names(current_level)
+      list_gated_data_level<-list()
+      list_temp_gated_data_all_dims_level<-list()
+      for(pop in all_pops_current_level){
+        print(sprintf("########## gating pop %s #########",pop))
+        model_current_pops_to_gate<-current_level[[pop]]
+        # check if pop to gate is binary or multiclass
+        stringsplitted<-strsplit(pop,"_")[[1]]
+        if(length(stringsplitted)>1){
+          print("multiclass pop")
+          # check hierarchy position of the pops
+          logic<-df_tree$Children %in% stringsplitted
+          inds<-which(logic==T)
+          mother_current_pop<-df_tree$Mother[inds]
+          mother_current_pop<-unique(mother_current_pop)
+        }else if(length(stringsplitted)==1){
+          print("binary pop")
+          # check hierarchy position of this pop
+          logic<-df_tree$Children %in% stringsplitted
+          ind<-which(logic==T)
+          mother_current_pop<-df_tree$Mother[ind]
+        }
+        print(sprintf("mother current pop to gate:%s",mother_current_pop))
+        # get dimensions current pop (or pops) to gate
+        dims<-model_current_pops_to_gate[["Dimensions_set"]]
+        # get labels association current pop to gate
+        label_set<-model_current_pops_to_gate[["Labels_set"]]
+        print(sprintf("Dimensions_set:%s",paste0(dims,collapse = " ")))
+        print(sprintf("Labels_set: %s",paste0(label_set,collapse = " ")))
+        ########################## get test df #######################
+        # get appropriate test df based on the current hierarchy level
+        if(mother_current_pop=="root"){
+          print(sprintf("the mother of %s is root",pop))
+          print("---- get root df with correct dims ----")
+          Xtest<-root_sample_i[,dims]
+        }else if(mother_current_pop!="root"){
+          print(sprintf("the mother of %s is %s",pop,mother_current_pop))
+          ########## look for the correct dataset in the already gated pops list with all dims#######
+          print("----- get associated test mother df with correct dims ------")
+          out<-get_slot_hierarchy_list(list_temp_gated_data_all_dims,mother_current_pop)
+          df_containing_mother<-out[[1]]
+          if(is.character(df_containing_mother)==T){
+            print("Mother pop is None. Hierarchy is broken. No Xtest")
+            Xtest<-"none_mother"
+          }else{
+            label_assoc<-out[[2]]
+            print("all labels association selected df")
+            print(label_assoc)
+            ind<-grep(mother_current_pop,label_assoc,fixed=T)
+            label_assoc<-label_assoc[ind]
+            print("selected label association:")
+            print(label_assoc)
+            s<-strsplit(label_assoc,":")[[1]]
+            label_mother_pop<-s[2]
+            print(sprintf("the associated label of the mother,%s,is:%s",mother_current_pop,label_mother_pop))
+            all_labels_df<-df_containing_mother[,ncol(df_containing_mother)]
+            all_dims_df<-df_containing_mother[,-ncol(df_containing_mother)]
+            inds<-which(all_labels_df==label_mother_pop)
+            df_only_mother_all_dims<-all_dims_df[inds,]
+            df_only_mother<-df_only_mother_all_dims[,dims]
+            Xtest<-df_only_mother
+          }
+        }
+        ######################### get local df #######################
+        print("---- get local train data---- ")
+        local_train_df<-list_local_train[[level]][[pop]]
+        ########################## check number of points in test mother df ##############################
+        print("######### check number of points in test mother df (Xtest) ######### ")
+        n_points<-nrow(Xtest)
+        if(is.null(n_points)==T){
+          warning("mother is None. Hierarchy is broken for this sample.")
+          check_1<-F
+          check_2<-F
+          ####### report results in lists ###########
+          print("------ report results ----------")
+          gated_data_current_pop_all_dims<-"None"
+          gated_data_current_pop<-"None"
+          polygons_coords_list<-"None"
+          df_gates_indices_on_root<-"None"
+          type_gate<-"Hierarchy_broken"
+          list_gated_data_level[[pop]]<-list(gated_data_current_pop,label_set,polygons_coords_list,df_gates_indices_on_root,type_gate)
+          names(list_gated_data_level[[pop]])<-c("gated_data","labels","poly_coordinates","inds_on_root","info")
+          list_temp_gated_data_all_dims_level[[pop]]<-list(gated_data_current_pop_all_dims,label_set)
+        }else if(n_points<3){ # not enough points to make a gate (min 2)
+          warning("mother df contains less than 3 points. No gate calculable")
+          check_1<-F
+          check_2<-F
+          ####### report results in lists ###########
+          print("------ report results ----------")
+          gated_data_current_pop_all_dims<-"None"
+          gated_data_current_pop<-"None"
+          polygons_coords_list<-"None"
+          df_gates_indices_on_root<-"None"
+          type_gate<-"None"
+          list_gated_data_level[[pop]]<-list(gated_data_current_pop,label_set,polygons_coords_list,df_gates_indices_on_root,type_gate)
+          names(list_gated_data_level[[pop]])<-c("gated_data","labels","poly_coordinates","inds_on_root","info")
+          list_temp_gated_data_all_dims_level[[pop]]<-list(gated_data_current_pop_all_dims,label_set)
+        }else{ # enough points to make a gate
+          ####### predict the gates ######
+          reference_model_local<-model_current_pops_to_gate$ref_model_info
+          print("----- predicting gates -----")
+          final_df<-magicPred_plain_one_model(test_data = Xtest,magic_model = magic_model,
+                                                             ref_model_info = reference_model_local,n_cores = 1)
+          ######## generate gated df current pop ######################
+          print("------ generating gated data current pop -----")
+          yhat_final_current_pop<-final_df$classes
+          gated_data_current_pop<-cbind(Xtest,yhat_final_current_pop)
+          # get indices of the gates based on the root df
+          indices_pop_on_root<-row.names(gated_data_current_pop)
+          
+          df_gates_indices_on_root<-as.data.frame(cbind(indices_pop_on_root,yhat_final_current_pop))
+          df_gates_indices_on_root$indices_pop_on_root<-as.character(df_gates_indices_on_root$indices_pop_on_root)
+          ####### report results in lists ###########
+          print("------ report results ----------")
+          if(mother_current_pop=="root"){
+            gated_data_current_pop_all_dims<-cbind(root_sample_i,yhat_final_current_pop)
+          }else{
+            gated_data_current_pop_all_dims<-cbind(df_only_mother_all_dims,yhat_final_current_pop)
+          }
+          list_gated_data_level[[pop]]<-list(gated_data_current_pop,label_set,df_gates_indices_on_root,final_df)
+          names(list_gated_data_level[[pop]])<-c("gated_data","labels","inds_on_root","final_df")
+          list_temp_gated_data_all_dims_level[[pop]]<-list(gated_data_current_pop_all_dims,label_set)
+          
+        }
+      }
+      list_temp_gated_data_all_dims[[level]]<-list_temp_gated_data_all_dims_level
+      list_gated_data_sample_i[[level]]<-list_gated_data_level
+    }
+    return(list_gated_data_sample_i)
+  },mc.cores = n_cores)
+  gc()
+  names(list_gated_data)<-name_samples
+  end<-Sys.time()
+  time_taken<-end-start
+  print("prediction time:")
+  print(time_taken)
+  return(list_gated_data)
+}
+
+#' magicPred
+#' 
+#' function to predict on plain test data (no hierarchy)
+#' @param test_data Dataframe of test data to gate. It has only the two columns of marker expression.
+#' @param magic_model Global trained model.
+#' @param ref_model_info Template model
+#' @param n_cores Number of cores to use. Default to 1.
+#' @param ref_data_train Template data.
+#' @param prop_down Proportion for downsampling. Default to 1 (no downsampling).
+#' @return List of Dataframes.
+#' @export
+#' @examples 
+#' \donttest{magicPred()}
+
+
+magicPred<-function(test_data,magic_model,ref_model_info=NULL,n_cores=1,ref_data_train=NULL,
+                                    prop_down=1){
+  set.seed(40)
+  start<-Sys.time()
+  if(ncol(test_data)>2){
+    stop("only 2 columns must be present in data to gate")
+  }
+  # --------- prepare test data -------------
+  message("prepare test data")
+  Xtest<-process_test_data(test_data = test_data,prop_down = prop_down)
+  #show(magicPlot(Xtest[,c(1,2)],type = "no_gate",size_points = 2))
+  #-------- get predictions  ----
+  if(is.null(magic_model)==F && is.null(ref_model_info)==T){
+    message("Using PD model")
+    #---- only  PD models predictions
+    classes<-predict(magic_model,Xtest)
+    # get distance templates - test data
+    vec_dist<-0
+  }else if(is.null(ref_model_info)==F){
+    message("Using template model")
+    #---- only reference predictions
+    classes<-predict(ref_model_info,Xtest)
+    # get distance templates - test data
+    if(is.null(ref_data_train)==F){
+      all_plot_num<-unique(ref_data_train$plot_num)
+      list_scores_ref<-lapply(1:length(all_plot_num),function(i){
+        ref_data_train_plot_num_i<-ref_data_train[which(ref_data_train$plot_num==all_plot_num[i]),]
+        check_col<-colnames(ref_data_train_plot_num_i) %in% c("x1_expr","x2_expr","classes","plot_num","n_gates_info")
+        inds<-which(check_col==T)
+        vec_scores<-ref_data_train_plot_num_i[1,-inds]
+        return(vec_scores)
+      })
+      
+      df_scores_ref<-do.call(rbind,list_scores_ref)
+      df_scores<-rbind(df_scores_ref,Xtest[1,-c(1,2)])
+      vec_dist<-get_weights_density_features(df_scores = df_scores)
+    }else{
+      vec_dist<-0
+    }
+  }else{
+    stop("InputError: Either PD model or template model must be provided")
+  }
+  test_data_final<-cbind(Xtest,classes)
+  test_data_original<-cbind(test_data,classes)
+  test_data_final$classes<-as.character(test_data_final$classes)
+  test_data_original$classes<-as.character(test_data_original$classes)
+  vec_dist<-round(vec_dist,2)
+  end<-Sys.time()
+  time_taken<-end-start
+  print("Execution time:")
+  print(time_taken)
+  print("Done")
+  return(list(test_data_original=test_data_original,test_data_final=test_data_final,vec_dist=vec_dist))
+}
+
+#' magicPred_all
+#' 
+#' function to predict on plain test data (no hierarchy)
+#' @param list_test_data List of unlabeled  dataframes. It has only the two columns of marker expression.
+#' @param magic_model Global trained model.
+#' @param ref_model_info Template model.
+#' @param n_cores Number of cores to use. Default to 1.
+#' @param ref_data_train Template data.
+#' @param verbose If True, show messages. Default to False.
+#' @return List of Dataframes.
+#' @export
+#' @examples 
+#' \donttest{magicPred_all()}
+
+# function to predict on all samples of plain test data (no hierarchy)
+magicPred_all<-function(list_test_data,magic_model,ref_model_info=NULL,n_cores=1,
+                                 ref_data_train=NULL,verbose=F){
+  set.seed(40)
+  start<-Sys.time()
+  all_names_test_data<-names(list_test_data)
+  # prediction for each test data
+  message("------------- Prediction for each test data")
+  list_all_dfs_pred<-mclapply(1:length(list_test_data),function(i){
+    message(sprintf("########### %s ##########",all_names_test_data[i]))
+    df_test<-list_test_data[[i]]
+    if(verbose==T){
+      out_pred<-magicPred(test_data = df_test,magic_model=magic_model,ref_model_info=ref_model_info,
+                                          n_cores=n_cores,ref_data_train=ref_data_train)
+    }else{
+      suppressMessages(out_pred<-magicPred(test_data = df_test,magic_model=magic_model,
+                                                           ref_model_info=ref_model_info,
+                                                           n_cores=n_cores,ref_data_train=ref_data_train))
+    }
+    final_df<-out_pred$test_data_final[,c("x1_expr","x2_expr","classes")]
+    print("-------post-processing gates")
+    all_classes<-unique(final_df$classes)
+    all_classes<-all_classes[all_classes!="0"]
+
+    if(length(all_classes)<=4){
+      if(is.null(ref_model_info)==T){
+        # no template
+          final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = T,thr_dist = 0.15,type="dist")
+      }else{
+        # yes template
+          final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,type = "polygon")
+      }
+    }else if(length(all_classes)>4){
+      if(is.null(ref_model_info)==T){
+        # no template
+        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = 0.15,type="dist")
+      }else{
+        # yes template
+        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = 0.05,type = "dist")
+      }
+    }
+    df_test_original<-cbind(df_test,final_df$classes)
+    return(list(df_test_original=df_test_original,final_df=final_df,vec_dist=out_pred$vec_dist))
+  },mc.cores = 1)
+  names(list_all_dfs_pred)<-all_names_test_data
+  end<-Sys.time()
+  time_taken<-end-start
+  print("Execution time:")
+  print(time_taken)
+  print("Done")
+  return(list_all_dfs_pred)
+}
+
