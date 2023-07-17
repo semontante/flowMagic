@@ -30,13 +30,13 @@ get_hull_all_gates<-function(gated_df,concavity_val=1){
 #' function to extract the polygon gates objects based on the convex hull and classes.
 #' @param gated_df dataframe with labels (third column).
 #' @param return_hull_only return only the dataframe of coordinates. Default to False.
+#' @param concavity_val Concavity of polygons. Default to 1.
 #' @return List of dataframes.
 #' @export
 #' @examples 
 #' \donttest{extract_polygon_gates()}
 
-# 
-extract_polygon_gates<-function(gated_df,return_hull_only=F){
+extract_polygon_gates<-function(gated_df,return_hull_only=F,concavity_val=1){
   row.names(gated_df)<-NULL
   colnames(gated_df)<-c("x","y","classes") 
   gated_df$classes<-as.character(gated_df$classes)
@@ -52,7 +52,7 @@ extract_polygon_gates<-function(gated_df,return_hull_only=F){
   message(sprintf("all classes: %s",paste0(all_classes,collapse = ",")))
   ########################## find convex hull for each class ###################
   message(" ############# find convex hull for each class ############")
-  list_df_hull<-get_hull_all_gates(gated_df)
+  list_df_hull<-get_hull_all_gates(gated_df,concavity_val=concavity_val)
   # we don't consider the 0 class (no gate) 
   vec<-names(list_df_hull)
   inds<-which(vec=="0")
@@ -184,12 +184,13 @@ compute_gates<-function(gated_df,list_final_polygons_coords,no_classes=F){
 #' @param include_zero  Consider centroid of label 0. Default to False.
 #' @param remove_centroids  Remove centroids too near each other based on thr_dist value.
 #' @param type  Type of post-processing.
+#' @param concavity_val  Concavity of polygons for the "polygon" type of post-processing
 #' @return Dataframe.
 #' @export
 #' @examples 
 #' \donttest{post_process_gates()}
 
-post_process_gates<-function(gated_df,n_cores=1,thr_dist=0.15,include_zero=F,remove_centroids=T,type="dist"){
+post_process_gates<-function(gated_df,n_cores=1,thr_dist=0.15,include_zero=F,remove_centroids=T,type="dist",concavity_val=5){
   colnames(gated_df)<-c("x","y","classes")
   gated_df$classes<-as.character(gated_df$classes)
   if(type=="dist"){
@@ -198,7 +199,7 @@ post_process_gates<-function(gated_df,n_cores=1,thr_dist=0.15,include_zero=F,rem
                                                n_cores = n_cores,thr_dist=thr_dist,
                                                include_zero = include_zero,remove_centroids = remove_centroids)
   }else if(type=="polygon"){
-    list_df_hull<-extract_polygon_gates(gated_df = gated_df,return_hull_only = T)
+    list_df_hull<-extract_polygon_gates(gated_df = gated_df,return_hull_only = T,concavity_val=concavity_val)
     new_df<-compute_gates(gated_df=gated_df,list_final_polygons_coords =  list_df_hull)
   }
 
