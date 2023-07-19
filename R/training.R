@@ -209,7 +209,7 @@ magicTrain_nnet<-function(Xtrain,Ytrain,k_cv=10,list_index=NULL,size=100,decay=0
     )
   }else{
     model_nnet <- train(
-      x=Xtrain, y=Ytrain, method = "nnet",
+      x=Xtrain, y=Ytrain, method = "nnet",tuneGrid = nnGrid,
       trControl = trainControl(trim = T,returnData = F,index = list_index)
     )
   }
