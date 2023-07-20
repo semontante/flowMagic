@@ -29,14 +29,13 @@ get_hull_all_gates<-function(gated_df,concavity_val=1){
 #' 
 #' function to extract the polygon gates objects based on the convex hull and classes.
 #' @param gated_df dataframe with labels (third column).
-#' @param return_hull_only return only the dataframe of coordinates. Default to False.
 #' @param concavity_val Concavity of polygons. Default to 1.
 #' @return List of dataframes.
 #' @export
 #' @examples 
 #' \donttest{extract_polygon_gates()}
 
-extract_polygon_gates<-function(gated_df,return_hull_only=F,concavity_val=1){
+extract_polygon_gates<-function(gated_df,concavity_val=1){
   row.names(gated_df)<-NULL
   colnames(gated_df)<-c("x","y","classes") 
   gated_df$classes<-as.character(gated_df$classes)
@@ -59,87 +58,60 @@ extract_polygon_gates<-function(gated_df,return_hull_only=F,concavity_val=1){
   if(length(inds)!=0){
     list_df_hull<-list_df_hull[-inds]
   }
-  if(return_hull_only==T){
-    return(list_df_hull)
-  }
-  df_hull<-do.call(rbind,list_df_hull)
+  return(list_df_hull)
+}
+
+#' extract_polygon_gates
+#' 
+#' funcction to check polygons intersection.
+#' @param list_df_hull List of polygons coordinates
+#' @return float
+#' @export
+#' @examples 
+#' \donttest{check_polygons_intersection()}
+
+check_polygons_intersection<-function(list_df_hull){
   ######################### convert convex hull in spatial polygon ################
+  df_hull<-do.call(rbind,list_df_hull)
   polys <- lapply(unique(df_hull$group_gate), function(i) {
     Polygons(list(Polygon(df_hull[df_hull$group_gate==i, 1:2])), ID=i)
   })
   spa_polys <- SpatialPolygons(polys) # spatial polygons based on a convex hull
-  
-  ####################### generate final polygons without intersections ##################
-  list_final_polygons_coords<-list()
+  ####################### check final polygons  ntersections ##################
   n_polygons<-length(spa_polys)
-  track_poly_i<-c()
+  vec_check<-c()
   if(n_polygons==1){
-    # nothing changes,we use the original convex hull
-    name_group_poly_1<-spa_polys@polygons[[1]]@ID # we keep track of the class under analysis
-    poly_1<-spa_polys[1]
-    poly_1_coords<-poly_1@polygons[[1]]@Polygons[[1]]@coords
-    poly_1_coords<-as.data.frame(poly_1_coords)
-    colnames(poly_1_coords)<-c("x","y")
-    poly_1_coords$group_gate<-rep(name_group_poly_1,nrow(poly_1_coords))
-    list_final_polygons_coords[[name_group_poly_1]]<-poly_1_coords
+    # There is only ony polygon no intersection
+    max_area_intersect<-0
   }else{
+    # check all combinations of polygons.
     for(i in 1:n_polygons){
       name_group_poly_i<-spa_polys@polygons[[i]]@ID # we keep track of the class under analysis
       message(sprintf("######## Analysis gate %s ###########",name_group_poly_i))
       poly_i<-spa_polys[i]
       all_new_poly_i_coords<-list() # all new possible coords of poly_i (poly_i intersects with more than one polygon)
       # for each polygon i we look for the situations in which there is an intersection with an other polygon j
-      track_poly_i<-append(track_poly_i,name_group_poly_i) # we keep track of the gate already analyzed before
       for(j in 1:n_polygons){
         name_group_poly_j<-spa_polys@polygons[[j]]@ID # we keep track of the class under analysis
         message(sprintf("-------- Analysis gate %s vs %s",name_group_poly_i,name_group_poly_j))
         if(name_group_poly_j!=name_group_poly_i){ # avoid comparison with itself
           poly_j<-spa_polys[j]
-          out_intersec<-gIntersects(poly_i,poly_j)
-          if(out_intersec==T){ # they intersect
-            message("they intersect")
-            check_track<-name_group_poly_j %in% track_poly_i
-            if(check_track==T){ # they intersect but we have already solved this intersection
-              message("already solved intersection nothing changes")
-              new_poly_i<-poly_i # nothing changes
-            }else{
-              message("solving new intersection")
-              new_poly_i<-tryCatch(gDifference(poly_i,poly_j),error=function(e){return(NULL)}) # poly i region not within poly_j
-              if(is.null(new_poly_i)==T){
-                return(NULL)
-              }
-            }
-          }else{ # no intersection
-            message("no intersection")
-            new_poly_i<-poly_i
+          poly_i_sf<-as(poly_i,"sf")
+          poly_j_sf<-as(poly_j,"sf")
+          area_intersect<-st_intersection(st_buffer(poly_i_sf, 0), st_buffer(poly_j_sf, 0)) %>% st_area
+          if(length(area_intersect)==0){
+            area_intersect<-0
           }
-          new_poly_i_coords<-new_poly_i@polygons[[1]]@Polygons[[1]]@coords
-          all_new_poly_i_coords[[name_group_poly_i]]<-new_poly_i_coords
-        }else{
-          message("same gate, skip comparison with itself")
+          vec_check<-c(vec_check,area_intersect)
         }
       }
-      message(sprintf("------- Analysis possible polygons gate %s",name_group_poly_i))
-      
-      message(sprintf("%s possible polygons",length(all_new_poly_i_coords)))
-      if(length(all_new_poly_i_coords)>1){ # poly_i intersect with more than one polygon
-        final_poly_i_coords<-all_new_poly_i_coords[[1]] # for now we choose the first one
-      }else{
-        final_poly_i_coords<-all_new_poly_i_coords[[1]] # we select the only dataframe present
-      }
-      final_poly_i_coords<-as.data.frame(final_poly_i_coords)
-      colnames(final_poly_i_coords)<-c("x","y")
-      final_poly_i_coords$group_gate<-rep(name_group_poly_i,nrow(final_poly_i_coords))
-      list_final_polygons_coords[[name_group_poly_i]]<-final_poly_i_coords
     }
+    vec_check<-as.numeric(vec_check)
+    max_area_intersect<-max(vec_check)
   }
-  check_operations<-all_classes %in% names(list_final_polygons_coords)
-  output_check<-all(check_operations)
-  if(output_check==F){
-    stop("fatal error occured in extract_polygon_gates(): FALSE value in check_operations")
-  }
-  return(list_final_polygons_coords)
+  return(max_area_intersect)
 }
+
 
 #' compute_gates
 #' 
@@ -199,13 +171,22 @@ post_process_gates<-function(gated_df,n_cores=1,thr_dist=0.15,include_zero=F,rem
                                                n_cores = n_cores,thr_dist=thr_dist,
                                                include_zero = include_zero,remove_centroids = remove_centroids)
   }else if(type=="polygon"){
-    list_df_hull<-extract_polygon_gates(gated_df = gated_df,return_hull_only = T,concavity_val=concavity_val)
-    new_df<-compute_gates(gated_df=gated_df,list_final_polygons_coords =  list_df_hull)
+    list_df_hull<-extract_polygon_gates(gated_df = gated_df,concavity_val=concavity_val)
+    # check polygons intersections
+    max_area_intersect<-check_polygons_intersection(list_df_hull = list_df_hull)
+    message(sprintf("max_area_intersect:%f",max_area_intersect))
+    # If 0: no polygon intersecion
+    if(max_area_intersect>0.08){
+      message("There is an relevant intersection")
+      new_df<-assign_events_to_nearest_centroids(gated_df = gated_df,
+                                                 n_cores = n_cores,thr_dist=0.05,
+                                                 include_zero = F,remove_centroids = T)
+    }else{
+      new_df<-compute_gates(gated_df=gated_df,list_final_polygons_coords =  list_df_hull)
+    }
   }
-
   return(new_df)
 }
-
 
 #' get_centroids
 #' 
