@@ -30,6 +30,11 @@ exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",s
     }else{
       df_p<-list_gated_data[[i]]
     }
+    all_classes<-unique(df_p[,3])
+    all_classes<-all_classes[all_classes!=0]
+    if(length(all_classes)==0){
+      type_plot<-"ML"
+    }
     plot_name<-tryCatch(magicPlot(df_p,type = type_plot,show_legend = show_legend,x_lab = x_lab,y_lab = y_lab,
                                   size_title_x = size_title_x,size_title_y=size_title_y),error=function(e){return(NULL)})
     # export plot in correct folder
