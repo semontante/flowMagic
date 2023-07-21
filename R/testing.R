@@ -253,7 +253,6 @@ magicPred<-function(test_data,magic_model,ref_model_info=NULL,n_cores=1,ref_data
 #' @examples 
 #' \donttest{magicPred_all()}
 
-# function to predict on all samples of plain test data (no hierarchy)
 magicPred_all<-function(list_test_data,magic_model,ref_model_info=NULL,n_cores=1,
                                  ref_data_train=NULL,verbose=F){
   set.seed(40)
@@ -276,19 +275,21 @@ magicPred_all<-function(list_test_data,magic_model,ref_model_info=NULL,n_cores=1
     print("-------post-processing gates")
     all_classes<-unique(final_df$classes)
     all_classes<-all_classes[all_classes!="0"]
-    if(is.null(ref_model_info)==T){
-      # ------- no template mode ---------
-      if(length(all_classes)==1){
-        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = T,thr_dist = 0.15,type="dist")
+    if(length(all_classes)!=0){
+      if(is.null(ref_model_info)==T){
+        # ------- no template mode ---------
+        if(length(all_classes)==1){
+          final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = T,thr_dist = 0.15,type="dist")
+        }else{
+          final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = 0.2,type="dist")
+        }
       }else{
-        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = 0.2,type="dist")
-      }
-    }else{
-      # ------- Yes template mode ---------
-      if(length(all_classes)<=3){
-        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,type = "polygon")
-      }else{
-        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = 0.05,type="dist")
+        # ------- Yes template mode ---------
+        if(length(all_classes)<=3){
+          final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,type = "polygon")
+        }else{
+          final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = 0.05,type="dist")
+        }
       }
     }
     df_test_original<-cbind(df_test,final_df$classes)
