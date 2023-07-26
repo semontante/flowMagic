@@ -455,17 +455,23 @@ get_paths_training<-function(df_paths,n_paths=200,seed_n=40){
 #' @param df_paths Dataframe of paths to training data.
 #' @param n_paths Max number of random paths to consider for number of gates.
 #' @param seed_n Random seed. Default to 40.
+#' @param remove_gates Vector of label numbers to ignore.
 #' @return Vector of characters.
 #' @export
 #' @examples 
 #' \donttest{get_paths_training_v2()}
 
-get_paths_training_v2<-function(df_paths,n_paths=200,seed_n=40){
+get_paths_training_v2<-function(df_paths,n_paths=200,seed_n=40,remove_gates=NULL){
   set.seed(seed_n)
   df_paths[,1]<-as.character(df_paths[,1])
   df_paths[,2]<-as.character(df_paths[,2])
   all_gates<-unique(df_paths[,3])
   all_gates<-all_gates[all_gates!=0]
+  if(is.null(remove_gates)==F){
+    check_remove<- (all_gates %in% remove_gates)
+    inds_remove<-which(check_remove==T)
+    all_gates<-all_gates[-inds_remove]
+  }
   print(all_gates)
   paths_selected_data<-c()
   path_selected_classes<-c()
@@ -483,6 +489,7 @@ get_paths_training_v2<-function(df_paths,n_paths=200,seed_n=40){
     }
     paths_selected_data<-c(paths_selected_data,path_data_to_train_n_gates_g_selected_data)
     path_selected_classes<-c(path_selected_classes,path_data_to_train_n_gates_g_selected_classes)
+
   }
   paths_selected_data<-str_remove(paths_selected_data,"/mnt/FCS_local5/projects/")
   paths_selected_data<-str_replace(paths_selected_data,"Discovery","/home/rstudio/Discovery_2")
