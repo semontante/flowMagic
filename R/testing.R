@@ -173,35 +173,61 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,magic_mod
 #' 
 #' function to predict on plain test data (no hierarchy)
 #' @param test_data Dataframe of test data to gate. It has only the two columns of marker expression.
-#' @param magic_model Global trained model.
-#' @param ref_model_info Template model
+#' @param magic_model Global trained model to predict gates. It can be a single model or list of named models (each model trained on selected number of gates).
+#' @param magic_model_n_gates  Global trained model to predict number of gates. If different from NULL, magic_model is expected to be a list of models to predict certain gates (e.g., 5 models for 2,3,4,5 or 6 gates).
+#' @param ref_model_info Template model to predic gates.
 #' @param n_cores Number of cores to use. Default to 1.
-#' @param ref_data_train Template data.
-#' @param prop_down Proportion for downsampling. Default to 1 (no downsampling).
+#' @param ref_data_train Template data used to generate ref_model_info. Needed to calculate target-template distance.
+#' @param prop_down Proportion for downsampling. Default to NULL (automatic downsampling using n_points_per_plot).
+#' @param n_points_per_plot Number of points to consider for downsampling. Default to 500.
 #' @return List of Dataframes.
 #' @export
 #' @examples 
 #' \donttest{magicPred()}
 
 
-magicPred<-function(test_data,magic_model,ref_model_info=NULL,n_cores=1,ref_data_train=NULL,
-                                    prop_down=1){
+magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_model_info=NULL,n_cores=1,ref_data_train=NULL,
+                                    prop_down=NULL,thr_dist=0.2,n_points_per_plot=500){
   set.seed(40)
   start<-Sys.time()
   if(ncol(test_data)>2){
     stop("only 2 columns must be present in data to gate")
   }
   # --------- prepare test data -------------
-  message("prepare test data")
-  Xtest<-process_test_data(test_data = test_data,prop_down = prop_down)
+  message("----- prepare test data -------")
+  Xtest<-process_test_data(test_data = test_data,prop_down = prop_down,n_points_per_plot = n_points_per_plot)
   #show(magicPlot(Xtest[,c(1,2)],type = "no_gate",size_points = 2))
-  #-------- get predictions  ----
+  #---------- get predictions based on provided model ------------
+  message("---------- get predictions based on provided model ------------")
   if(is.null(magic_model)==F && is.null(ref_model_info)==T){
-    message("Using PD model")
-    #---- only  PD models predictions
-    classes<-predict(magic_model,Xtest)
-    # get distance templates - test data
-    vec_dist<-0
+    if(is.null(magic_model_n_gates)==F){
+      if(is.list(magic_model)==F){
+        stop("List of magic models required.")
+      }
+      message("Using list of general models and n_gates model")
+      #---- list of models and n_gates model
+      if(class(magic_model_n_gates)=="train"){
+        n_gates<-predict(magic_model_n_gates,Xtest)
+        inds_max_gates<-which.max(table(n_gates))
+        max_gate<-names(table(n_gates))[inds_max_gates]
+        message("Number of gates predicted")
+        message(max_gate)
+      }else{
+        max_gate<-as.character(magic_model_n_gates)
+        message("Number of gates selected")
+        message(max_gate)
+      }
+      magic_model_selected<-magic_model[[max_gate]]
+      classes<-predict(magic_model_selected,Xtest)
+      vec_dist<-0
+    }else if(is.null(magic_model_n_gates)==T){
+      message("Using general purpose model")
+      #---- only  PD models predictions
+      classes<-predict(magic_model,Xtest)
+      # get distance templates - test data
+      vec_dist<-0
+    }
+
   }else if(is.null(ref_model_info)==F){
     message("Using template model")
     #---- only reference predictions
@@ -224,37 +250,77 @@ magicPred<-function(test_data,magic_model,ref_model_info=NULL,n_cores=1,ref_data
       vec_dist<-0
     }
   }else{
-    stop("InputError: Either PD model or template model must be provided")
+    stop("InputError: Either general purpose model or template model must be provided")
   }
   test_data_final<-cbind(Xtest,classes)
-  test_data_original<-cbind(test_data,classes)
-  test_data_final$classes<-as.character(test_data_final$classes)
-  test_data_original$classes<-as.character(test_data_original$classes)
+  final_df<-test_data_final[,c("x1_expr","x2_expr","classes")]
+  final_df$classes<-as.character(final_df$classes)
+  #------------------- post-processing ----------------
+  message("---------- post-processing ------------")
+  all_classes<-unique(final_df$classes)
+  all_classes<-all_classes[all_classes!="0"]
+  if(length(all_classes)!=0){
+    if(is.null(ref_model_info)==T){
+      # ------- no template model ---------
+      if(length(all_classes)==1){
+        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = T,thr_dist = thr_dist,type="dist")
+      }else{
+        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = thr_dist,type="dist")
+      }
+    }else{
+      # ------- Yes template model ---------
+      if(length(all_classes)<=3){
+        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,type = "polygon")
+      }else{
+        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = 0.05,type="dist")
+      }
+    }
+  }
+
+  # get polygons after post-processing
+  message("------ get polygons after post-processing ------")
+  list_df_hull<-extract_polygon_gates(gated_df = final_df,concavity_val=5)
+  # compute gates on original data
+  message("------ compute gates ------")
+  test_data_temp<-test_data
+  test_data_temp$classes<-rep("0",nrow(test_data_temp))
+  test_data_temp[,1]<-range01(test_data_temp[,1])
+  test_data_temp[,2]<-range01(test_data_temp[,2])
+  test_data_temp[,1]<-round(test_data_temp[,1],2)
+  test_data_temp[,2]<-round(test_data_temp[,2],2)
+  test_data_temp_original<-compute_gates(gated_df=test_data_temp,list_final_polygons_coords =  list_df_hull)
+  test_data_temp_original$classes<-as.character(test_data_temp_original$classes)
+  test_data_original<-cbind(test_data,test_data_temp_original$classes)
+  # return gated results
   vec_dist<-round(vec_dist,2)
   end<-Sys.time()
   time_taken<-end-start
   print("Execution time:")
   print(time_taken)
   print("Done")
-  return(list(test_data_original=test_data_original,test_data_final=test_data_final,vec_dist=vec_dist))
+  return(list(test_data_original=test_data_original,test_data_temp_original=test_data_temp_original,
+              final_df=final_df,vec_dist=vec_dist,test_data_final=test_data_final))
 }
 
 #' magicPred_all
 #' 
 #' function to predict on plain test data (no hierarchy)
 #' @param list_test_data List of unlabeled  dataframes. It has only the two columns of marker expression.
-#' @param magic_model Global trained model.
-#' @param ref_model_info Template model.
+#' @param magic_model Global trained model to predict gates. It can be a single model or list of named models (each model trained on selected number of gates).
+#' @param magic_model_n_gates  Global trained model to predict number of gates. If different from NULL, magic_model is expected to be a list of models to predict certain gates (e.g., 5 models for 2,3,4,5 or 6 gates).
+#' @param ref_model_info Template model to predic gates.
 #' @param n_cores Number of cores to use. Default to 1.
-#' @param ref_data_train Template data.
+#' @param ref_data_train Template data used to generate ref_model_info. Needed to calculate target-template distance.
 #' @param verbose If True, show messages. Default to False.
+#' @param n_points_per_plot Number of points to consider for downsampling. Default to 500.
 #' @return List of Dataframes.
 #' @export
 #' @examples 
 #' \donttest{magicPred_all()}
 
-magicPred_all<-function(list_test_data,magic_model,ref_model_info=NULL,n_cores=1,
-                                 ref_data_train=NULL,verbose=F){
+magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magic_model_n_gates=NULL,
+                                 ref_data_train=NULL,verbose=F,prop_down=NULL,n_points_per_plot=500,
+                                 thr_dist=0.2,n_cores=1){
   set.seed(40)
   start<-Sys.time()
   all_names_test_data<-names(list_test_data)
@@ -265,34 +331,16 @@ magicPred_all<-function(list_test_data,magic_model,ref_model_info=NULL,n_cores=1
     df_test<-list_test_data[[i]]
     if(verbose==T){
       out_pred<-magicPred(test_data = df_test,magic_model=magic_model,ref_model_info=ref_model_info,
-                                          n_cores=n_cores,ref_data_train=ref_data_train)
+                          n_cores=n_cores,ref_data_train=ref_data_train,prop_down = prop_down,
+                          thr_dist = thr_dist,magic_model_n_gates = magic_model_n_gates,n_points_per_plot=n_points_per_plot)
     }else{
       suppressMessages(out_pred<-magicPred(test_data = df_test,magic_model=magic_model,
-                                                           ref_model_info=ref_model_info,
-                                                           n_cores=n_cores,ref_data_train=ref_data_train))
+                                           ref_model_info=ref_model_info,n_cores=n_cores,
+                                           ref_data_train=ref_data_train,prop_down=prop_down,thr_dist=thr_dist,
+                                           magic_model_n_gates = magic_model_n_gates,n_points_per_plot=n_points_per_plot))
     }
-    final_df<-out_pred$test_data_final[,c("x1_expr","x2_expr","classes")]
-    print("-------post-processing gates")
-    all_classes<-unique(final_df$classes)
-    all_classes<-all_classes[all_classes!="0"]
-    if(length(all_classes)!=0){
-      if(is.null(ref_model_info)==T){
-        # ------- no template mode ---------
-        if(length(all_classes)==1){
-          final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = T,thr_dist = 0.15,type="dist")
-        }else{
-          final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = 0.2,type="dist")
-        }
-      }else{
-        # ------- Yes template mode ---------
-        if(length(all_classes)<=3){
-          final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,type = "polygon")
-        }else{
-          final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = 0.05,type="dist")
-        }
-      }
-    }
-    df_test_original<-cbind(df_test,final_df$classes)
+    df_test_original<-out_pred$test_data_original
+    final_df<-out_pred$final_df
     return(list(df_test_original=df_test_original,final_df=final_df,vec_dist=out_pred$vec_dist))
   },mc.cores = 1)
   names(list_all_dfs_pred)<-all_names_test_data

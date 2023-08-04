@@ -159,40 +159,25 @@ import_png_image<-function(path_img){
 
 #' get_train_data
 #' 
-#' function to import test set in csv format.
-#' @param paths_file Vector of paths. Each path points toward a single csv file containin training info (labels and bivariate expression).
-#' @param df_paths Dataframe containing the paths of file to read. The paths must be in the first column.
+#' function to import training data based on paths to files.
+#' @param paths_file Vector of paths. Each path points toward a single csv file containin training info (labels and bivariate expression). paths_file can be also directly the list of dataframes containing labels and bivariate expression.
+#' @param df_paths Dataframe containing the paths of file to read. The paths to data must be in the first column. The associated paths to classes are in second column.
 #' @param n_cores Number of cores. Default to 1.
-#' @param prop_down Proportion of events to consider (dowsampling). Default to NULL.
+#' @param prop_down Proportion of events (downsampling). Default to NULL (downsampling using number of points).
+#' @param n_points_per_plot Number of points for downsampling.
 #' @param remove_class Vector of classes to ignore. Default to NULL.
 #' @return Dataframe.
 #' @export
 #' @examples 
 #' \donttest{get_train_data()}
 
-# function to import all PD data as one training set
 
-get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,remove_class=NULL){
+get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,remove_class=NULL,n_points_per_plot=500){
   start<-Sys.time()
   if(is.null(df_paths)==F){
     paths_file<-df_paths[,1]
   }
-  # select proportion of data to consider
-  # higher number of training plots, lower proportion of events we need
-  if(is.null(prop_down)==T){
-    if(length(paths_file)<15){
-      prop_down<-0.90
-    }else if(length(paths_file)<100){
-      prop_down<-0.30
-    }else if(length(paths_file)<500){
-      prop_down<-0.10
-    }else if(length(paths_file)<1000){
-      prop_down<-0.05
-    }else{
-      prop_down<-0.01
-    }
-  }
-  
+
   names_dens_features<-c("n_peaks_m1","h_peak_m1_1","pos_peak_m1_1","start_peak_m1_1","end_peak_m1_1",
                                     "h_peak_m1_2","pos_peak_m1_2","start_peak_m1_2","end_peak_m1_2",
                                     "h_peak_m1_3","pos_peak_m1_3","start_peak_m1_3","end_peak_m1_3",
@@ -203,7 +188,7 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
                                     "h_peak_m2_4","pos_peak_m2_4","start_peak_m2_4","end_peak_m2_4")
 
   list_dfs<-mclapply(1:length(paths_file),function(i){
-    print(i)
+    print(sprintf("plot_num:%s",i))
     #print("----- get or import dataframe with classes")
     if(is.list(paths_file)==F && is.null(df_paths)==T){
       # import df
@@ -223,50 +208,46 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
     if(ncol(df)>3){
       df<-df[,c("x","y","corrected_classes")]
     }
-    #show(magicPlot(df = df,type = "ML",size_points = 0.1))
     colnames(df)<-c("x1_expr","x2_expr","classes")
-    #show(magicPlot(df = df,type = "ML",size_points = 1))
-    if(is.null(prop_down)==T && length(paths_file)<100){
-      if(nrow(df)>300000){
-        prop_down<-0.05
-      }else if(nrow(df)>100000){
-        prop_down<-0.10
-      }
+    #show(magicPlot(df = df,type = "dens",size_points = 1))
+    if(is.null(prop_down)==T){
+      prop_down<-(n_points_per_plot/nrow(df))
     }
     # downsample df
     out_part<-createDataPartition(y=factor(df[,"classes"]),times = 1,p = prop_down)
-    inds_new_df<-out_part$Resample1
-    new_df<-df[inds_new_df,]
+    df<-df[out_part$Resample1,]
     # remove some classes if needed
     if(is.null(remove_class)==F){
-      inds_to_remove<-which((new_df$classes %in% remove_class)==T)
+      inds_to_remove<-which((df$classes %in% remove_class)==T)
       if(length(inds_to_remove)!=0){
         new_df$classes[inds_to_remove]<-0
       }
     }
     # get density features
-    new_df$x1_expr<-range01(new_df$x1_expr)
-    new_df$x2_expr<-range01(new_df$x2_expr)
-    new_df$x1_expr<-round(new_df$x1_expr,2)
-    new_df$x2_expr<-round(new_df$x2_expr,2)
-    df_dens<-csv_to_dens(df = new_df,with_classes = F,n_coord = 50)
+    df$x1_expr<-range01(df$x1_expr)
+    df$x2_expr<-range01(df$x2_expr)
+    df$x1_expr<-round(df$x1_expr,2)
+    df$x2_expr<-round(df$x2_expr,2)
+    df_dens<-csv_to_dens(df = df,with_classes = F,n_coord = 50)
     vec_info_dens<-get_density_features(df_dens = df_dens)
     #show(magicPlot(df = new_df,type = "ML",size_points = 1))
     # add density features
-    m_info_dens<-matrix(vec_info_dens,length(vec_info_dens),nrow(new_df))
+    m_info_dens<-matrix(vec_info_dens,length(vec_info_dens),nrow(df))
     m_info_dens<-t(m_info_dens)
     df_info_dens<-as.data.frame(m_info_dens)
     colnames(df_info_dens)<-names_dens_features
-    new_df<-cbind(new_df,df_info_dens)
+    df<-cbind(df,df_info_dens)
     # add other info
-    new_df$plot_num<-as.character(rep(i,nrow(new_df)))
-    all_classes<-unique(new_df$classes)
+    df$plot_num<-as.character(rep(i,nrow(df)))
+    all_classes<-unique(df$classes)
     all_classes<-all_classes[all_classes!=0]
     n_gates<-length(all_classes)
-    new_df$n_gates_info<-rep(n_gates,nrow(new_df))
-    return(new_df)
+    df$n_gates_info<-rep(n_gates,nrow(df))
+    return(df)
   },mc.cores = n_cores)
+  gc()
   df_train<-do.call(rbind,list_dfs)
+  row.names(df_train)<-NULL
   end<-Sys.time()
   time_taken<-end-start
   print("Time of execution:")
