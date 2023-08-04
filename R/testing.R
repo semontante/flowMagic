@@ -187,7 +187,7 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,magic_mod
 
 
 magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_model_info=NULL,n_cores=1,ref_data_train=NULL,
-                                    prop_down=NULL,thr_dist=0.2,n_points_per_plot=500){
+                                    prop_down=NULL,thr_dist=0.05,n_points_per_plot=500){
   set.seed(40)
   start<-Sys.time()
   if(ncol(test_data)>2){
