@@ -187,7 +187,7 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,magic_mod
 
 
 magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_model_info=NULL,n_cores=1,ref_data_train=NULL,
-                                    prop_down=NULL,thr_dist=0.05,n_points_per_plot=500){
+                                    prop_down=NULL,thr_dist=0.05,n_points_per_plot=NULL){
   set.seed(40)
   start<-Sys.time()
   if(ncol(test_data)>2){
@@ -195,8 +195,10 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
   }
   # --------- prepare test data -------------
   message("----- prepare test data -------")
-  if(is.null(ref_model_info)==F && is.null(prop_down)==T){
+  if(is.null(ref_model_info)==F && is.null(prop_down)==T && is.null(n_points_per_plot)==T){
     prop_down<-1
+  }else if(is.null(ref_model_info)==T  && is.null(prop_down)==T && is.null(n_points_per_plot)==T){
+    n_points_per_plot<-500
   }
   Xtest<-process_test_data(test_data = test_data,prop_down = prop_down,n_points_per_plot = n_points_per_plot)
   #show(magicPlot(Xtest[,c(1,2)],type = "no_gate",size_points = 2))
@@ -304,6 +306,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
   return(list(test_data_original=test_data_original,test_data_temp_original=test_data_temp_original,
               final_df=final_df,vec_dist=vec_dist,test_data_final=test_data_final))
 }
+
 
 #' magicPred_all
 #' 
