@@ -320,7 +320,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
 
 magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magic_model_n_gates=NULL,
                                  ref_data_train=NULL,verbose=F,prop_down=NULL,n_points_per_plot=500,
-                                 thr_dist=0.2,n_cores=1){
+                                 thr_dist=0.05,n_cores=1){
   set.seed(40)
   start<-Sys.time()
   all_names_test_data<-names(list_test_data)
