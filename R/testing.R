@@ -195,6 +195,9 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
   }
   # --------- prepare test data -------------
   message("----- prepare test data -------")
+  if(is.null(ref_model_info)==F && is.null(prop_down)==T){
+    prop_down<-1
+  }
   Xtest<-process_test_data(test_data = test_data,prop_down = prop_down,n_points_per_plot = n_points_per_plot)
   #show(magicPlot(Xtest[,c(1,2)],type = "no_gate",size_points = 2))
   #---------- get predictions based on provided model ------------
