@@ -643,7 +643,7 @@ process_test_data<-function(test_data,prop_down=NULL,n_points_per_plot=500){
 
   # downsample
   if(is.null(prop_down)==T){
-      if(n_points_per_plot>nrow(test_data){
+      if(n_points_per_plot>nrow(test_data)){
        prop_down<-1
       }else{
        prop_down<-(n_points_per_plot/nrow(test_data))
