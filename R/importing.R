@@ -212,6 +212,9 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
     #show(magicPlot(df = df,type = "dens",size_points = 1))
     if(is.null(prop_down)==T){
       prop_down<-(n_points_per_plot/nrow(df))
+      if(prop_down>1){
+        prop_down<-1
+      }
     }
     # downsample df
     out_part<-createDataPartition(y=factor(df[,"classes"]),times = 1,p = prop_down)
