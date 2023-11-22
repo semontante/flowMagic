@@ -78,6 +78,7 @@ magicTrain_local<-function(list_train_sets,n_tree=10,train_model="rf",n_cores=1)
 #' @param decay_nnet Decay parameter value for nnet model.
 #' @param method_control Type of training control: oob or cv. Default to oob. 
 #' @param type_y Type of response variable: classes (train to predict gates boundaries) or n_gates_info(train to predict number of gates).
+#' @param seed_n Set seed. Default to 40.
 #' @return model object.
 #' @export
 #' @examples 
@@ -86,7 +87,7 @@ magicTrain_local<-function(list_train_sets,n_tree=10,train_model="rf",n_cores=1)
 
 magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
                                      list_index_train=NULL,list_index_val=NULL,n_tree=10,tune_lenght=3,size_nnet_units=100,
-                                     decay_nnet=0.1,method_control="oob",type_y="classes"){
+                                     decay_nnet=0.1,method_control="oob",type_y="classes",seed_n=40){
   start<-Sys.time()
   # Get Xtrain, Ytrain and f_info
   print("prepare data")
@@ -99,6 +100,7 @@ magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
   print("training...")
   cl <- makePSOCKcluster(n_cores)
   registerDoParallel(cl)
+  set.seed(seed_n)
   if(train_model=="rf"){
     out_model<-magicTrain_rf(Xtrain = Xtrain,Ytrain = Ytrain,
                              list_index_train = list_index_train,list_index_val=list_index_val,n_tree = n_tree,
