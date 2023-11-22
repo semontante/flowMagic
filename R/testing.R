@@ -1,10 +1,20 @@
-# function to predict the gates on the ungated .fcs samples 
-# list_test_sets contains the list of root dataframe for each ungated fcs file imported
-# list_models_local contains the optimized local models pre-generated using the magicTrain_local function
-# df_tree contains the info related to the populations hierarchy
-# list_global_train contains the pool of similar data found in the global train pool
-# list_local_train contains the local training sets (gated data of the sample manually gated)
-#-------- function to use the optimized trained models on the ungated fcs samples
+
+
+#' magicPred_hierarchy
+#' 
+#' function to predict the gates on the ungated .fcs samples.
+#' @param list_test_sets contains the list of root dataframe for each ungated fcs file imported.
+#' @param list_models_local contains the optimized local models pre-generated using the magicTrain_local function.
+#' @param df_tree contains the info related to the populations hierarchy.
+#' @param magic_model Global trained model.
+#' @param list_local_train contains the local training sets (gated data of the sample manually gated).
+#' @param n_cores Number of cores to use. Default to 1.
+#' @return List of Dataframes.
+#' @export
+#' @examples 
+#' \donttest{magicPred_hierarchy()}
+
+
 magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,magic_model,list_local_train,n_cores=1){
   n_samples<-length(list_test_sets)
   name_samples<-names(list_test_sets)
@@ -159,11 +169,26 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,magic_mod
   return(list_gated_data)
 }
 
+#' magicPred
+#' 
+#' function to predict on plain test data (no hierarchy)
+#' @param test_data Dataframe of test data to gate. It has only the two columns of marker expression.
+#' @param magic_model Global trained model to predict gates. It can be a single model or list of named models (each model trained on selected number of gates).
+#' @param magic_model_n_gates  Global trained model to predict number of gates. If different from NULL, magic_model is expected to be a list of models to predict certain gates (e.g., 5 models for 2,3,4,5 or 6 gates).
+#' @param ref_model_info Template model to predic gates.
+#' @param n_cores Number of cores to use. Default to 1.
+#' @param ref_data_train Template data used to generate ref_model_info. Needed to calculate target-template distance.
+#' @param prop_down Proportion for downsampling. Default to NULL (automatic downsampling using n_points_per_plot).
+#' @param n_points_per_plot Number of points to consider for downsampling. Default to 500.
+#' @param normalize_data If True, data is normalized to 0-1 range. Default to False.
+#' @return List of Dataframes.
+#' @export
+#' @examples 
+#' \donttest{magicPred()}
 
 
-# function to predict on plain test data (no hierarchy)
 magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_model_info=NULL,n_cores=1,ref_data_train=NULL,
-                                    prop_down=NULL,thr_dist=0.05,n_points_per_plot=NULL){
+                                    prop_down=NULL,thr_dist=0.05,n_points_per_plot=NULL,normalize_data=F){
   set.seed(40)
   start<-Sys.time()
   if(ncol(test_data)>2){
@@ -176,7 +201,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
   }else if(is.null(ref_model_info)==T  && is.null(prop_down)==T && is.null(n_points_per_plot)==T){
     n_points_per_plot<-500
   }
-  Xtest<-process_test_data(test_data = test_data,prop_down = prop_down,n_points_per_plot = n_points_per_plot)
+  Xtest<-process_test_data(test_data = test_data,prop_down = prop_down,n_points_per_plot = n_points_per_plot,normalize_data = normalize_data)
   #show(magicPlot(Xtest[,c(1,2)],type = "no_gate",size_points = 2))
   #---------- get predictions based on provided model ------------
   message("---------- get predictions based on provided model ------------")
@@ -267,8 +292,10 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
   test_data_temp<-test_data
   test_data_temp$classes<-rep("0",nrow(test_data_temp))
   if(is.null(list_df_hull)==F){
-    test_data_temp[,1]<-range01(test_data_temp[,1])
-    test_data_temp[,2]<-range01(test_data_temp[,2])
+    if(normalize_data==T){
+      test_data_temp[,1]<-range01(test_data_temp[,1])
+      test_data_temp[,2]<-range01(test_data_temp[,2])
+    }
     test_data_temp[,1]<-round(test_data_temp[,1],2)
     test_data_temp[,2]<-round(test_data_temp[,2],2)
     test_data_temp_original<-compute_gates(gated_df=test_data_temp,list_final_polygons_coords =  list_df_hull)
@@ -291,10 +318,26 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
 }
 
 
-# function to predict on all samples of plain test data (no hierarchy)
+#' magicPred_all
+#' 
+#' function to predict on plain test data (no hierarchy)
+#' @param list_test_data List of unlabeled  dataframes. It has only the two columns of marker expression.
+#' @param magic_model Global trained model to predict gates. It can be a single model or list of named models (each model trained on selected number of gates).
+#' @param magic_model_n_gates  Global trained model to predict number of gates. If different from NULL, magic_model is expected to be a list of models to predict certain gates (e.g., 5 models for 2,3,4,5 or 6 gates).
+#' @param ref_model_info Template model to predic gates.
+#' @param n_cores Number of cores to use. Default to 1.
+#' @param ref_data_train Template data used to generate ref_model_info. Needed to calculate target-template distance.
+#' @param verbose If True, show messages. Default to False.
+#' @param n_points_per_plot Number of points to consider for downsampling. Default to 500.
+#' @param normalize_data If True, data is normalized to 0-1 range. Default to False.
+#' @return List of Dataframes.
+#' @export
+#' @examples 
+#' \donttest{magicPred_all()}
+
 magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magic_model_n_gates=NULL,
                                  ref_data_train=NULL,verbose=F,prop_down=NULL,n_points_per_plot=NULL,
-                                 thr_dist=0.05,n_cores=1){
+                                 thr_dist=0.05,n_cores=1,normalize_data=F){
   set.seed(40)
   start<-Sys.time()
   all_names_test_data<-names(list_test_data)
@@ -306,12 +349,14 @@ magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magi
     if(verbose==T){
       out_pred<-magicPred(test_data = df_test,magic_model=magic_model,ref_model_info=ref_model_info,
                           n_cores=n_cores,ref_data_train=ref_data_train,prop_down = prop_down,
-                          thr_dist = thr_dist,magic_model_n_gates = magic_model_n_gates,n_points_per_plot=n_points_per_plot)
+                          thr_dist = thr_dist,magic_model_n_gates = magic_model_n_gates,n_points_per_plot=n_points_per_plot,
+                          normalize_data=normalize_data)
     }else{
       suppressMessages(out_pred<-magicPred(test_data = df_test,magic_model=magic_model,
                                            ref_model_info=ref_model_info,n_cores=n_cores,
                                            ref_data_train=ref_data_train,prop_down=prop_down,thr_dist=thr_dist,
-                                           magic_model_n_gates = magic_model_n_gates,n_points_per_plot=n_points_per_plot))
+                                           magic_model_n_gates = magic_model_n_gates,n_points_per_plot=n_points_per_plot,
+                                           normalize_data=normalize_data))
     }
     df_test_original<-out_pred$test_data_original
     final_df<-out_pred$final_df

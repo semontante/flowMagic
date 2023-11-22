@@ -166,13 +166,16 @@ import_png_image<-function(path_img){
 #' @param prop_down Proportion of events (downsampling). Default to NULL (downsampling using number of points).
 #' @param n_points_per_plot Number of points for downsampling.
 #' @param remove_class Vector of classes to ignore. Default to NULL.
+#' @param normalize_data If True, data is normalized to 0-1 range. Default to False.
+#' @param vec_col vector of columns names if the input dataframes have more than 3 columns. The third column name must always refer to the column with the gate label of each event. Default to NULL.
 #' @return Dataframe.
 #' @export
 #' @examples 
 #' \donttest{get_train_data()}
 
 
-get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,remove_class=NULL,n_points_per_plot=500){
+get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,remove_class=NULL,
+                         n_points_per_plot=500,normalize_data=F,vec_col=NULL){
   start<-Sys.time()
   if(is.null(df_paths)==F){
     paths_file<-df_paths[,1]
@@ -206,7 +209,13 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
       stop("input not valid")
     }
     if(ncol(df)>3){
-      df<-df[,c("x","y","corrected_classes")]
+      warning("dataframe has more than three columns, checking vec_col argument")
+      if(is.null(vec_col)==T || length(vec_col)!=3){
+        stop("the input dataframes has length > 3 and vec_col format is not valid. 
+             Please either make dataframes of 3 columns or indicate 3 valid columns names in vec_col argument. 
+             Third column must contain the classes.")
+      }
+      df<-df[,vec_col]
     }
     colnames(df)<-c("x1_expr","x2_expr","classes")
     #show(magicPlot(df = df,type = "dens",size_points = 1))
@@ -227,8 +236,10 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
       }
     }
     # get density features
-    df$x1_expr<-range01(df$x1_expr)
-    df$x2_expr<-range01(df$x2_expr)
+    if(normalize_data==T){
+      df$x1_expr<-range01(df$x1_expr)
+      df$x2_expr<-range01(df$x2_expr)
+    }
     df$x1_expr<-round(df$x1_expr,2)
     df$x2_expr<-round(df$x2_expr,2)
     df_dens<-csv_to_dens(df = df,with_classes = F,n_coord = 50)
@@ -258,4 +269,5 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
   print("Done")
   return(df_train)
 }
+
 

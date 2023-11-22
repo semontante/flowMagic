@@ -661,12 +661,13 @@ get_paths_training_v2<-function(df_paths,n_paths=200,seed_n=40,remove_gates=NULL
 #' @param test_data Dataframe of bivariate markers expression.
 #' @param prop_down Proportion of events (downsampling). Default to NULL (downsampling using number of points).
 #' @param n_points_per_plot Number of points for downsampling.
+#' @param normalize_data If True, data is normalized to 0-1 range. Default to False.
 #' @return Dataframe.
 #' @export
 #' @examples 
 #' \donttest{process_test_data()}
 
-process_test_data<-function(test_data,prop_down=NULL,n_points_per_plot=500){
+process_test_data<-function(test_data,prop_down=NULL,n_points_per_plot=500,normalize_data=F){
   names_dens_features<-c("n_peaks_m1","h_peak_m1_1","pos_peak_m1_1","start_peak_m1_1","end_peak_m1_1",
                          "h_peak_m1_2","pos_peak_m1_2","start_peak_m1_2","end_peak_m1_2",
                          "h_peak_m1_3","pos_peak_m1_3","start_peak_m1_3","end_peak_m1_3",
@@ -691,8 +692,10 @@ process_test_data<-function(test_data,prop_down=NULL,n_points_per_plot=500){
   Xtest<-test_data[inds_new_df,c(1,2)]
 
   # get density features
-  Xtest[,1]<-range01(Xtest[,1])
-  Xtest[,2]<-range01(Xtest[,2])
+  if(normalize_data==T){
+    Xtest[,1]<-range01(Xtest[,1])
+    Xtest[,2]<-range01(Xtest[,2])
+  }
   Xtest[,1]<-round(Xtest[,1],2)
   Xtest[,2]<-round(Xtest[,2],2)
   df_dens<-csv_to_dens(df = Xtest,with_classes = F,n_coord = 50)
