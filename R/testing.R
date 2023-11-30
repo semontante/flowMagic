@@ -180,7 +180,7 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,magic_mod
 #' @param ref_data_train Template data used to generate ref_model_info. Needed to calculate target-template distance.
 #' @param prop_down Proportion for downsampling. Default to NULL (automatic downsampling using n_points_per_plot).
 #' @param n_points_per_plot Number of points to consider for downsampling. Default to 500.
-#' @param normalize_data If True, data is normalized to 0-1 range. Default to False.
+#' @param normalize_data If True, data is normalized to 0-1 range. Default to True.
 #' @return List of Dataframes.
 #' @export
 #' @examples 
@@ -188,7 +188,7 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,magic_mod
 
 
 magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_model_info=NULL,n_cores=1,ref_data_train=NULL,
-                                    prop_down=NULL,thr_dist=0.05,n_points_per_plot=NULL,normalize_data=F){
+                                    prop_down=NULL,thr_dist=0.05,n_points_per_plot=NULL,normalize_data=T){
   set.seed(40)
   start<-Sys.time()
   if(ncol(test_data)>2){
@@ -329,7 +329,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
 #' @param ref_data_train Template data used to generate ref_model_info. Needed to calculate target-template distance.
 #' @param verbose If True, show messages. Default to False.
 #' @param n_points_per_plot Number of points to consider for downsampling. Default to 500.
-#' @param normalize_data If True, data is normalized to 0-1 range. Default to False.
+#' @param normalize_data If True, data is normalized to 0-1 range. Default to True.
 #' @return List of Dataframes.
 #' @export
 #' @examples 
@@ -337,7 +337,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
 
 magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magic_model_n_gates=NULL,
                                  ref_data_train=NULL,verbose=F,prop_down=NULL,n_points_per_plot=NULL,
-                                 thr_dist=0.05,n_cores=1,normalize_data=F){
+                                 thr_dist=0.05,n_cores=1,normalize_data=T){
   set.seed(40)
   start<-Sys.time()
   all_names_test_data<-names(list_test_data)

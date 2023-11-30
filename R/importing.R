@@ -166,7 +166,7 @@ import_png_image<-function(path_img){
 #' @param prop_down Proportion of events (downsampling). Default to NULL (downsampling using number of points).
 #' @param n_points_per_plot Number of points for downsampling.
 #' @param remove_class Vector of classes to ignore. Default to NULL.
-#' @param normalize_data If True, data is normalized to 0-1 range. Default to False.
+#' @param normalize_data If True, data is normalized to 0-1 range. Default to True.
 #' @param vec_col vector of columns names if the input dataframes have more than 3 columns. The third column name must always refer to the column with the gate label of each event. Default to NULL.
 #' @return Dataframe.
 #' @export
@@ -175,7 +175,7 @@ import_png_image<-function(path_img){
 
 
 get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,remove_class=NULL,
-                         n_points_per_plot=500,normalize_data=F,vec_col=NULL){
+                         n_points_per_plot=500,normalize_data=T,vec_col=NULL){
   start<-Sys.time()
   if(is.null(df_paths)==F){
     paths_file<-df_paths[,1]
@@ -243,7 +243,11 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
     df$x1_expr<-round(df$x1_expr,2)
     df$x2_expr<-round(df$x2_expr,2)
     df_dens<-csv_to_dens(df = df,with_classes = F,n_coord = 50)
-    vec_info_dens<-get_density_features(df_dens = df_dens)
+    if(normalize_data==F){
+      vec_info_dens<-get_density_features(df_dens = df_dens,min_height = 0.00)
+    }else{
+      vec_info_dens<-get_density_features(df_dens = df_dens)
+    }
     #show(magicPlot(df = new_df,type = "ML",size_points = 1))
     # add density features
     m_info_dens<-matrix(vec_info_dens,length(vec_info_dens),nrow(df))
