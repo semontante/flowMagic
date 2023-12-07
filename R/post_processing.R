@@ -162,7 +162,8 @@ compute_gates<-function(gated_df,list_final_polygons_coords,no_classes=F){
 #' @examples 
 #' \donttest{post_process_gates()}
 
-post_process_gates<-function(gated_df,n_cores=1,thr_dist=0.15,include_zero=F,remove_centroids=T,type="dist",concavity_val=5){
+post_process_gates<-function(gated_df,n_cores=1,thr_dist=0.15,include_zero=F,remove_centroids=T,type="dist",
+                             concavity_val=5,normalize_data=T){
   colnames(gated_df)<-c("x","y","classes")
   gated_df$classes<-as.character(gated_df$classes)
   if(type=="dist"){
@@ -172,18 +173,23 @@ post_process_gates<-function(gated_df,n_cores=1,thr_dist=0.15,include_zero=F,rem
                                                include_zero = include_zero,remove_centroids = remove_centroids)
   }else if(type=="polygon"){
     list_df_hull<-extract_polygon_gates(gated_df = gated_df,concavity_val=concavity_val)
-    # check polygons intersections
-    max_area_intersect<-check_polygons_intersection(list_df_hull = list_df_hull)
-    message(sprintf("max_area_intersect:%f",max_area_intersect))
-    # If 0: no polygon intersecion
-    if(max_area_intersect>0.08){
-      message("There is an relevant intersection")
-      new_df<-assign_events_to_nearest_centroids(gated_df = gated_df,
-                                                 n_cores = n_cores,thr_dist=0.05,
-                                                 include_zero = F,remove_centroids = T)
+    if(normalize_data==T){
+      # check polygons intersections
+      max_area_intersect<-check_polygons_intersection(list_df_hull = list_df_hull)
+      message(sprintf("max_area_intersect:%f",max_area_intersect))
+      # If 0: no polygon intersecion
+      if(max_area_intersect>0.08){
+        message("There is a relevant intersection")
+        new_df<-assign_events_to_nearest_centroids(gated_df = gated_df,
+                                                   n_cores = n_cores,thr_dist=0.05,
+                                                   include_zero = F,remove_centroids = T)
+      }else{
+        new_df<-compute_gates(gated_df=gated_df,list_final_polygons_coords =  list_df_hull)
+      }
     }else{
       new_df<-compute_gates(gated_df=gated_df,list_final_polygons_coords =  list_df_hull)
     }
+
   }
   return(new_df)
 }

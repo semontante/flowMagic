@@ -276,7 +276,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
     }else{
       # ------- Yes template model ---------
       if(length(all_classes)<=4){
-        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,type = "polygon")
+        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,type = "polygon",normalize_data = normalize_data)
       }else{
         final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = 0.05,type="dist")
       }

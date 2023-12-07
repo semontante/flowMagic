@@ -259,12 +259,13 @@ get_density_features<-function(df_dens,min_height=0.06){
 #' @param df Dataframe of marker expression values.
 #' @param with_classes Consider classes. Default to True.
 #' @param n_coord Grid size. Default to df.
+#' @param normalize_data If True, data is normalized to 0-1 range. Default to True.
 #' @return Dataframe.
 #' @export
 #' @examples 
 #' \donttest{csv_to_dens()}
 
-csv_to_dens<-function(df,with_classes=T,n_coord="df"){
+csv_to_dens<-function(df,with_classes=T,n_coord="df",normalize_data=T){
 
   if(with_classes==T){
       x1_expr<-df[,1]
@@ -272,8 +273,10 @@ csv_to_dens<-function(df,with_classes=T,n_coord="df"){
       x2_expr<-df[,2]
       x2density<-(density(df[,2],n=nrow(df)))$y # density of x2 marker expression
       classes<- df[,3] 
-      x1_expr<-range01(x1_expr)
-      x2_expr<-range01(x2_expr)
+      if(normalize_data==T){
+        x1_expr<-range01(x1_expr)
+        x2_expr<-range01(x2_expr)
+      }
       new_df<-as.data.frame(cbind(x1_expr,x1density,x2_expr,x2density,classes))
   }else if(with_classes==F){
     if(n_coord=="df"){
@@ -281,8 +284,10 @@ csv_to_dens<-function(df,with_classes=T,n_coord="df"){
       x1density<-(density(df[,1],n=nrow(df)))$y # density of x1 marker expression
       x2_expr<-df[,2]
       x2density<-(density(df[,2],n=nrow(df)))$y # density of x2 marker expression
-      x1_expr<-range01(x1_expr)
-      x2_expr<-range01(x2_expr)
+      if(normalize_data==T){
+        x1_expr<-range01(x1_expr)
+        x2_expr<-range01(x2_expr)
+      }
       new_df<-as.data.frame(cbind(x1_expr,x1density,x2_expr,x2density))
     }else{
       x1density<-(density(df[,1],n=n_coord))$y # density of x1 marker expression
@@ -661,13 +666,13 @@ get_paths_training_v2<-function(df_paths,n_paths=200,seed_n=40,remove_gates=NULL
 #' @param test_data Dataframe of bivariate markers expression.
 #' @param prop_down Proportion of events (downsampling). Default to NULL (downsampling using number of points).
 #' @param n_points_per_plot Number of points for downsampling.
-#' @param normalize_data If True, data is normalized to 0-1 range. Default to False.
+#' @param normalize_data If True, data is normalized to 0-1 range. Default to True.
 #' @return Dataframe.
 #' @export
 #' @examples 
 #' \donttest{process_test_data()}
 
-process_test_data<-function(test_data,prop_down=NULL,n_points_per_plot=500,normalize_data=F){
+process_test_data<-function(test_data,prop_down=NULL,n_points_per_plot=500,normalize_data=T){
   names_dens_features<-c("n_peaks_m1","h_peak_m1_1","pos_peak_m1_1","start_peak_m1_1","end_peak_m1_1",
                          "h_peak_m1_2","pos_peak_m1_2","start_peak_m1_2","end_peak_m1_2",
                          "h_peak_m1_3","pos_peak_m1_3","start_peak_m1_3","end_peak_m1_3",
@@ -698,8 +703,12 @@ process_test_data<-function(test_data,prop_down=NULL,n_points_per_plot=500,norma
   }
   Xtest[,1]<-round(Xtest[,1],2)
   Xtest[,2]<-round(Xtest[,2],2)
-  df_dens<-csv_to_dens(df = Xtest,with_classes = F,n_coord = 50)
-  vec_info_dens<-get_density_features(df_dens = df_dens)
+  df_dens<-csv_to_dens(df = Xtest,with_classes = F,n_coord = 50,normalize_data = normalize_data)
+  if(normalize_data==F){
+    vec_info_dens<-get_density_features(df_dens = df_dens,min_height = 0.00)
+  }else{
+    vec_info_dens<-get_density_features(df_dens = df_dens)
+  }
   m_info_dens<-matrix(vec_info_dens,length(vec_info_dens),nrow(Xtest))
   m_info_dens<-t(m_info_dens)
   df_info_dens<-as.data.frame(m_info_dens)
