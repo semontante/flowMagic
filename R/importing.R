@@ -174,8 +174,8 @@ import_png_image<-function(path_img){
 #' \donttest{get_train_data()}
 
 
-get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,remove_class=NULL,
-                         n_points_per_plot=500,normalize_data=T,vec_col=NULL){
+get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=0.90,remove_class=NULL,
+                         n_points_per_plot=NULL,normalize_data=T,vec_col=NULL){
   start<-Sys.time()
   if(is.null(df_paths)==F){
     paths_file<-df_paths[,1]
