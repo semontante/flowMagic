@@ -174,7 +174,7 @@ import_png_image<-function(path_img){
 #' \donttest{get_train_data()}
 
 
-get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=0.90,remove_class=NULL,
+get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,remove_class=NULL,
                          n_points_per_plot=NULL,normalize_data=T,vec_col=NULL){
   start<-Sys.time()
   if(is.null(df_paths)==F){
@@ -219,7 +219,9 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=0.90,
     }
     colnames(df)<-c("x1_expr","x2_expr","classes")
     #show(magicPlot(df = df,type = "dens",size_points = 1))
-    if(is.null(prop_down)==T){
+    if(is.null(prop_down)==T & is.null(n_points_per_plot)==T){
+      prop_down<-1
+    }else if(is.null(prop_down)==T & is.null(n_points_per_plot)==F){
       prop_down<-(n_points_per_plot/nrow(df))
       if(prop_down>1){
         prop_down<-1
