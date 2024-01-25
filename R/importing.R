@@ -4,28 +4,19 @@
 #' @param path path to gs or GatingML object.
 #' @param type type of object.
 #' @param group_wsp Group of wsp to import.
-#' @param report_gs report gs?
-#' @return GatingHierarchy object
+#' @return GatingSet object
 #' @export
 #' @examples 
 #' \donttest{import_sample_gated()}
 
-import_sample_gated<-function(path,type="gs",group_wsp=NULL,report_gs=F){
+import_gating_info<-function(path,type="gs",group_wsp=NULL){
   if(type=="gs"){
     gs<-load_gs(path)
   }else if(type=="ws"){
     ws<-CytoML::open_flowjo_xml(path)
-    print(ws)
     gs<-flowjo_to_gatingset(ws,name=group_wsp)
   }
-  if(report_gs==T){
-    return(gs)
-  }
-  if(length(gs)>1){
-    gs<-gs[1]
-  }
-  gh<-gs[[1]]
-  return(gh)
+  return(gs)
 }
 
 #' import_reference_csv
@@ -73,7 +64,7 @@ import_reference_csv<-function(path_results,n_cores=1){
 #' \donttest{import_test_set()}
 
 
-import_test_set<-function(path,n_samples="All",ref_f_n=1){
+import_test_set_fcs<-function(path,n_samples="All",ref_f_n=1){
   start<-Sys.time()
   paths_files<-list.files(path,full.names = T)
   if(is.character(n_samples)==F){

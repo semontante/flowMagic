@@ -6,8 +6,6 @@
 #' @param list_test_sets contains the list of root dataframe for each ungated fcs file imported.
 #' @param list_models_local contains the optimized local models pre-generated using the magicTrain_local function.
 #' @param df_tree contains the info related to the populations hierarchy.
-#' @param magic_model Global trained model.
-#' @param list_local_train contains the local training sets (gated data of the sample manually gated).
 #' @param n_cores Number of cores to use. Default to 1.
 #' @return List of Dataframes.
 #' @export
@@ -15,7 +13,7 @@
 #' \donttest{magicPred_hierarchy()}
 
 
-magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,magic_model,list_local_train,n_cores=1){
+magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,n_cores=1){
   n_samples<-length(list_test_sets)
   name_samples<-names(list_test_sets)
   start<-Sys.time()
@@ -77,6 +75,7 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,magic_mod
           }else{
             label_assoc<-out[[2]]
             print("all labels association selected df")
+            label_assoc<-label_assoc[[1]]
             print(label_assoc)
             ind<-grep(mother_current_pop,label_assoc,fixed=T)
             label_assoc<-label_assoc[ind]
@@ -94,8 +93,8 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,magic_mod
           }
         }
         ######################### get local df #######################
-        print("---- get local train data---- ")
-        local_train_df<-list_local_train[[level]][[pop]]
+        # print("---- get local train data---- ")
+        # local_train_df<-list_local_train[[level]][[pop]]
         ########################## check number of points in test mother df ##############################
         print("######### check number of points in test mother df (Xtest) ######### ")
         n_points<-nrow(Xtest)
@@ -131,11 +130,12 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,magic_mod
           ####### predict the gates ######
           reference_model_local<-model_current_pops_to_gate$ref_model_info
           print("----- predicting gates -----")
-          final_df<-magicPred_plain_one_model(test_data = Xtest,magic_model = magic_model,
-                                                             ref_model_info = reference_model_local,n_cores = 1)
+          out_pred<-magicPred(test_data = Xtest,ref_model_info=reference_model_local,n_cores=1,
+                              prop_down=0.9,thr_dist=0.05,normalize_data=F)
+          final_df<-out_pred$test_data_original
           ######## generate gated df current pop ######################
           print("------ generating gated data current pop -----")
-          yhat_final_current_pop<-final_df$classes
+          yhat_final_current_pop<-final_df[,3]
           gated_data_current_pop<-cbind(Xtest,yhat_final_current_pop)
           # get indices of the gates based on the root df
           indices_pop_on_root<-row.names(gated_data_current_pop)
