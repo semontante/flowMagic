@@ -4,7 +4,8 @@
 \alias{get_paths_training_v2}
 \title{get_paths_training_v2}
 \usage{
-get_paths_training_v2(df_paths, n_paths = 200, seed_n = 40)
+get_paths_training_v2(df_paths, n_paths = 200, seed_n = 40,
+  remove_gates = NULL)
 }
 \arguments{
 \item{df_paths}{Dataframe of paths to training data.}
@@ -12,6 +13,8 @@ get_paths_training_v2(df_paths, n_paths = 200, seed_n = 40)
 \item{n_paths}{Max number of random paths to consider for number of gates.}
 
 \item{seed_n}{Random seed. Default to 40.}
+
+\item{remove_gates}{Vector of label numbers to ignore.}
 }
 \value{
 Vector of characters.

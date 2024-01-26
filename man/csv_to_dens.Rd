@@ -4,7 +4,7 @@
 \alias{csv_to_dens}
 \title{csv_to_dens}
 \usage{
-csv_to_dens(df, with_classes = T, n_coord = "df")
+csv_to_dens(df, with_classes = T, n_coord = "df", normalize_data = T)
 }
 \arguments{
 \item{df}{Dataframe of marker expression values.}
@@ -12,6 +12,8 @@ csv_to_dens(df, with_classes = T, n_coord = "df")
 \item{with_classes}{Consider classes. Default to True.}
 
 \item{n_coord}{Grid size. Default to df.}
+
+\item{normalize_data}{If True, data is normalized to 0-1 range. Default to True.}
 }
 \value{
 Dataframe.

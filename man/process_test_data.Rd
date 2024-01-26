@@ -4,12 +4,17 @@
 \alias{process_test_data}
 \title{process_test_data}
 \usage{
-process_test_data(test_data, prop_down = 1)
+process_test_data(test_data, prop_down = NULL, n_points_per_plot = 500,
+  normalize_data = T)
 }
 \arguments{
 \item{test_data}{Dataframe of bivariate markers expression.}
 
-\item{prop_down}{Proportion of events (downsampling). Default to 1 (no downsampling).}
+\item{prop_down}{Proportion of events (downsampling). Default to NULL (downsampling using number of points).}
+
+\item{n_points_per_plot}{Number of points for downsampling.}
+
+\item{normalize_data}{If True, data is normalized to 0-1 range. Default to True.}
 }
 \value{
 Dataframe.

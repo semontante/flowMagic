@@ -5,7 +5,8 @@
 \title{post_process_gates}
 \usage{
 post_process_gates(gated_df, n_cores = 1, thr_dist = 0.15,
-  include_zero = F, remove_centroids = T, type = "dist")
+  include_zero = F, remove_centroids = T, type = "dist",
+  concavity_val = 5, normalize_data = T)
 }
 \arguments{
 \item{gated_df}{dataframe with labels (third column).}
@@ -19,6 +20,8 @@ post_process_gates(gated_df, n_cores = 1, thr_dist = 0.15,
 \item{remove_centroids}{Remove centroids too near each other based on thr_dist value.}
 
 \item{type}{Type of post-processing.}
+
+\item{concavity_val}{Concavity of polygons for the "polygon" type of post-processing}
 }
 \value{
 Dataframe.

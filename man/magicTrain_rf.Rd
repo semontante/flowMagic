@@ -4,15 +4,18 @@
 \alias{magicTrain_rf}
 \title{magicTrain_rf}
 \usage{
-magicTrain_rf(Xtrain, Ytrain, list_index = NULL, n_tree = 10,
-  method_control = "oob", k_cv = 10)
+magicTrain_rf(Xtrain, Ytrain, list_index_train = NULL,
+  list_index_val = NULL, n_tree = 10, method_control = "oob",
+  k_cv = 10)
 }
 \arguments{
 \item{Xtrain}{Dataframe of training features.}
 
 \item{Ytrain}{Dataframe of labels (one column).}
 
-\item{list_index}{List of vector of indices to use in training.}
+\item{list_index_train}{List of vector of indices to use in training for each fold.}
+
+\item{list_index_val}{List of vector of indices to use as held out data for each fold.}
 
 \item{n_tree}{Number of trees for random forest.}
 

@@ -4,12 +4,12 @@
 \alias{extract_polygon_gates}
 \title{extract_polygon_gates}
 \usage{
-extract_polygon_gates(gated_df, return_hull_only = F)
+extract_polygon_gates(gated_df, concavity_val = 1)
 }
 \arguments{
 \item{gated_df}{dataframe with labels (third column).}
 
-\item{return_hull_only}{return only the dataframe of coordinates. Default to False.}
+\item{concavity_val}{Concavity of polygons. Default to 1.}
 }
 \value{
 List of dataframes.

@@ -5,7 +5,7 @@
 \title{magicPred_hierarchy}
 \usage{
 magicPred_hierarchy(list_test_sets, list_models_local, df_tree,
-  magic_model, list_local_train, n_cores = 1)
+  n_cores = 1)
 }
 \arguments{
 \item{list_test_sets}{contains the list of root dataframe for each ungated fcs file imported.}
@@ -13,10 +13,6 @@ magicPred_hierarchy(list_test_sets, list_models_local, df_tree,
 \item{list_models_local}{contains the optimized local models pre-generated using the magicTrain_local function.}
 
 \item{df_tree}{contains the info related to the populations hierarchy.}
-
-\item{magic_model}{Global trained model.}
-
-\item{list_local_train}{contains the local training sets (gated data of the sample manually gated).}
 
 \item{n_cores}{Number of cores to use. Default to 1.}
 }

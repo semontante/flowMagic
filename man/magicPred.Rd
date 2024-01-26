@@ -4,21 +4,29 @@
 \alias{magicPred}
 \title{magicPred}
 \usage{
-magicPred(test_data, magic_model, ref_model_info = NULL, n_cores = 1,
-  ref_data_train = NULL, prop_down = 1)
+magicPred(test_data, magic_model = NULL, magic_model_n_gates = NULL,
+  ref_model_info = NULL, n_cores = 1, ref_data_train = NULL,
+  prop_down = NULL, thr_dist = 0.05, n_points_per_plot = NULL,
+  normalize_data = T)
 }
 \arguments{
 \item{test_data}{Dataframe of test data to gate. It has only the two columns of marker expression.}
 
-\item{magic_model}{Global trained model.}
+\item{magic_model}{Global trained model to predict gates. It can be a single model or list of named models (each model trained on selected number of gates).}
 
-\item{ref_model_info}{Template model}
+\item{magic_model_n_gates}{Global trained model to predict number of gates. If different from NULL, magic_model is expected to be a list of models to predict certain gates (e.g., 5 models for 2,3,4,5 or 6 gates).}
+
+\item{ref_model_info}{Template model to predic gates.}
 
 \item{n_cores}{Number of cores to use. Default to 1.}
 
-\item{ref_data_train}{Template data.}
+\item{ref_data_train}{Template data used to generate ref_model_info. Needed to calculate target-template distance.}
 
-\item{prop_down}{Proportion for downsampling. Default to 1 (no downsampling).}
+\item{prop_down}{Proportion for downsampling. Default to NULL (automatic downsampling using n_points_per_plot).}
+
+\item{n_points_per_plot}{Number of points to consider for downsampling. Default to 500.}
+
+\item{normalize_data}{If True, data is normalized to 0-1 range. Default to True.}
 }
 \value{
 List of Dataframes.

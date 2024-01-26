@@ -4,21 +4,30 @@
 \alias{magicPred_all}
 \title{magicPred_all}
 \usage{
-magicPred_all(list_test_data, magic_model, ref_model_info = NULL,
-  n_cores = 1, ref_data_train = NULL, verbose = F)
+magicPred_all(list_test_data, magic_model = NULL,
+  ref_model_info = NULL, magic_model_n_gates = NULL,
+  ref_data_train = NULL, verbose = F, prop_down = NULL,
+  n_points_per_plot = NULL, thr_dist = 0.05, n_cores = 1,
+  normalize_data = T)
 }
 \arguments{
 \item{list_test_data}{List of unlabeled  dataframes. It has only the two columns of marker expression.}
 
-\item{magic_model}{Global trained model.}
+\item{magic_model}{Global trained model to predict gates. It can be a single model or list of named models (each model trained on selected number of gates).}
 
-\item{ref_model_info}{Template model.}
+\item{ref_model_info}{Template model to predic gates.}
+
+\item{magic_model_n_gates}{Global trained model to predict number of gates. If different from NULL, magic_model is expected to be a list of models to predict certain gates (e.g., 5 models for 2,3,4,5 or 6 gates).}
+
+\item{ref_data_train}{Template data used to generate ref_model_info. Needed to calculate target-template distance.}
+
+\item{verbose}{If True, show messages. Default to False.}
+
+\item{n_points_per_plot}{Number of points to consider for downsampling. Default to 500.}
 
 \item{n_cores}{Number of cores to use. Default to 1.}
 
-\item{ref_data_train}{Template data.}
-
-\item{verbose}{If True, show messages. Default to False.}
+\item{normalize_data}{If True, data is normalized to 0-1 range. Default to True.}
 }
 \value{
 List of Dataframes.
