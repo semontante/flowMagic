@@ -7,8 +7,9 @@
 magicPlot(df, type = "dens", polygons_coords_list = NULL,
   show_legend = T, size_axis_text = 18, size_title_x = 20,
   size_title_y = 20, treat_0_as_gate = F, x_lab = "x", y_lab = "y",
-  gates_to_plot = NULL, apply_manual_scale = T, size_points = 1,
-  concavity_val = 5)
+  gates_to_plot = NULL, apply_manual_scale = T, hull_only = F,
+  size_points = 1, concavity_val = 5, aspect_ratio = NULL,
+  x_lim1 = NULL, x_lim2 = NULL, y_lim1 = NULL, y_lim2 = NULL)
 }
 \arguments{
 \item{df}{Dataframe of bivariate markers expression (with labels if gates to plot).}
@@ -38,6 +39,16 @@ magicPlot(df, type = "dens", polygons_coords_list = NULL,
 \item{size_points}{Size of points in scatter plot.}
 
 \item{concavity_val}{Concavity value. Default to 5.}
+
+\item{aspect_ratio}{Aspect ratio value. If = 1, y and x axis have equal distance between the ticks labels. Default to NULL.}
+
+\item{x_lim1}{Minimum limit x axis. Default to NULL.}
+
+\item{x_lim2}{Max limit x axis. Default to NULL.}
+
+\item{y_lim1}{Minimum limit y axis. Default to NULL.}
+
+\item{y_lim2}{Max limit y axis. Default to NULL.}
 }
 \value{
 ggplot.

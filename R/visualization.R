@@ -15,6 +15,11 @@
 #' @param apply_manual_scale Apply predifined scale of colors. Default to True.
 #' @param size_points Size of points in scatter plot.
 #' @param concavity_val Concavity value. Default to 5.
+#' @param aspect_ratio Aspect ratio value. If = 1, y and x axis have equal distance between the ticks labels. Default to NULL.
+#' @param x_lim1 Minimum limit x axis. Default to NULL.
+#' @param x_lim2 Max limit x axis. Default to NULL.
+#' @param y_lim1 Minimum limit y axis. Default to NULL.
+#' @param y_lim2 Max limit y axis. Default to NULL.
 #' @return ggplot.
 #' @export
 #' @examples 
@@ -23,7 +28,8 @@
 magicPlot<-function(df,type="dens",polygons_coords_list=NULL,
                     show_legend=T,size_axis_text=18,size_title_x=20,size_title_y=20,
                     treat_0_as_gate=F,x_lab="x",y_lab="y",gates_to_plot=NULL,apply_manual_scale=T,
-                    size_points=1,concavity_val=5){
+                    hull_only=F,size_points=1,concavity_val=5,aspect_ratio=NULL,x_lim1=NULL,x_lim2=NULL,
+                    y_lim1=NULL,y_lim2=NULL){
   
   if(type=="no_gate" || ncol(df)==2){
     colPalette <- colorRampPalette(c("blue", "turquoise", "green", "yellow", "orange", "red"))
@@ -94,8 +100,18 @@ magicPlot<-function(df,type="dens",polygons_coords_list=NULL,
     }
     magicggplot<-magicggplot + xlab(x_lab) + ylab(y_lab)
   }
+  
+  if(is.null(aspect_ratio)==F){
+    magicggplot<- magicggplot + coord_fixed(ratio = aspect_ratio) + theme(plot.margin=unit(c(0,0,0,0), "pt"))
+  }
+  if(is.null(x_lim1)==F){
+    magicggplot<- magicggplot+ xlim(x_lim1, x_lim2) + ylim(y_lim1,y_lim2)
+  }
+  # The ratio represents the number of units on the y-axis equivalent to one unit on the x-axis. 
+  # The default, ratio = 1, ensures that one unit on the x-axis is the same length as one unit on the y-axis.
   return(magicggplot)
 }
+
 
 #' .densRange
 #'
