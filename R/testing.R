@@ -181,6 +181,7 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,n_cores=1
 #' @param prop_down Proportion for downsampling. Default to NULL (automatic downsampling using n_points_per_plot).
 #' @param n_points_per_plot Number of points to consider for downsampling. Default to 500.
 #' @param normalize_data If True, data is normalized to 0-1 range. Default to True.
+#' @param include_zero_val considering events labeled as 0 as an additional gate when there is only one gate. Default to  True.
 #' @return List of Dataframes.
 #' @export
 #' @examples 
@@ -188,7 +189,7 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,n_cores=1
 
 
 magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_model_info=NULL,n_cores=1,ref_data_train=NULL,
-                                    prop_down=NULL,thr_dist=0.05,n_points_per_plot=NULL,normalize_data=T){
+                    prop_down=NULL,thr_dist=0.05,n_points_per_plot=NULL,normalize_data=T,include_zero_val=T){
   set.seed(40)
   start<-Sys.time()
   if(ncol(test_data)>2){
@@ -201,7 +202,8 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
   }else if(is.null(ref_model_info)==T  && is.null(prop_down)==T && is.null(n_points_per_plot)==T){
     n_points_per_plot<-500
   }
-  Xtest<-process_test_data(test_data = test_data,prop_down = prop_down,n_points_per_plot = n_points_per_plot,normalize_data = normalize_data)
+  Xtest<-process_test_data(test_data = test_data,prop_down = prop_down,n_points_per_plot = n_points_per_plot,
+                           normalize_data = normalize_data)
   #show(magicPlot(Xtest[,c(1,2)],type = "no_gate",size_points = 2))
   #---------- get predictions based on provided model ------------
   message("---------- get predictions based on provided model ------------")
@@ -233,7 +235,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
       # get distance templates - test data
       vec_dist<-0
     }
-
+    
   }else if(is.null(ref_model_info)==F){
     message("Using template model")
     #---- only reference predictions
@@ -269,7 +271,9 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
     if(is.null(ref_model_info)==T){
       # ------- no template model ---------
       if(length(all_classes)==1){
-        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = T,thr_dist = thr_dist,type="dist")
+        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = include_zero_val,thr_dist = thr_dist,
+                                       type="dist")
+        
       }else{
         final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = thr_dist,type="dist")
       }
@@ -278,15 +282,15 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
       if(length(all_classes)<=4){
         final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,type = "polygon",normalize_data = normalize_data)
       }else{
-        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = 0.05,type="dist")
+        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = thr_dist,type="dist")
       }
     }
   }
-
+  
   # get polygons after post-processing
   message("------ get polygons after post-processing ------")
   list_df_hull<-extract_polygon_gates(gated_df = final_df,concavity_val=5)
-
+  
   # compute gates on original data
   message("------ compute gates ------")
   test_data_temp<-test_data
@@ -305,7 +309,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
     test_data_temp_original<-test_data_temp
     test_data_original<-cbind(test_data,test_data_temp_original$classes)
   }
-
+  
   # return gated results
   vec_dist<-round(vec_dist,2)
   end<-Sys.time()
@@ -325,19 +329,20 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
 #' @param magic_model Global trained model to predict gates. It can be a single model or list of named models (each model trained on selected number of gates).
 #' @param magic_model_n_gates  Global trained model to predict number of gates. If different from NULL, magic_model is expected to be a list of models to predict certain gates (e.g., 5 models for 2,3,4,5 or 6 gates).
 #' @param ref_model_info Template model to predic gates.
-#' @param n_cores Number of cores to use. Default to 1.
+#' @param n_cores Number of cores to use to process one sample. Default to 1.
 #' @param ref_data_train Template data used to generate ref_model_info. Needed to calculate target-template distance.
-#' @param verbose If True, show messages. Default to False.
 #' @param n_points_per_plot Number of points to consider for downsampling. Default to 500.
 #' @param normalize_data If True, data is normalized to 0-1 range. Default to True.
+#' @param include_zero_val considering events labeled as 0 as an additional gate when there is only one gate. Default to  True.
+#' @param n_cores_all Number of cores to use across all samples. Default to 1.
 #' @return List of Dataframes.
 #' @export
 #' @examples 
 #' \donttest{magicPred_all()}
 
 magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magic_model_n_gates=NULL,
-                                 ref_data_train=NULL,verbose=F,prop_down=NULL,n_points_per_plot=NULL,
-                                 thr_dist=0.05,n_cores=1,normalize_data=T){
+                        ref_data_train=NULL,prop_down=NULL,n_points_per_plot=NULL,
+                        thr_dist=0.05,n_cores=1,normalize_data=T,include_zero_val=T,n_cores_all=1){
   set.seed(40)
   start<-Sys.time()
   all_names_test_data<-names(list_test_data)
@@ -346,22 +351,25 @@ magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magi
   list_all_dfs_pred<-mclapply(1:length(list_test_data),function(i){
     message(sprintf("########### %s ##########",all_names_test_data[i]))
     df_test<-list_test_data[[i]]
-    if(verbose==T){
-      out_pred<-magicPred(test_data = df_test,magic_model=magic_model,ref_model_info=ref_model_info,
-                          n_cores=n_cores,ref_data_train=ref_data_train,prop_down = prop_down,
-                          thr_dist = thr_dist,magic_model_n_gates = magic_model_n_gates,n_points_per_plot=n_points_per_plot,
-                          normalize_data=normalize_data)
+    out_pred<-tryCatch(suppressMessages(magicPred(test_data = df_test,magic_model=magic_model,
+                                                  ref_model_info=ref_model_info,n_cores=n_cores,
+                                                  ref_data_train=ref_data_train,prop_down=prop_down,thr_dist=thr_dist,
+                                                  magic_model_n_gates = magic_model_n_gates,n_points_per_plot=n_points_per_plot,
+                                                  normalize_data=normalize_data,include_zero_val=include_zero_val)),error=function(e){return(NULL)})
+    
+    
+    if(is.null(out_pred)==F){
+      df_test_original<-out_pred$test_data_original
+      final_df<-out_pred$final_df
+      vec_dist<-out_pred$vec_dist
     }else{
-      suppressMessages(out_pred<-magicPred(test_data = df_test,magic_model=magic_model,
-                                           ref_model_info=ref_model_info,n_cores=n_cores,
-                                           ref_data_train=ref_data_train,prop_down=prop_down,thr_dist=thr_dist,
-                                           magic_model_n_gates = magic_model_n_gates,n_points_per_plot=n_points_per_plot,
-                                           normalize_data=normalize_data))
+      df_test_original<-NULL
+      final_df<-NULL
+      vec_dist<-NULL
     }
-    df_test_original<-out_pred$test_data_original
-    final_df<-out_pred$final_df
-    return(list(df_test_original=df_test_original,final_df=final_df,vec_dist=out_pred$vec_dist))
-  },mc.cores = 1)
+    
+    return(list(df_test_original=df_test_original,final_df=final_df,vec_dist=vec_dist))
+  },mc.cores = n_cores_all)
   names(list_all_dfs_pred)<-all_names_test_data
   end<-Sys.time()
   time_taken<-end-start

@@ -10,6 +10,10 @@
 #' @param y_lab y-axis label.
 #' @param size_title_x Size x axis label.
 #' @param size_title_y Size y axis label.
+#' @param aspect_ratio Set aspect ratio= Default to NULL> If = 1, y and x axis ticks have same distance.
+#' @param w_val width value. Default to 7.
+#' @param h_val height value. Default to 7.
+#' @param size_axis_text Size of ticks labels.
 #' @return NULL
 #' @export
 #' @examples 
@@ -18,7 +22,8 @@
 
 
 exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",show_legend=T,x_lab="x",
-                             y_lab="y",size_title_x=23,size_title_y=23){
+                        y_lab="y",size_title_x=23,size_title_y=23,aspect_ratio=NULL,w_val=7,h_val=7,
+                        size_axis_text=25){
   start<-Sys.time()
   all_names<-names(list_gated_data)
   list_n_gates_all_data<-mclapply(1:length(list_gated_data),function(i){
@@ -36,11 +41,12 @@ exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",s
       type_plot<-"ML"
     }
     plot_name<-tryCatch(magicPlot(df_p,type = type_plot,show_legend = show_legend,x_lab = x_lab,y_lab = y_lab,
-                                  size_title_x = size_title_x,size_title_y=size_title_y),error=function(e){return(NULL)})
+                                  size_title_x = size_title_x,size_title_y=size_title_y,
+                                  aspect_ratio = aspect_ratio,size_axis_text = size_axis_text),error=function(e){return(NULL)})
     # export plot in correct folder
     print("---- export plot")
     path_output_file<-paste0(path_output,sprintf("/%s.png",name_current_file))
-    ggsave(filename = path_output_file,plot=plot_name)
+    ggsave(filename = path_output_file,plot=plot_name,width = w_val,height = h_val)
     return(NULL)
   },mc.cores=n_cores)
   end<-Sys.time()

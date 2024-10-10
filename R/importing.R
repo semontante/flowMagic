@@ -119,6 +119,9 @@ import_test_set_csv<-function(path_data,n_cores=1,xy_col=T){
   names_plot<-list.files(path = path_data,full.names = F,recursive = F)
   list_test_data<-mclapply(path_data_all,function(p){
     df_expr<-read.csv(p,check.names = F)
+    if(nrow(df_expr)==0){
+      return(NULL)
+    }
     df_expr<-df_expr[,c(1,2)]
     if(xy_col==T){
       colnames(df_expr)<-c("x","y")
@@ -126,6 +129,14 @@ import_test_set_csv<-function(path_data,n_cores=1,xy_col=T){
     return(df_expr)
   },mc.cores = n_cores)
   names(list_test_data)<-names_plot
+  vec_check<-sapply(list_test_data,function(x){
+    check_x<-is.null(x)
+  })
+  ind<-which(vec_check==T)
+  if(length(ind)!=0){
+    list_test_data<-list_test_data[-ind]
+    
+  }
   return(list_test_data)
 }
 
@@ -171,16 +182,16 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
   if(is.null(df_paths)==F){
     paths_file<-df_paths[,1]
   }
-
+  
   names_dens_features<-c("n_peaks_m1","h_peak_m1_1","pos_peak_m1_1","start_peak_m1_1","end_peak_m1_1",
-                                    "h_peak_m1_2","pos_peak_m1_2","start_peak_m1_2","end_peak_m1_2",
-                                    "h_peak_m1_3","pos_peak_m1_3","start_peak_m1_3","end_peak_m1_3",
-                                    "h_peak_m1_4","pos_peak_m1_4","start_peak_m1_4","end_peak_m1_4",
-                                    "n_peaks_m2","h_peak_m2_1","pos_peak_m2_1","start_peak_m2_1","end_peak_m2_1",
-                                    "h_peak_m2_2","pos_peak_m2_2","start_peak_m2_2","end_peak_m2_2",
-                                    "h_peak_m2_3","pos_peak_m2_3","start_peak_m2_3","end_peak_m2_3",
-                                    "h_peak_m2_4","pos_peak_m2_4","start_peak_m2_4","end_peak_m2_4")
-
+                         "h_peak_m1_2","pos_peak_m1_2","start_peak_m1_2","end_peak_m1_2",
+                         "h_peak_m1_3","pos_peak_m1_3","start_peak_m1_3","end_peak_m1_3",
+                         "h_peak_m1_4","pos_peak_m1_4","start_peak_m1_4","end_peak_m1_4",
+                         "n_peaks_m2","h_peak_m2_1","pos_peak_m2_1","start_peak_m2_1","end_peak_m2_1",
+                         "h_peak_m2_2","pos_peak_m2_2","start_peak_m2_2","end_peak_m2_2",
+                         "h_peak_m2_3","pos_peak_m2_3","start_peak_m2_3","end_peak_m2_3",
+                         "h_peak_m2_4","pos_peak_m2_4","start_peak_m2_4","end_peak_m2_4")
+  
   list_dfs<-mclapply(1:length(paths_file),function(i){
     print(sprintf("plot_num:%s",i))
     #print("----- get or import dataframe with classes")
@@ -195,7 +206,11 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
       current_path_classes<-df_paths[i,2]
       df_data<-read.csv(current_path_data)
       df_classes<-read.csv(current_path_classes)
-      df<-cbind(df_data,df_classes$cor_labels)
+      if("cor_labels" %in% colnames(df_classes)){
+        df<-cbind(df_data,df_classes$cor_labels)
+      }else{
+        df<-cbind(df_data,df_classes)
+      }
     }else{
       stop("input not valid")
     }
@@ -207,7 +222,7 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
              Third column must contain the classes.")
       }
       df<-df[,vec_col]
-    }
+      }
     colnames(df)<-c("x1_expr","x2_expr","classes")
     #show(magicPlot(df = df,type = "dens",size_points = 1))
     if(is.null(prop_down)==T & is.null(n_points_per_plot)==T){
@@ -255,7 +270,7 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
     n_gates<-length(all_classes)
     df$n_gates_info<-rep(n_gates,nrow(df))
     return(df)
-  },mc.cores = n_cores)
+    },mc.cores = n_cores)
   gc()
   df_train<-do.call(rbind,list_dfs)
   row.names(df_train)<-NULL
@@ -265,6 +280,6 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
   print(time_taken)
   print("Done")
   return(df_train)
-}
+  }
 
 

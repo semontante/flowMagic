@@ -6,11 +6,13 @@ Authors@R:
            family = "Montante",
            role = c("aut", "cre"),
            email = "smontante@bccrc.ca")
-Description: tool to perform the automated gating of flow cytometry data in a user friendly way.
-License: GPL (>= 2)
+Description: tool to perform the automated gating of bivariate flow cytometry data.
+License: Apache License 2.0 | file LICENSE + file NOTICE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports:
 	caret
+	ggplot
+	
