@@ -22,12 +22,18 @@ The  full technical documentation for the flowMagic R package can be found insid
 
 # Installation
 
-The flowMagic package can be installed from GitHub:
+The flowMagic package can be installed within R using the devtools library:
 
-```
+```R
+library(devtools)
 install_github("semontante/flowMagic")
 ```
 
+Alternatively, the user can download the flowMagic package and install it from their local directory:
+
+```R
+install.packages("path/to/flowMagic.tar.gz",repos=NULL,type="source")
+```
 
 # License
 This R package is licensed under the Apache License 2.0. See the `LICENSE` and `NOTICE` files for more information.
