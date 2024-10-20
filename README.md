@@ -12,7 +12,7 @@ The flowMagic algorithm is the first algorithm trained on a large dataset of gat
 
 ![License](https://img.shields.io/github/license/semontante/flowMagic) 
 ![Issues](https://img.shields.io/github/issues/semontante/flowMagic)
-![docs](https://img.shields.io/badge/docs-pdf-blue)(https://semontante.github.io/flowMagic/)
+[![PDF](https://img.shields.io/badge/View-PDF-red)](https://github.com/semontante/flowMagic/pk_manual/flowMagic_introduction.pdf)
 
 # Overview
 
