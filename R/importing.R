@@ -140,24 +140,6 @@ import_test_set_csv<-function(path_data,n_cores=1,xy_col=T){
   return(list_test_data)
 }
 
-#' import_png_image
-#' 
-#' function to correctly import a png image as matrix of pixels.
-#' @param path_img path to directory containing csv files to read (third column is ignored).
-#' @return matrix.
-#' @export
-#' @examples 
-#' \donttest{import_png_image()}
-
-
-import_png_image<-function(path_img){
-  image_x<-readPNG(path_img)
-  matrix_sum<-image_x[,,1] + image_x[,,2] + image_x[,,3] # combine arrays
-  matrix_sum<-matrix_sum/max(matrix_sum) 
-  matrix_final<-t(apply(matrix_sum, 2, rev)) # otherwise it is rotated
-  return(matrix_final)
-}
-
 
 #' get_train_data
 #' 

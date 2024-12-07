@@ -1,11 +1,12 @@
 Package: flowMagic
+Type: Package
 Title: Automated gating of flow cytometry data
 Version: 0.99
 Authors@R:
     person(given = "Sebastiano",
            family = "Montante",
            role = c("aut", "cre"),
-           email = "smontante@bccrc.ca")
+           email = "semont93@gmail.com")
 Description: tool to perform the automated gating of bivariate flow cytometry data.
 License: Apache License 2.0 | file LICENSE + file NOTICE
 Encoding: UTF-8
@@ -13,6 +14,26 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports:
-	caret
-	ggplot
+	caret,
+	ggplot2,
+	stringr,
+	parallel,
+	randomForest,
+	CytoML,
+	concaveman,
+	sp,
+	sf,
+	stats,
+	grDevices,
+	doParallel,
+	nnet,
+	sm,
+	pracma
+Suggests:
+	flowCore,
+	flowWorkspace,
+	data.tree,
+	visNetwork,
+	klaR(<= 0.6-12),
+	remotes
 	

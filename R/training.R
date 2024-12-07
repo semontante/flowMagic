@@ -133,7 +133,7 @@ magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
 #' function to generate a neural net training model. 
 #' @param Xtrain Dataframe of training features.
 #' @param Ytrain Dataframe of labels (one column).
-#' @param k_cv  Number of k for cross-validation (if method control=cv).
+#' @param k_cv  Number of k for cross-validation.
 #' @param list_index_train  List of vector of indices to use in training for each fold.
 #' @param list_index_val  List of vector of indices to use as held out data for each fold.
 #' @param size  Number of units in hidden layer (if train_model=nnet).
@@ -144,13 +144,13 @@ magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
 #' \donttest{magicTrain_nnet()}
 
 
-agicTrain_nnet<-function(Xtrain,Ytrain,k_cv=10,list_index_train=NULL,list_index_val=NULL,size=100,decay=0.1){
+magicTrain_nnet<-function(Xtrain,Ytrain,k_cv=10,list_index_train=NULL,list_index_val=NULL,size=100,decay=0.1,tune_lenght=5){
   # size= number of units in the hidden layer (nnet uses only 1 hidden layer)
   nnGrid <-  expand.grid(size = size,
                          decay = decay)
   #----- train model
   print("--- train model")
-  if(is.null(list_index)==T){
+  if(is.null(list_index_train)==T){
     model_nnet <- train(
       x=Xtrain, y=Ytrain, method = "nnet",
       tuneGrid = nnGrid,MaxNWts=9000,
@@ -158,11 +158,12 @@ agicTrain_nnet<-function(Xtrain,Ytrain,k_cv=10,list_index_train=NULL,list_index_
     )
   }else{
     model_nnet <- train(
-      x=Xtrain, y=Ytrain, method = "nnet",tuneGrid = nnGrid,MaxNWts=9000,
-      trControl = trainControl(trim = T,returnData = F,index = list_index_train,indexOut = list_index_val)
+      x=Xtrain, y=Ytrain, method = "nnet",MaxNWts=9000,
+      trControl = trainControl(trim = T,returnData = F,index = list_index_train,indexOut = list_index_val),
+      tuneLength = tune_lenght
     )
   }
-
+  
   return(model_nnet)
 }
 
@@ -213,4 +214,112 @@ magicTrain_rf<-function(Xtrain,Ytrain,list_index_train=NULL,list_index_val=NULL,
   return(model_rf)
 }
 
+
+#' magicTrain_knn
+#' 
+#' function to generate a random forest training model. 
+#' @param Xtrain Dataframe of training features.
+#' @param Ytrain Dataframe of labels (one column).
+#' @param k_cv  Number of k for cross-validation.
+#' @param list_index_train  List of vector of indices to use in training for each fold.
+#' @param list_index_val  List of vector of indices to use as held out data for each fold.
+#' @param tune_lenght  Number of hyper parameters to test. Default to 5.
+#' @return model object.
+#' @export
+#' @examples 
+#' \donttest{magicTrain_knn()}
+
+
+magicTrain_knn<-function(Xtrain,Ytrain,k_cv=10,list_index_train=NULL,list_index_val=NULL,tune_lenght=5){
+  
+  #----- train model
+  if(is.null(list_index_train)==T){
+    print("--- train model")
+    model_nb <- train(
+      x=Xtrain, y=Ytrain, method = "knn",
+      trControl = trainControl(method = "cv",number = k_cv, trim = T)
+    )
+  }else{
+    print("--- train model")
+    model_nb <- train(
+      x=Xtrain, y=Ytrain, method = "knn",
+      trControl = trainControl(trim = T,returnData = F,index = list_index_train,indexOut = list_index_val),
+      tuneLength = tune_lenght
+    )
+  }
+  
+  return(model_nb)
+}
+
+#' magicTrain_nb
+#' 
+#' function to generate a random forest training model. 
+#' @param Xtrain Dataframe of training features.
+#' @param Ytrain Dataframe of labels (one column).
+#' @param k_cv  Number of k for cross-validation.
+#' @param list_index_train  List of vector of indices to use in training for each fold.
+#' @param list_index_val  List of vector of indices to use as held out data for each fold.
+#' @param tune_lenght  Number of hyper parameters to test. Default to 5.
+#' @return model object.
+#' @export
+#' @examples 
+#' \donttest{magicTrain_nb()}
+
+magicTrain_nb<-function(Xtrain,Ytrain,k_cv=10,list_index_train=NULL,list_index_val=NULL,tune_lenght=5){
+  
+  #----- train model
+  if(is.null(list_index_train)==T){
+    print("--- train model")
+    model_nb <- train(
+      x=Xtrain, y=Ytrain, method = "nb",
+      trControl = trainControl(method = "cv",number = k_cv, trim = T)
+    )
+  }else{
+    print("--- train model")
+    model_nb <- train(
+      x=Xtrain, y=Ytrain, method = "nb",
+      trControl = trainControl(trim = T,returnData = F,index = list_index_train,indexOut = list_index_val),
+      tuneLength = tune_lenght
+    )
+  }
+  
+  return(model_nb)
+}
+
+#' magicTrain_dt
+#' 
+#' function to generate a random forest training model. 
+#' @param Xtrain Dataframe of training features.
+#' @param Ytrain Dataframe of labels (one column).
+#' @param k_cv  Number of k for cross-validation.
+#' @param list_index_train  List of vector of indices to use in training for each fold.
+#' @param list_index_val  List of vector of indices to use as held out data for each fold.
+#' @param tune_lenght  Number of hyper parameters to test. Default to 5.
+#' @return model object.
+#' @export
+#' @examples 
+#' \donttest{magicTrain_dt()}
+
+magicTrain_dt<-function(Xtrain,Ytrain,k_cv=10,list_index_train=NULL,list_index_val=NULL,tune_lenght=5){
+  
+  #----- train model
+  print("--- train model")
+  if(is.null(list_index_train)==T){
+    model_dt <- train(
+      x=Xtrain, y=Ytrain, method = "rpart",
+      trControl = trainControl(method = "cv",number = k_cv, trim = T,returnData = F),
+      tuneLength = tune_lenght,
+      parms=list(split="information")
+    )
+  }else{
+    model_dt <- train(
+      x=Xtrain, y=Ytrain, method = "rpart",
+      trControl = trainControl(trim = T,returnData = F,index = list_index_train,indexOut = list_index_val),
+      tuneLength = tune_lenght,
+      parms=list(split="information")
+    )
+  }
+  
+  return(model_dt)
+}
 

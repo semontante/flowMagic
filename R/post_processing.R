@@ -63,7 +63,7 @@ extract_polygon_gates<-function(gated_df,concavity_val=1){
 
 #' extract_polygon_gates
 #' 
-#' funcction to check polygons intersection.
+#' function to check polygons intersection.
 #' @param list_df_hull List of polygons coordinates
 #' @return float
 #' @export
