@@ -13,7 +13,7 @@ check_polygons_intersection(list_df_hull)
 float
 }
 \description{
-funcction to check polygons intersection.
+function to check polygons intersection.
 }
 \examples{
 \donttest{check_polygons_intersection()}

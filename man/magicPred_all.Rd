@@ -6,9 +6,9 @@
 \usage{
 magicPred_all(list_test_data, magic_model = NULL,
   ref_model_info = NULL, magic_model_n_gates = NULL,
-  ref_data_train = NULL, verbose = F, prop_down = NULL,
-  n_points_per_plot = NULL, thr_dist = 0.05, n_cores = 1,
-  normalize_data = T)
+  ref_data_train = NULL, prop_down = NULL, n_points_per_plot = NULL,
+  thr_dist = 0.05, n_cores = 1, normalize_data = T,
+  include_zero_val = T, n_cores_all = 1)
 }
 \arguments{
 \item{list_test_data}{List of unlabeled  dataframes. It has only the two columns of marker expression.}
@@ -21,13 +21,15 @@ magicPred_all(list_test_data, magic_model = NULL,
 
 \item{ref_data_train}{Template data used to generate ref_model_info. Needed to calculate target-template distance.}
 
-\item{verbose}{If True, show messages. Default to False.}
-
 \item{n_points_per_plot}{Number of points to consider for downsampling. Default to 500.}
 
-\item{n_cores}{Number of cores to use. Default to 1.}
+\item{n_cores}{Number of cores to use to process one sample. Default to 1.}
 
 \item{normalize_data}{If True, data is normalized to 0-1 range. Default to True.}
+
+\item{include_zero_val}{considering events labeled as 0 as an additional gate when there is only one gate. Default to  True.}
+
+\item{n_cores_all}{Number of cores to use across all samples. Default to 1.}
 }
 \value{
 List of Dataframes.

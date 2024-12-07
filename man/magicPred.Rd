@@ -7,7 +7,7 @@
 magicPred(test_data, magic_model = NULL, magic_model_n_gates = NULL,
   ref_model_info = NULL, n_cores = 1, ref_data_train = NULL,
   prop_down = NULL, thr_dist = 0.05, n_points_per_plot = NULL,
-  normalize_data = T)
+  normalize_data = T, include_zero_val = T)
 }
 \arguments{
 \item{test_data}{Dataframe of test data to gate. It has only the two columns of marker expression.}
@@ -27,6 +27,8 @@ magicPred(test_data, magic_model = NULL, magic_model_n_gates = NULL,
 \item{n_points_per_plot}{Number of points to consider for downsampling. Default to 500.}
 
 \item{normalize_data}{If True, data is normalized to 0-1 range. Default to True.}
+
+\item{include_zero_val}{considering events labeled as 0 as an additional gate when there is only one gate. Default to  True.}
 }
 \value{
 List of Dataframes.

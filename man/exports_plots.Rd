@@ -6,7 +6,8 @@
 \usage{
 exports_plots(list_gated_data, path_output, n_cores = 1,
   type_plot = "dens", show_legend = T, x_lab = "x", y_lab = "y",
-  size_title_x = 23, size_title_y = 23)
+  size_title_x = 23, size_title_y = 23, aspect_ratio = NULL,
+  w_val = 7, h_val = 7, size_axis_text = 25)
 }
 \arguments{
 \item{list_gated_data}{list of dataframes. Each dataframe has 3 columns: marker 1 values, marker 2 values and label column.}
@@ -26,6 +27,14 @@ exports_plots(list_gated_data, path_output, n_cores = 1,
 \item{size_title_x}{Size x axis label.}
 
 \item{size_title_y}{Size y axis label.}
+
+\item{aspect_ratio}{Set aspect ratio= Default to NULL> If = 1, y and x axis ticks have same distance.}
+
+\item{w_val}{width value. Default to 7.}
+
+\item{h_val}{height value. Default to 7.}
+
+\item{size_axis_text}{Size of ticks labels.}
 }
 \description{
 function to generate plots (no hierarchy).
