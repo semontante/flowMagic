@@ -19,10 +19,9 @@ Imports:
 	stringr,
 	parallel,
 	randomForest,
-	CytoML,
 	concaveman,
 	sp,
-	sf,
+	sf (<=0.7.2),
 	stats,
 	grDevices,
 	doParallel,
@@ -35,5 +34,6 @@ Suggests:
 	data.tree,
 	visNetwork,
 	klaR(<= 0.6-12),
-	remotes
+	remotes,
+	CytoML,
 	
