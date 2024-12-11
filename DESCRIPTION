@@ -21,7 +21,7 @@ Imports:
 	randomForest,
 	concaveman,
 	sp,
-	sf (<=0.7.2),
+	sf,
 	stats,
 	grDevices,
 	doParallel,
