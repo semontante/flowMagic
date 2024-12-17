@@ -64,7 +64,7 @@ list_data_ref<-import_reference_csv(path_results = path_dir,n_cores = 1)
 list_test_data<-import_test_set_csv(path_data = path_dir,n_cores = 1)
 # Note that it is possible to provide also directly the paths to each file. See functions manual for additional
 details.
-# data preprocessing for generate template model using first file as template
+# data preprocessing to generate the template model using first file as template
 ref_train<-get_train_data(paths_file = list_data_ref[1],n_cores = 1) # we select first element of the imported list
 of dataframes
 # generate template model using out-of-the-bag validation
