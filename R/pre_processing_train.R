@@ -50,7 +50,7 @@ pre_process_manual_binary<-function(gh,pop){
   #################### get the expression matrix of the root population ###################
   print("####### get expression matrix of the root population #########")
   f<-gh_pop_get_data(gh,"root") # It takes automatically the flowFrame associated to the sample of the GatingHierarchy
-  exprs_matrix<-f@exprs
+  exprs_matrix<-exprs(f)
   dataframe_expr<-as.data.frame(exprs_matrix) # expression matrix of the root population.
   ######################## make the binary dataset for the selected node  #######################
   # Now we make the binary dataset for the selected pop (events with 1 belongs to the pop, otherwise 0)
