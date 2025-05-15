@@ -4,8 +4,12 @@
 \alias{process_test_data}
 \title{process_test_data}
 \usage{
-process_test_data(test_data, prop_down = NULL, n_points_per_plot = 500,
-  normalize_data = T)
+process_test_data(
+  test_data,
+  prop_down = NULL,
+  n_points_per_plot = 500,
+  normalize_data = T
+)
 }
 \arguments{
 \item{test_data}{Dataframe of bivariate markers expression.}

@@ -4,12 +4,31 @@
 \alias{magicPlot}
 \title{magicPlot}
 \usage{
-magicPlot(df, type = "dens", polygons_coords_list = NULL,
-  show_legend = T, size_axis_text = 18, size_title_x = 20,
-  size_title_y = 20, treat_0_as_gate = F, x_lab = "x", y_lab = "y",
-  gates_to_plot = NULL, apply_manual_scale = T, hull_only = F,
-  size_points = 1, concavity_val = 5, aspect_ratio = NULL,
-  x_lim1 = NULL, x_lim2 = NULL, y_lim1 = NULL, y_lim2 = NULL)
+magicPlot(
+  df,
+  type = "dens",
+  polygons_coords_list = NULL,
+  show_legend = T,
+  size_axis_text = 18,
+  size_title_x = 20,
+  size_title_y = 20,
+  treat_0_as_gate = F,
+  x_lab = "x",
+  y_lab = "y",
+  gates_to_plot = NULL,
+  apply_manual_scale = T,
+  hull_only = F,
+  size_points = 1,
+  concavity_val = 5,
+  aspect_ratio = NULL,
+  x_lim1 = NULL,
+  x_lim2 = NULL,
+  y_lim1 = NULL,
+  y_lim2 = NULL,
+  add_labels = F,
+  map_label_polygon = NULL,
+  size_pol_name = 6
+)
 }
 \arguments{
 \item{df}{Dataframe of bivariate markers expression (with labels if gates to plot).}
@@ -49,6 +68,12 @@ magicPlot(df, type = "dens", polygons_coords_list = NULL,
 \item{y_lim1}{Minimum limit y axis. Default to NULL.}
 
 \item{y_lim2}{Max limit y axis. Default to NULL.}
+
+\item{add_labels}{add polygon labels. Default to FALSE.}
+
+\item{map_label_polygon}{map of polygon labels (to assign custom labels). Default to NULL.}
+
+\item{size_pol_name}{size polygon labels. Default to 6.}
 }
 \value{
 ggplot.

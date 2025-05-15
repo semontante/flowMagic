@@ -4,8 +4,14 @@
 \alias{get_centroids}
 \title{get_centroids}
 \usage{
-get_centroids(df, low_thr = 0.1, up_thr = 0.9, thr_dist = 0.15,
-  include_zero = F, remove_centroids = T)
+get_centroids(
+  df,
+  low_thr = 0.1,
+  up_thr = 0.9,
+  thr_dist = 0.15,
+  include_zero = F,
+  remove_centroids = T
+)
 }
 \arguments{
 \item{df}{dataframe with labels (third column).}

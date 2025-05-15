@@ -4,8 +4,7 @@
 \alias{get_distance_loc_vs_test}
 \title{get_distance_loc_vs_test}
 \usage{
-get_distance_loc_vs_test(test_df, loc_df, show_plot = "none",
-  nboot = 50)
+get_distance_loc_vs_test(test_df, loc_df, show_plot = "none", nboot = 50)
 }
 \arguments{
 \item{test_df}{Dataframe with bivariate marker expression.}

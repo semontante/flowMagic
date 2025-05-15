@@ -4,9 +4,15 @@
 \alias{magicTrain_rf}
 \title{magicTrain_rf}
 \usage{
-magicTrain_rf(Xtrain, Ytrain, list_index_train = NULL,
-  list_index_val = NULL, n_tree = 10, method_control = "oob",
-  k_cv = 10)
+magicTrain_rf(
+  Xtrain,
+  Ytrain,
+  list_index_train = NULL,
+  list_index_val = NULL,
+  n_tree = 10,
+  method_control = "oob",
+  k_cv = 10
+)
 }
 \arguments{
 \item{Xtrain}{Dataframe of training features.}

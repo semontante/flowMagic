@@ -4,9 +4,16 @@
 \alias{post_process_gates}
 \title{post_process_gates}
 \usage{
-post_process_gates(gated_df, n_cores = 1, thr_dist = 0.15,
-  include_zero = F, remove_centroids = T, type = "dist",
-  concavity_val = 5, normalize_data = T)
+post_process_gates(
+  gated_df,
+  n_cores = 1,
+  thr_dist = 0.15,
+  include_zero = F,
+  remove_centroids = T,
+  type = "dist",
+  concavity_val = 5,
+  normalize_data = T
+)
 }
 \arguments{
 \item{gated_df}{dataframe with labels (third column).}

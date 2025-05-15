@@ -4,9 +4,16 @@
 \alias{get_train_data}
 \title{get_train_data}
 \usage{
-get_train_data(paths_file = NULL, df_paths = NULL, n_cores = 1,
-  prop_down = NULL, remove_class = NULL, n_points_per_plot = NULL,
-  normalize_data = T, vec_col = NULL)
+get_train_data(
+  paths_file = NULL,
+  df_paths = NULL,
+  n_cores = 1,
+  prop_down = NULL,
+  remove_class = NULL,
+  n_points_per_plot = NULL,
+  normalize_data = T,
+  vec_col = NULL
+)
 }
 \arguments{
 \item{paths_file}{Vector of paths. Each path points toward a single csv file containin training info (labels and bivariate expression). paths_file can be also directly the list of dataframes containing labels and bivariate expression.}

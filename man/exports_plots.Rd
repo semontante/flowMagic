@@ -4,10 +4,21 @@
 \alias{exports_plots}
 \title{exports_plots}
 \usage{
-exports_plots(list_gated_data, path_output, n_cores = 1,
-  type_plot = "dens", show_legend = T, x_lab = "x", y_lab = "y",
-  size_title_x = 23, size_title_y = 23, aspect_ratio = NULL,
-  w_val = 7, h_val = 7, size_axis_text = 25)
+exports_plots(
+  list_gated_data,
+  path_output,
+  n_cores = 1,
+  type_plot = "dens",
+  show_legend = T,
+  x_lab = "x",
+  y_lab = "y",
+  size_title_x = 23,
+  size_title_y = 23,
+  aspect_ratio = NULL,
+  w_val = 7,
+  h_val = 7,
+  size_axis_text = 25
+)
 }
 \arguments{
 \item{list_gated_data}{list of dataframes. Each dataframe has 3 columns: marker 1 values, marker 2 values and label column.}

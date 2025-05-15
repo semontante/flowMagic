@@ -40,8 +40,10 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
                                      "green", "yellow", "orange", "red"))
     col <- densCols(df[, c(1, 2)], colramp = colPalette, 
                     nbin = 200)
+
     plot <- graphics::plot(df[, c(1, 2)], col = col, pch = ".", 
-                           cex = size_points)
+                           cex = size_points,xlim = c(x_lim1, x_lim2),  
+                           ylim = c(y_lim1, y_lim2))
     return(plot)
   }
   colnames(df) <- c("x", "y", "classes")

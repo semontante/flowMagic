@@ -4,10 +4,19 @@
 \alias{magicPred}
 \title{magicPred}
 \usage{
-magicPred(test_data, magic_model = NULL, magic_model_n_gates = NULL,
-  ref_model_info = NULL, n_cores = 1, ref_data_train = NULL,
-  prop_down = NULL, thr_dist = 0.05, n_points_per_plot = NULL,
-  normalize_data = T, include_zero_val = T)
+magicPred(
+  test_data,
+  magic_model = NULL,
+  magic_model_n_gates = NULL,
+  ref_model_info = NULL,
+  n_cores = 1,
+  ref_data_train = NULL,
+  prop_down = NULL,
+  thr_dist = 0.05,
+  n_points_per_plot = NULL,
+  normalize_data = T,
+  include_zero_val = T
+)
 }
 \arguments{
 \item{test_data}{Dataframe of test data to gate. It has only the two columns of marker expression.}

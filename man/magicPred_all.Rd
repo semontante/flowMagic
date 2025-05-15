@@ -4,11 +4,20 @@
 \alias{magicPred_all}
 \title{magicPred_all}
 \usage{
-magicPred_all(list_test_data, magic_model = NULL,
-  ref_model_info = NULL, magic_model_n_gates = NULL,
-  ref_data_train = NULL, prop_down = NULL, n_points_per_plot = NULL,
-  thr_dist = 0.05, n_cores = 1, normalize_data = T,
-  include_zero_val = T, n_cores_all = 1)
+magicPred_all(
+  list_test_data,
+  magic_model = NULL,
+  ref_model_info = NULL,
+  magic_model_n_gates = NULL,
+  ref_data_train = NULL,
+  prop_down = NULL,
+  n_points_per_plot = NULL,
+  thr_dist = 0.05,
+  n_cores = 1,
+  normalize_data = T,
+  include_zero_val = T,
+  n_cores_all = 1
+)
 }
 \arguments{
 \item{list_test_data}{List of unlabeled  dataframes. It has only the two columns of marker expression.}

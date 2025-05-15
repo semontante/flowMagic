@@ -4,8 +4,7 @@
 \alias{magicPred_hierarchy}
 \title{magicPred_hierarchy}
 \usage{
-magicPred_hierarchy(list_test_sets, list_models_local, df_tree,
-  n_cores = 1)
+magicPred_hierarchy(list_test_sets, list_models_local, df_tree, n_cores = 1)
 }
 \arguments{
 \item{list_test_sets}{contains the list of root dataframe for each ungated fcs file imported.}

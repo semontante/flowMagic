@@ -4,9 +4,14 @@
 \alias{assign_events_to_nearest_centroids}
 \title{assign_events_to_nearest_centroids}
 \usage{
-assign_events_to_nearest_centroids(gated_df, n_cores = 1,
-  method_dist = "euclidean", thr_dist = 0.15, include_zero = F,
-  remove_centroids = T)
+assign_events_to_nearest_centroids(
+  gated_df,
+  n_cores = 1,
+  method_dist = "euclidean",
+  thr_dist = 0.15,
+  include_zero = F,
+  remove_centroids = T
+)
 }
 \arguments{
 \item{gated_df}{dataframe with labels (third column).}

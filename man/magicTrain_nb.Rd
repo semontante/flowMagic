@@ -4,8 +4,14 @@
 \alias{magicTrain_nb}
 \title{magicTrain_nb}
 \usage{
-magicTrain_nb(Xtrain, Ytrain, k_cv = 10, list_index_train = NULL,
-  list_index_val = NULL, tune_lenght = 5)
+magicTrain_nb(
+  Xtrain,
+  Ytrain,
+  k_cv = 10,
+  list_index_train = NULL,
+  list_index_val = NULL,
+  tune_lenght = 5
+)
 }
 \arguments{
 \item{Xtrain}{Dataframe of training features.}

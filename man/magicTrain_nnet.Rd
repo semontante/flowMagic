@@ -4,8 +4,16 @@
 \alias{magicTrain_nnet}
 \title{magicTrain_nnet}
 \usage{
-magicTrain_nnet(Xtrain, Ytrain, k_cv = 10, list_index_train = NULL,
-  list_index_val = NULL, size = 100, decay = 0.1, tune_lenght = 5)
+magicTrain_nnet(
+  Xtrain,
+  Ytrain,
+  k_cv = 10,
+  list_index_train = NULL,
+  list_index_val = NULL,
+  size = 100,
+  decay = 0.1,
+  tune_lenght = 5
+)
 }
 \arguments{
 \item{Xtrain}{Dataframe of training features.}
