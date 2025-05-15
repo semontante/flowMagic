@@ -75,8 +75,8 @@ ref_model_info = ref_model_info,n_cores = 8)
 # Note that providing the training set is optional (ref_data_train = ref_train is optional).
 # Providing the training set allows the user to calculate the target-template distance for each plot to analyze.
 # list_dfs_pred contains a list of dataframes for each plot analyzed. In other words, it is a nested list (e.g.,
-downsampled dataset and original dataset with predicted labels for each plot). See the functions manual for the
-full list of dataframes returned.
+# downsampled dataset and original dataset with predicted labels for each plot). See the functions manual for the
+# full list of dataframes returned.
 # visualize gated data
 df_temp<-list_dfs_pred[[1]] $ df_test_original # dataframe of first gated plot
 magicPlot(df = df_temp,type = "ML",size_points = 1)
