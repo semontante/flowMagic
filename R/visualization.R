@@ -14,7 +14,7 @@
 #' @param gates_to_plot Select labels to plot.
 #' @param apply_manual_scale Apply predifined scale of colors. Default to True.
 #' @param size_points Size of points in scatter plot.
-#' @param concavity_val Concavity value. Default to 5.
+#' @param concavity_val Concavity value. Default to 5. Higher value, less jagged boundaries
 #' @param aspect_ratio Aspect ratio value. If = 1, y and x axis have equal distance between the ticks labels. Default to NULL.
 #' @param x_lim1 Minimum limit x axis. Default to NULL.
 #' @param x_lim2 Max limit x axis. Default to NULL.
