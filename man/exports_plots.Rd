@@ -17,7 +17,8 @@ exports_plots(
   aspect_ratio = NULL,
   w_val = 7,
   h_val = 7,
-  size_axis_text = 25
+  size_axis_text = 25,
+  ...
 )
 }
 \arguments{
@@ -25,7 +26,7 @@ exports_plots(
 
 \item{path_output}{Path to the directory where to export the plots.}
 
-\item{n_cores}{Path to directory containing the expression data of the files analyzed.}
+\item{n_cores}{Number of cores to use. Default to 1.}
 
 \item{type_plot}{the user can choose between density (="dens) or label assignment visualization (="ML")}
 
@@ -39,7 +40,7 @@ exports_plots(
 
 \item{size_title_y}{Size y axis label.}
 
-\item{aspect_ratio}{Set aspect ratio= Default to NULL> If = 1, y and x axis ticks have same distance.}
+\item{aspect_ratio}{Set aspect ratio. Default to NULL> If = 1, y and x axis ticks have same distance.}
 
 \item{w_val}{width value. Default to 7.}
 

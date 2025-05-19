@@ -57,7 +57,7 @@ magicPlot(
 
 \item{size_points}{Size of points in scatter plot.}
 
-\item{concavity_val}{Concavity value. Default to 5.}
+\item{concavity_val}{Concavity value. Default to 5. Higher value, less jagged boundaries}
 
 \item{aspect_ratio}{Aspect ratio value. If = 1, y and x axis have equal distance between the ticks labels. Default to NULL.}
 
