@@ -2,7 +2,7 @@
 #' 
 #' function to generate plots (no hierarchy).
 #' @param list_gated_data list of dataframes. Each dataframe has 3 columns: marker 1 values, marker 2 values and label column.
-#' @param n_cores Path to directory containing the expression data of the files analyzed.
+#' @param n_cores Number of cores to use. Default to 1.
 #' @param path_output Path to the directory where to export the plots.
 #' @param type_plot the user can choose between density (="dens) or label assignment visualization (="ML")
 #' @param show_legend If True it shows the legend for the label assignment visualization. Default to True.
@@ -54,4 +54,55 @@ exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",s
   print("Execution time:")
   print(time_taken)
   print("Done")
+}
+
+#' exports_plots
+#' 
+#' function to generate ungated plots from selected gs node
+#' @param gs GatingSet
+#' @param n_cores Number of cores to use. Default to 1.
+#' @param path_output Path to the directory where to export the plots.
+#' @param x_lab x-axis label.
+#' @param y_lab y-axis label.
+#' @param w_val width value. Default to 800 pixels.
+#' @param h_val height value. Default to 600 pixels.
+#' @param size_points Size points scatter plot.
+#' @return NULL
+#' @export
+#' @examples 
+#' \donttest{export_raw_gs_plots()}
+
+export_raw_gs_plots<-function(gs,node_name,channel_x,channel_y,path_output,n_cores=1,x_lab = "x", y_lab = "y", 
+                               w_val = 800, h_val = 600,size_points=1,...){
+  start <- Sys.time()
+  
+  samples_names<-sampleNames(gs)
+  list_n_gates_all_data <- mclapply(1:length(samples_names),function(i){
+    s<-samples_names[i]
+    print(s)
+    ff_temp <- gh_pop_get_data(gs[[s]], node_name)
+    
+    expr_matrix_ff <- exprs(ff_temp) 
+    df_exprs<-as.data.frame(expr_matrix_ff) 
+    df_exprs_selected_channels<-df_exprs[,c(channel_x,channel_y)]
+    path_output_file <- paste0(path_output, sprintf("/%s.png", 
+                                                    s))
+    png(path_output_file, width = w_val, height = h_val)
+    plot_name <- tryCatch(magicPlot(df_exprs_selected_channels, type = "no_gate", 
+                                    x_lab = x_lab, y_lab = y_lab, 
+                                    size_points=size_points, 
+                                    ...), error = function(e) {
+                                      return(NULL)
+                                    })
+
+  
+    dev.off()
+    return(NULL)
+  },mc.cores = n_cores) 
+  end <- Sys.time()
+  time_taken <- end - start
+  print("Execution time:")
+  print(time_taken)
+  print("Done")
+
 }
