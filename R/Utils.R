@@ -626,7 +626,34 @@ process_test_data<-function(test_data,prop_down=NULL,n_points_per_plot=500,norma
   return(Xtest)
 }
 
+#' get_list_df_gated_plots
+#'
+#' function to get test data correctly formatted.
+#' @param gs GatingSet
+#' @param gate_name Name of the Gating tree node whose gating data needs to be extracted.
+#' @return List.
+#' @export
+#' @examples 
+#' \donttest{get_list_df_gated_plots()}
 
+get_list_df_gated_plots<-function(gs,gate_name){
+  list_gated_data <- list()
+  # Loop over all samples in the GatingSet
+  for(s in sampleNames(gs)){
+    # Get data from the specified gated population
+    gh<-gs[[s]]
+    
+    # df_pop_root = mapping of selected pop events to root
+    df_pop_root<-pre_process_manual_binary(gh = gh,pop = gate_name)
+    
+    # df_pop_mother = mapping of selected pop events to mother of selected pop
 
+    df_pop_mother<-subsetting_binary_df(gh = gh,binary_df = df_parent)
+    
+    # Store in list
+    list_gated_data[[s]] <- df_pop_mother
+  }
+  return(list_gated_data)
+}
 
 
