@@ -27,7 +27,8 @@ magicPlot(
   y_lim2 = NULL,
   add_labels = F,
   map_label_polygon = NULL,
-  size_pol_name = 6
+  size_pol_name = 6,
+  show_marginals = F
 )
 }
 \arguments{
@@ -74,6 +75,8 @@ magicPlot(
 \item{map_label_polygon}{map of polygon labels (to assign custom labels). Default to NULL.}
 
 \item{size_pol_name}{size polygon labels. Default to 6.}
+
+\item{show_marginals}{show 1D density next to axis. Default to False.}
 }
 \value{
 ggplot.

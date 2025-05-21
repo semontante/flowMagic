@@ -23,6 +23,7 @@
 #' @param add_labels add polygon labels. Default to FALSE.
 #' @param map_label_polygon map of polygon labels (to assign custom labels). Default to NULL.
 #' @param size_pol_name size polygon labels. Default to 6.
+#' @param show_marginals show 1D density next to axis. Default to False.
 #' @return ggplot.
 #' @export
 #' @examples 
@@ -33,18 +34,39 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
           treat_0_as_gate = F, x_lab = "x", y_lab = "y", gates_to_plot = NULL, 
           apply_manual_scale = T, hull_only = F, size_points = 1, concavity_val = 5, 
           aspect_ratio = NULL, x_lim1 = NULL, x_lim2 = NULL, y_lim1 = NULL, 
-          y_lim2 = NULL,add_labels=F,map_label_polygon=NULL,size_pol_name=6){
+          y_lim2 = NULL,add_labels=F,map_label_polygon=NULL,size_pol_name=6,show_marginals=F){
 
-  if(type == "no_gate" || ncol(df) == 2){
-    colPalette <- colorRampPalette(c("blue", "turquoise", 
-                                     "green", "yellow", "orange", "red"))
-    col <- densCols(df[, c(1, 2)], colramp = colPalette, 
-                    nbin = 200)
-
-    plot <- graphics::plot(df[, c(1, 2)], col = col, pch = ".", 
-                           cex = size_points,xlim = c(x_lim1, x_lim2),  
-                           ylim = c(y_lim1, y_lim2))
-    return(plot)
+  if (type == "no_gate" || ncol(df) == 2) {
+    colPalette <- colorRampPalette(c("blue", "turquoise", "green", "yellow", "orange", "red"))
+    col <- densCols(df[, c(1, 2)], colramp = colPalette, nbin = 200)
+    
+    df_plot <- data.frame(x = df[[1]], y = df[[2]], col = col)
+    
+    p <- ggplot(df_plot, aes(x = x, y = y)) + geom_point(color = df_plot$col, size = size_points, shape = 16) 
+    p <- p + xlab(x_lab) + ylab(y_lab)
+    p <- p + theme(legend.position = "none")
+    p <- p + theme(axis.text = element_text(size = size_axis_text), 
+                                       axis.title.x = element_text(size = size_title_x, 
+                                                                   face = "bold"), axis.title.y = element_text(size = size_title_y, 
+                                                                                                               face = "bold"))
+    p <- p + theme(panel.grid.major = element_blank(), 
+                                       panel.grid.minor = element_blank(), panel.background = element_blank(), 
+                                       axis.line = element_line(colour = "black"))
+    # Apply limits if specified
+    if (!is.null(x_lim1) && !is.null(x_lim2)) {
+      p <- p + xlim(x_lim1, x_lim2)
+    }
+    if (!is.null(y_lim1) && !is.null(y_lim2)) {
+      p <- p + ylim(y_lim1, y_lim2)
+    }
+    
+    # Add marginal densities
+    if (show_marginals == TRUE) {
+      p <- ggExtra::ggMarginal(p, type = "density", margins = "both", 
+                               groupColour = FALSE, groupFill = F, fill="gray")
+    }
+    
+    return(p)
   }
   colnames(df) <- c("x", "y", "classes")
   df$classes <- as.character(df$classes)
@@ -125,9 +147,12 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     magicggplot <- magicggplot + coord_fixed(ratio = aspect_ratio) + 
       theme(plot.margin = unit(c(0, 0, 0, 0), "pt"))
   }
-  if (is.null(x_lim1) == F) {
-    magicggplot <- magicggplot + xlim(x_lim1, x_lim2) + ylim(y_lim1, 
-                                                             y_lim2)
+  # Apply limits if specified
+  if (!is.null(x_lim1) && !is.null(x_lim2)) {
+    magicggplot <- magicggplot + xlim(x_lim1, x_lim2)
+  }
+  if (!is.null(y_lim1) && !is.null(y_lim2)) {
+    magicggplot <- magicggplot + ylim(y_lim1, y_lim2)
   }
   if(add_labels==T){
     if(is.null(map_label_polygon)==F){
@@ -143,9 +168,14 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     magicggplot<- magicggplot + geom_text(data = label_coords, aes(x = label_x, y = label_y, label = group), 
                                           fontface = "bold",inherit.aes = FALSE,size = size_pol_name)
   }
+  
+  # Add marginal densities
+  if (show_marginals == TRUE) {
+    magicggplot <- ggExtra::ggMarginal(magicggplot, type = "density", margins = "both", 
+                             groupColour = FALSE, groupFill = F, fill="gray")
+  }
   return(magicggplot)
 }
-
 
 
 
