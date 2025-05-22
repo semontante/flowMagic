@@ -28,7 +28,8 @@ Imports:
 	nnet,
 	sm,
 	pracma,
-	patchwork
+	patchwork,
+	ggExtra
 Suggests:
 	flowCore,
 	flowWorkspace,
@@ -37,3 +38,4 @@ Suggests:
 	klaR(<= 0.6-12),
 	remotes,
 	CytoML,
+	
