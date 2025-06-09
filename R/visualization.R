@@ -204,3 +204,109 @@ magic_plot_wrap<-function(list_gated_data,n_col_wrap=3,size_title=10,...){
   
   return(combined_plot)
 }
+
+
+#' magicplot_3D
+#'
+#' function to make a 3D plot of data.
+#' @param df input dataframe composed of at least three columns. Four columns if gate needs to be plot.
+#' @param class_col Gate to plot? Default to False.
+#' @param x_lab label of the x axis
+#' @param y_lab Label of the y axis
+#' @param z_lab Label of the z axis
+#' @param type Assuming class_col==T, If type==ML, Generate a plot colored based on the gate assignment. If type=="mesh", generate a 3d polygon gate.
+#' @param size_p size of scatter plot points. Default to 1.
+#' @return plotly plot
+#' @export
+#' @examples 
+#' \donttest{magicplot_3D()}
+
+magicplot_3D<-function(df,class_col=F,x_lab="x",y_lab="y",z_lab="z",type="ML",size_p=1){
+  if(class_col==F){
+    if(ncol(df)!=3){
+      stop("the input df is expected to have 3 columns if class_col==F")
+    }
+    plotly_plot<-plot_ly(x = df[,1], y = df[,2], 
+                         z = df[,3], type = "scatter3d", mode = "markers",
+                         marker = list(size = size_p))
+    
+    plotly_plot<- plotly_plot %>% layout(scene = list(
+      xaxis = list(title = x_lab),
+      yaxis = list(title = y_lab),
+      zaxis = list(title = z_lab)
+    ))
+  }else if(class_col==T){
+    if(ncol(df)!=4){
+      stop("the input df is expected to have 4 columns if class_col==T")
+    }
+    if(type=="ML"){
+      df[,4]<-as.factor(df[,4])
+      
+      plotly_plot<-plot_ly(x = df[,1], y = df[,2], 
+                           z = df[,3], type = "scatter3d", mode = "markers",marker = list(size = size_p),
+                           color =df[,4],colors = c("blue", "red"))
+      
+      plotly_plot<- plotly_plot %>% layout(scene = list(
+        xaxis = list(title = x_lab),
+        yaxis = list(title = y_lab),
+        zaxis = list(title = z_lab)
+      ))
+      plotly_plot<- plotly_plot %>% layout(showlegend = FALSE)
+      
+    }else if(type=="mesh"){
+      df_class<-df[df[,4]==1,]
+      
+      coords<-cbind(df_class[,1], df_class[,2],
+                    df_class[,3])
+      
+      hull <- convhulln(coords)
+      
+      red_rgb <- rep("rgb(255,0,0)", nrow(coords))
+      
+      plotly_plot<-plot_ly() %>%
+        # Full data as scatter
+        add_trace(
+          type = "scatter3d",
+          mode = "markers",
+          x = df[,1],
+          y = df[,2],
+          z = df[,3],
+          color = df[,4],
+          marker = list(size = size_p),
+          colors = c("blue", "black"),
+          name = "Parent"
+        ) %>%
+        # Add convex hull as simulated 3D gate
+        add_trace(
+          type = "mesh3d",
+          x = coords[, 1],
+          y = coords[, 2],
+          z = coords[, 3],
+          i = hull[, 1] - 1,
+          j = hull[, 2] - 1,
+          k = hull[, 3] - 1,
+          vertexcolor = red_rgb,
+          opacity = 0.3,
+          color = I("red"),
+          flatshading = TRUE,
+          lighting = list(ambient = 1, diffuse = 0, specular = 0, roughness = 0, fresnel = 0),
+          lightposition = list(x = 0, y = 0, z = 100),
+          name = "Gated pop"
+        )
+      
+      plotly_plot<- plotly_plot %>% layout(scene = list(
+        xaxis = list(title = x_lab),
+        yaxis = list(title = y_lab),
+        zaxis = list(title = z_lab)
+      ))
+      
+      plotly_plot<- plotly_plot %>% layout(showlegend = FALSE)
+      
+    }
+
+  }
+  return(plotly_plot)
+ 
+}
+
+
