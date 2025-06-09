@@ -13,8 +13,8 @@ export_raw_gs_plots(
   n_cores = 1,
   x_lab = "x",
   y_lab = "y",
-  w_val = 800,
-  h_val = 600,
+  w_val = 7,
+  h_val = 7,
   size_points = 1,
   ...
 )
@@ -30,9 +30,9 @@ export_raw_gs_plots(
 
 \item{y_lab}{y-axis label.}
 
-\item{w_val}{width value. Default to 800 pixels.}
+\item{w_val}{width value. Default to 7 inches.}
 
-\item{h_val}{height value. Default to 600 pixels.}
+\item{h_val}{height value. Default to 7 inches.}
 
 \item{size_points}{Size points scatter plot.}
 }

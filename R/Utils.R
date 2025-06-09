@@ -656,4 +656,35 @@ get_list_df_gated_plots<-function(gs,gate_name){
   return(list_gated_data)
 }
 
+#' get_flowframe_from_gs
+#'
+#' function to get flowframe from gs (converting cytoframe to flowframe)
+#' @param gs GatingSet
+#' @param node_name Name of the Gating tree node whose gating data needs to be extracted.
+#' @param sample_id Name or index of the sample to extract.
+#' @return List.
+#' @export
+#' @examples 
+#' \donttest{get_flowframe_from_gs()}
 
+get_flowframe_from_gs<-function(gs,node_name,sample_id){
+  # Get flowFrame
+  ff <- gh_pop_get_data(gs[[sample_id]], node_name)
+  # ff is a cytoframe object not compatible with flowDensity
+  # we need to build a flowFrame from the cytoframe
+  # Note: as(ff, "flowFrame") does not work because the cytoframe 
+  # is only a visual representation of data not real data
+  
+  # Extract expression data
+  exprs_mat <- exprs(ff)  # or exprs(ff_temp)
+  
+  # Extract parameter data
+  param_data <- pData(parameters(ff)) 
+  
+  # Extract metadata/keywords
+  desc <- keyword(ff)
+  
+  ff <- flowFrame(exprs = exprs_mat, parameters = AnnotatedDataFrame(param_data), description = desc)
+  
+  return(ff)
+}

@@ -33,9 +33,10 @@ Imports:
 Suggests:
 	flowCore,
 	flowWorkspace,
+	Biobase,
 	data.tree,
 	visNetwork,
 	klaR(<= 0.6-12),
 	remotes,
-	CytoML,
+	CytoML
 	
