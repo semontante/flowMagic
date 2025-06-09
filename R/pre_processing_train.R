@@ -137,7 +137,7 @@ map_to_parent<-function(gh,binary_df){
   print(sprintf("mother pop: %s",mother_pop))
   #------  get binary dataset for mother pop
   print("get binary dataset of the mother pop based on the root")
-  df_tot_mother<-pre_process_manual_binary(gh=gh,pop=mother_pop) # root dataset indicating with the integer 1,the mother cells of pop of the binary df
+  df_tot_mother<-map_to_root(gh=gh,pop=mother_pop) # root dataset indicating with the integer 1,the mother cells of pop of the binary df
   df_sub_mother<-subset(df_tot_mother,df_tot_mother[,length(colnames(df_tot_mother))]==1) # we select only the mother cells from the root
   indices<-rownames(df_sub_mother) # this command finds the indices of the mother cells of the pop of binary_df from the root.
   # ----- get modified binary dataset
