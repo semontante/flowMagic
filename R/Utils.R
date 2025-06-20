@@ -644,11 +644,11 @@ get_list_df_gated_plots<-function(gs,gate_name){
     gh<-gs[[s]]
     
     # df_pop_root = mapping of selected pop events to root
-    df_pop_root<-pre_process_manual_binary(gh = gh,pop = gate_name)
+    df_pop_root<-map_to_root(gh = gh,pop = gate_name)
     
     # df_pop_mother = mapping of selected pop events to mother of selected pop
 
-    df_pop_mother<-subsetting_binary_df(gh = gh,binary_df = df_pop_root)
+    df_pop_mother<-map_to_parent(gh = gh,binary_df = df_pop_root)
     
     # Store in list
     list_gated_data[[s]] <- df_pop_mother
