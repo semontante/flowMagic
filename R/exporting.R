@@ -56,7 +56,7 @@ exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",s
   print("Done")
 }
 
-#' exports_plots
+#' export_raw_gs_plots
 #' 
 #' function to generate ungated plots from selected gs node
 #' @param gs GatingSet
@@ -67,31 +67,55 @@ exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",s
 #' @param w_val width value. Default to 7 inches.
 #' @param h_val height value. Default to 7 inches.
 #' @param size_points Size points scatter plot.
+#' @param return_data  If TRUE, return the list of dataframes used to generate the plots. Default to FALSE.
 #' @return NULL
 #' @export
 #' @examples 
 #' \donttest{export_raw_gs_plots()}
 
 export_raw_gs_plots<-function(gs,node_name,channel_x,channel_y,path_output,n_cores=1,x_lab = "x", y_lab = "y", 
-                               w_val = 7, h_val = 7,size_points=1,...){
+                               w_val = 7, h_val = 7,size_points=1,return_data=F,...){
   start <- Sys.time()
   samples_names <- sampleNames(gs)
-  list_n_gates_all_data <- mclapply(1:length(samples_names), function(i) {
-    s <- samples_names[i]
-    print(s)
-    ff_temp <- gh_pop_get_data(gs[[s]], node_name)
-    expr_matrix_ff <- exprs(ff_temp)
-    df_exprs <- as.data.frame(expr_matrix_ff)
-    df_exprs_selected_channels <- df_exprs[, c(channel_x,channel_y)]
-
-    plot_name <- tryCatch(magicPlot(df_exprs_selected_channels,type = "no_gate", x_lab = x_lab, y_lab = y_lab, 
-                                      size_points = size_points, ...), error = function(e) {
+ if(return_data==T){
+    list_n_gates_all_data <- mclapply(1:length(samples_names), 
+                                      function(i) {
+                                        s <- samples_names[i]
+                                        print(s)
+                                        ff_temp <- gh_pop_get_data(gs[[s]], node_name)
+                                        expr_matrix_ff <- exprs(ff_temp)
+                                        df_exprs <- as.data.frame(expr_matrix_ff)
+                                        df_exprs_selected_channels <- df_exprs[, c(channel_x, 
+                                                                                   channel_y)]
+                                        return(df_exprs_selected_channels)
+                                      },mc.cores=n_cores)
+    
+    names(list_n_gates_all_data)<-samples_names
+    return(list_n_gates_all_data)
+  }else{
+    list_n_gates_all_data <- mclapply(1:length(samples_names), 
+                                      function(i) {
+                                        s <- samples_names[i]
+                                        print(s)
+                                        ff_temp <- gh_pop_get_data(gs[[s]], node_name)
+                                        expr_matrix_ff <- exprs(ff_temp)
+                                        df_exprs <- as.data.frame(expr_matrix_ff)
+                                        df_exprs_selected_channels <- df_exprs[, c(channel_x, 
+                                                                                   channel_y)]
+                                        
+                                        plot_name <- tryCatch(magicPlot(df_exprs_selected_channels, 
+                                                                        type = "no_gate", x_lab = x_lab, y_lab = y_lab, 
+                                                                        size_points = size_points, ...), error = function(e) {
+                                                                          return(NULL)
+                                                                        })
+                                        path_output_file <- paste0(path_output, sprintf("/%s.png", 
+                                                                                        s))
+                                        ggsave(filename = path_output_file, plot = plot_name, 
+                                               width = w_val, height = h_val)
                                         return(NULL)
-                                      })
-    path_output_file<-paste0(path_output,sprintf("/%s.png",s))
-    ggsave(filename = path_output_file,plot=plot_name,width = w_val,height = h_val)
-    return(NULL)
-    }, mc.cores = n_cores)
+                                      }, mc.cores = n_cores)
+  }
+
   end <- Sys.time()
   time_taken <- end - start
   print("Execution time:")
