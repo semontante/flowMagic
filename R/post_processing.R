@@ -74,9 +74,9 @@ check_polygons_intersection<-function(list_df_hull){
   ######################### convert convex hull in spatial polygon ################
   df_hull<-do.call(rbind,list_df_hull)
   polys <- lapply(unique(df_hull$group_gate), function(i) {
-    Polygons(list(Polygon(df_hull[df_hull$group_gate==i, 1:2])), ID=i)
+    sp::Polygons(list(sp::Polygon(df_hull[df_hull$group_gate==i, 1:2])), ID=i)
   })
-  spa_polys <- SpatialPolygons(polys) # spatial polygons based on a convex hull
+  spa_polys <- sp::SpatialPolygons(polys) # spatial polygons based on a convex hull
   ####################### check final polygons  ntersections ##################
   n_polygons<-length(spa_polys)
   vec_check<-c()
@@ -98,7 +98,7 @@ check_polygons_intersection<-function(list_df_hull){
           poly_j<-spa_polys[j]
           poly_i_sf<-as(poly_i,"sf")
           poly_j_sf<-as(poly_j,"sf")
-          area_intersect<-st_intersection(st_buffer(poly_i_sf, 0), st_buffer(poly_j_sf, 0)) %>% st_area
+          area_intersect<-sf::st_intersection(st_buffer(poly_i_sf, 0), st_buffer(poly_j_sf, 0)) %>% st_area
           if(length(area_intersect)==0){
             area_intersect<-0
           }
@@ -139,7 +139,7 @@ compute_gates<-function(gated_df,list_final_polygons_coords,no_classes=F){
   for(i in 1:n_polygons){
     class_name<-all_classes_name[i]
     coords_poly_current_class<-list_final_polygons_coords[[i]]
-    vec_out<-point.in.polygon(point.x=gated_df[,1], point.y=gated_df[,2], pol.x=coords_poly_current_class[,1],
+    vec_out<-sp::point.in.polygon(point.x=gated_df[,1], point.y=gated_df[,2], pol.x=coords_poly_current_class[,1],
                               pol.y=coords_poly_current_class[,2], mode.checked=FALSE)
     inds<-which(vec_out!=0)
     gated_df[inds,"classes"]<-class_name
