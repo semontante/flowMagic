@@ -103,7 +103,7 @@ magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
   # train model
   print("training...")
   cl <- makePSOCKcluster(n_cores)
-  registerDoParallel(cl)
+  doParallel::registerDoParallel(cl)
   set.seed(seed_n)
   if(train_model=="rf"){
     out_model<-magicTrain_rf(Xtrain = Xtrain,Ytrain = Ytrain,
