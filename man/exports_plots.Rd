@@ -18,6 +18,7 @@ exports_plots(
   w_val = 7,
   h_val = 7,
   size_axis_text = 25,
+  export_csv = F,
   ...
 )
 }
@@ -47,9 +48,11 @@ exports_plots(
 \item{h_val}{height value. Default to 7.}
 
 \item{size_axis_text}{Size of ticks labels.}
+
+\item{export_csv}{Export plot data as csv files. Default to False.}
 }
 \description{
-function to generate plots (no hierarchy).
+function to generate plots (no hierarchy) from list of labelled dataframes.
 }
 \examples{
 \donttest{exports_plots()}

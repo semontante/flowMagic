@@ -2,7 +2,7 @@
 % Please edit documentation in R/exporting.R
 \name{export_raw_gs_plots}
 \alias{export_raw_gs_plots}
-\title{exports_plots}
+\title{export_raw_gs_plots}
 \usage{
 export_raw_gs_plots(
   gs,
@@ -16,6 +16,7 @@ export_raw_gs_plots(
   w_val = 7,
   h_val = 7,
   size_points = 1,
+  return_data = F,
   ...
 )
 }
@@ -35,6 +36,8 @@ export_raw_gs_plots(
 \item{h_val}{height value. Default to 7 inches.}
 
 \item{size_points}{Size points scatter plot.}
+
+\item{return_data}{If TRUE, return the list of dataframes used to generate the plots. Default to FALSE.}
 }
 \description{
 function to generate ungated plots from selected gs node

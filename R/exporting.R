@@ -1,6 +1,6 @@
 #' exports_plots
 #' 
-#' function to generate plots (no hierarchy).
+#' function to generate plots (no hierarchy) from list of labelled dataframes.
 #' @param list_gated_data list of dataframes. Each dataframe has 3 columns: marker 1 values, marker 2 values and label column.
 #' @param n_cores Number of cores to use. Default to 1.
 #' @param path_output Path to the directory where to export the plots.
@@ -14,6 +14,7 @@
 #' @param w_val width value. Default to 7.
 #' @param h_val height value. Default to 7.
 #' @param size_axis_text Size of ticks labels.
+#' @param export_csv Export plot data as csv files. Default to False.
 #' @return NULL
 #' @export
 #' @examples 
@@ -23,32 +24,64 @@
 
 exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",show_legend=T,x_lab="x",
                         y_lab="y",size_title_x=23,size_title_y=23,aspect_ratio=NULL,w_val=7,h_val=7,
-                        size_axis_text=25,...){
+                        size_axis_text=25,export_csv=F,...){
   start<-Sys.time()
   all_names<-names(list_gated_data)
-  list_n_gates_all_data<-mclapply(1:length(list_gated_data),function(i){
-    name_current_file<-all_names[i]
-    name_current_file<-str_remove(name_current_file,".csv")
-    print(name_current_file)
-    if("df_test_original" %in% names(list_gated_data[[i]])){
-      df_p<-list_gated_data[[i]]$df_test_original
-    }else{
-      df_p<-list_gated_data[[i]]
-    }
-    all_classes<-unique(df_p[,3])
-    all_classes<-all_classes[all_classes!=0]
-    if(length(all_classes)==0){
-      type_plot<-"ML"
-    }
-    plot_name<-tryCatch(magicPlot(df_p,type = type_plot,show_legend = show_legend,x_lab = x_lab,y_lab = y_lab,
-                                  size_title_x = size_title_x,size_title_y=size_title_y,
-                                  aspect_ratio = aspect_ratio,size_axis_text = size_axis_text,...),error=function(e){return(NULL)})
-    # export plot in correct folder
-    print("---- export plot")
-    path_output_file<-paste0(path_output,sprintf("/%s.png",name_current_file))
-    ggsave(filename = path_output_file,plot=plot_name,width = w_val,height = h_val)
-    return(NULL)
-  },mc.cores=n_cores)
+ if(export_csv==T){
+    list_n_gates_all_data <- mclapply(1:length(list_gated_data), 
+                                      function(i) {
+                                        name_current_file <- all_names[i]
+                                        name_current_file <- str_remove(name_current_file, 
+                                                                        ".csv")
+                                        print(name_current_file)
+                                        if ("df_test_original" %in% names(list_gated_data[[i]])) {
+                                          df_p <- list_gated_data[[i]]$df_test_original
+                                        }
+                                        else {
+                                          df_p <- list_gated_data[[i]]
+                                        }
+                                        
+                                        print("---- export csv file")
+                                        path_output_file <- paste0(path_output, sprintf("/%s.csv", 
+                                                                                        name_current_file))
+                                        write.csv(df_p,file = path_output_file,row.names = F)
+                                                
+                                        return(NULL)
+                                      }, mc.cores = n_cores)
+    
+  }else{
+    list_n_gates_all_data <- mclapply(1:length(list_gated_data), 
+                                      function(i) {
+                                        name_current_file <- all_names[i]
+                                        name_current_file <- str_remove(name_current_file, 
+                                                                        ".csv")
+                                        print(name_current_file)
+                                        if ("df_test_original" %in% names(list_gated_data[[i]])) {
+                                          df_p <- list_gated_data[[i]]$df_test_original
+                                        }
+                                        else {
+                                          df_p <- list_gated_data[[i]]
+                                        }
+                                        all_classes <- unique(df_p[, 3])
+                                        all_classes <- all_classes[all_classes != 0]
+                                        if (length(all_classes) == 0) {
+                                          type_plot <- "ML"
+                                        }
+                                        plot_name <- tryCatch(magicPlot(df_p, type = type_plot, 
+                                                                        show_legend = show_legend, x_lab = x_lab, y_lab = y_lab, 
+                                                                        size_title_x = size_title_x, size_title_y = size_title_y, 
+                                                                        aspect_ratio = aspect_ratio, size_axis_text = size_axis_text, 
+                                                                        ...), error = function(e) {
+                                                                          return(NULL)
+                                                                        })
+                                        print("---- export plot")
+                                        path_output_file <- paste0(path_output, sprintf("/%s.png", 
+                                                                                        name_current_file))
+                                        ggsave(filename = path_output_file, plot = plot_name, 
+                                               width = w_val, height = h_val)
+                                        return(NULL)
+                                      }, mc.cores = n_cores)
+  }
   end<-Sys.time()
   time_taken<-end-start
   print("Execution time:")
