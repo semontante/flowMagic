@@ -21,6 +21,9 @@ Flow cytometry (FCM) is a technology widely used in immunology and cell biology 
 
 The full technical documentation for the flowMagic R package can be found inside the `pk_manual` directory above. Click on the red pdf badge to download and visualize the flowMagic introduction (vignette).
 
+The flowMagic output can also be integrated with the popular flowCore and flowWorkspace R packages.
+
+
 # Installation
 
 The flowMagic package can be installed within R using the devtools library:
