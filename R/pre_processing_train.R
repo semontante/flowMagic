@@ -21,9 +21,10 @@ name_pop_gating<-function(gh){
 
 #' map_to_root
 #' 
-#'it generates a dataset indicating what cells belong to the selected pop (1) 0 otherwise.
-#'The dataset is always the dataset of the Root pop.
-#'gh and pop are mandatory arguments, dim and mode have a default value.
+#' it generates a dataset indicating what cells belong to the selected pop (1) 0 otherwise. 
+#' Old name: pre_process_manual_binary()
+#' The dataset is always the dataset of the Root pop.
+#' gh and pop are mandatory arguments, dim and mode have a default value.
 #' @param gh GatingHierarchy.
 #' @param pop Name of the population to get events assignments.
 #' @return Dataframe.

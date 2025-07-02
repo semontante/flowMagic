@@ -196,7 +196,7 @@ get_density_features<-function(df_dens,min_height=0.06){
   # show(plot(density_m2,type="l"))
 
   # features first density
-  matrix_peaks_m1<-findpeaks(density_m1,minpeakheight = min_height,minpeakdistance = 5)
+  matrix_peaks_m1<-pracma::findpeaks(density_m1,minpeakheight = min_height,minpeakdistance = 5)
   if(nrow(matrix_peaks_m1)>1){
     matrix_peaks_m1<-matrix_peaks_m1[order(matrix_peaks_m1[,2],decreasing = F),]
   }
@@ -221,7 +221,7 @@ get_density_features<-function(df_dens,min_height=0.06){
   info_all_peaks_m1<-round(info_all_peaks_m1,2)
   info_all_peaks_m1<-c(n_peaks_m1,info_all_peaks_m1)
   # features second density
-  matrix_peaks_m2<-findpeaks(density_m2,minpeakheight = min_height,minpeakdistance = 5)
+  matrix_peaks_m2<-pracma::findpeaks(density_m2,minpeakheight = min_height,minpeakdistance = 5)
   if(nrow(matrix_peaks_m2)>1){
     matrix_peaks_m2<-matrix_peaks_m2[order(matrix_peaks_m2[,2],decreasing = F),]
   }
