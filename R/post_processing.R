@@ -96,9 +96,9 @@ check_polygons_intersection<-function(list_df_hull){
         message(sprintf("-------- Analysis gate %s vs %s",name_group_poly_i,name_group_poly_j))
         if(name_group_poly_j!=name_group_poly_i){ # avoid comparison with itself
           poly_j<-spa_polys[j]
-          poly_i_sf<-as(poly_i,"sf")
-          poly_j_sf<-as(poly_j,"sf")
-          area_intersect<-sf::st_intersection(sf::st_buffer(poly_i_sf, 0), sf::st_buffer(poly_j_sf, 0)) %>% sf::st_area
+          poly_i_sf<-sf::st_as_sf(poly_i)
+          poly_j_sf<-sf::st_as_sf(poly_j)
+          area_intersect<-sf::st_intersection(sf::st_buffer(poly_i_sf, 0), sf::st_buffer(poly_j_sf, 0)) %>% sf::st_area()
           if(length(area_intersect)==0){
             area_intersect<-0
           }
@@ -167,11 +167,12 @@ post_process_gates<-function(gated_df,n_cores=1,thr_dist=0.15,include_zero=F,rem
   colnames(gated_df)<-c("x","y","classes")
   gated_df$classes<-as.character(gated_df$classes)
   if(type=="dist"){
-    print("post-process based on events distance")
+    message("post-process based on events distance")
     new_df<-assign_events_to_nearest_centroids(gated_df = gated_df,
                                                n_cores = n_cores,thr_dist=thr_dist,
                                                include_zero = include_zero,remove_centroids = remove_centroids)
   }else if(type=="polygon"){
+    message("post-process based on events distance checking polygons intersection")
     list_df_hull<-extract_polygon_gates(gated_df = gated_df,concavity_val=concavity_val)
     if(normalize_data==T){
       # check polygons intersections
@@ -325,7 +326,7 @@ assign_events_to_nearest_centroids<-function(gated_df,n_cores=1,method_dist="euc
   start<-Sys.time()
   df_centroids<-get_centroids(df = gated_df,thr_dist = thr_dist,include_zero = include_zero,remove_centroids = remove_centroids)
   list_new_classes<-mclapply(1:nrow(gated_df),function(i){
-    print(i)
+    message(i)
     coords_i<-gated_df[i,c(1,2)]
     colnames(coords_i)<-c("coord_1","coord_2")
     dist_vec<-c()
@@ -351,9 +352,9 @@ assign_events_to_nearest_centroids<-function(gated_df,n_cores=1,method_dist="euc
   gated_df$classes<-as.character(gated_df$classes)
   end<-Sys.time()
   time_taken<-end-start
-  print("Execution time:")
-  print(time_taken)
-  print("Done")
+  message("Execution time:")
+  message(time_taken)
+  message("Done")
   return(gated_df)
 }
 

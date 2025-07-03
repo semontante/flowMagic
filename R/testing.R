@@ -280,8 +280,10 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
     }else{
       # ------- Yes template model ---------
       if(length(all_classes)<=4){
+      message("Yes template model with less than 4 polygons")
         final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,type = "polygon",normalize_data = normalize_data)
       }else{
+      message("Yes template model with more than 4 polygons")
         final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = thr_dist,type="dist")
       }
     }
@@ -314,9 +316,9 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
   vec_dist<-round(vec_dist,2)
   end<-Sys.time()
   time_taken<-end-start
-  print("Execution time:")
-  print(time_taken)
-  print("Done")
+  message("Execution time:")
+  message(time_taken)
+  message("Done")
   return(list(test_data_original=test_data_original,test_data_temp_original=test_data_temp_original,
               final_df=final_df,vec_dist=vec_dist,test_data_final=test_data_final))
 }
@@ -335,6 +337,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
 #' @param normalize_data If True, data is normalized to 0-1 range. Default to True.
 #' @param include_zero_val considering events labeled as 0 as an additional gate when there is only one gate. Default to  True.
 #' @param n_cores_all Number of cores to use across all samples. Default to 1.
+#' @param verbose If True, print all message and disable tryCatch (any error will stop the execution). Default to False.
 #' @return List of Dataframes.
 #' @export
 #' @examples 
@@ -342,7 +345,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
 
 magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magic_model_n_gates=NULL,
                         ref_data_train=NULL,prop_down=NULL,n_points_per_plot=NULL,
-                        thr_dist=0.05,n_cores=1,normalize_data=T,include_zero_val=T,n_cores_all=1){
+                        thr_dist=0.05,n_cores=1,normalize_data=T,include_zero_val=T,n_cores_all=1,verbose=F){
   set.seed(40)
   start<-Sys.time()
   all_names_test_data<-names(list_test_data)
@@ -351,11 +354,20 @@ magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magi
   list_all_dfs_pred<-mclapply(1:length(list_test_data),function(i){
     message(sprintf("########### %s ##########",all_names_test_data[i]))
     df_test<-list_test_data[[i]]
+    if(verbose==T){
+    out_pred<-magicPred(test_data = df_test,magic_model=magic_model,
+                                            ref_model_info=ref_model_info,n_cores=n_cores,
+                                            ref_data_train=ref_data_train,prop_down=prop_down,thr_dist=thr_dist,
+                                            magic_model_n_gates = magic_model_n_gates,n_points_per_plot=n_points_per_plot,
+                                            normalize_data=normalize_data,include_zero_val=include_zero_val)
+    }else{
     out_pred<-tryCatch(suppressMessages(magicPred(test_data = df_test,magic_model=magic_model,
                                                   ref_model_info=ref_model_info,n_cores=n_cores,
                                                   ref_data_train=ref_data_train,prop_down=prop_down,thr_dist=thr_dist,
                                                   magic_model_n_gates = magic_model_n_gates,n_points_per_plot=n_points_per_plot,
                                                   normalize_data=normalize_data,include_zero_val=include_zero_val)),error=function(e){return(NULL)})
+    }
+
     
     
     if(is.null(out_pred)==F){

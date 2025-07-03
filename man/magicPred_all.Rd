@@ -16,7 +16,8 @@ magicPred_all(
   n_cores = 1,
   normalize_data = T,
   include_zero_val = T,
-  n_cores_all = 1
+  n_cores_all = 1,
+  verbose = F
 )
 }
 \arguments{
@@ -39,6 +40,8 @@ magicPred_all(
 \item{include_zero_val}{considering events labeled as 0 as an additional gate when there is only one gate. Default to  True.}
 
 \item{n_cores_all}{Number of cores to use across all samples. Default to 1.}
+
+\item{verbose}{If True, print all message and disable tryCatch (any error will stop the execution). Default to False.}
 }
 \value{
 List of Dataframes.
