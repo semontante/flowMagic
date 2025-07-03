@@ -102,8 +102,11 @@ magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
   Ytrain<-as.character(df_info[,type_y]) # or n_gates_info
   # train model
   print("training...")
-  cl <- makePSOCKcluster(n_cores)
-  doParallel::registerDoParallel(cl)
+  if(method_control != "oob"){
+    cl <- makePSOCKcluster(n_cores)
+    registerDoParallel(cl)
+    # the oob method cannot benefit from parallelization
+  }
   set.seed(seed_n)
   if(train_model=="rf"){
     out_model<-magicTrain_rf(Xtrain = Xtrain,Ytrain = Ytrain,
@@ -118,7 +121,9 @@ magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
                                list_index_train=list_index_train,list_index_val=list_index_val,size = size_nnet_units,
                                decay = decay_nnet)
   }
-  stopCluster(cl)
+  if(exists("cl")){
+    stopCluster(cl)
+  }
   end<-Sys.time()
   time_taken<-end-start
   print("Execution time:")
