@@ -688,3 +688,47 @@ get_flowframe_from_gs<-function(gs,node_name,sample_id){
   
   return(ff)
 }
+
+#' magic_label_rectangle
+#'
+#' function to label points of dataframe based on rectangle coordinates
+#' @param df Dataframe composed of two columns for marker expression of first (x axis = first column) and second marker (y axis = second column)
+#' @param x_min x coordinate minimum
+#' @param x_max  x coordinate maximum
+#' @param y_min y coordinate minimum
+#' @param y_max  y coordinate maximum
+#' @param label_pol  Label for current polygon.
+#' @return Dataframe
+#' @export
+#' @examples 
+#' \donttest{magic_label_rectangle()}
+
+magic_label_rectangle<-function(df,x_min,x_max,y_min,y_max,label_pol="1"){
+  # Initialize class column if it doesn't exist
+  if (!"class" %in% names(df)) {
+    df$class <- "0"  
+  }
+  df$class[df[,1] > x_min & df[,1] < x_max & df[,2] > y_min & df[,2]] <- label_pol
+  return(df)
+}
+
+#' magic_label_poly
+#'
+#' function to label points of dataframe based on polygon coordinates
+#' @param df Dataframe composed of two columns for marker expression of first (x axis = first column) and second marker (y axis = second column)
+#' @param polygon_df Dataframe containing the x coordinates (first column) and y coordinates (second column) of the current polygon to label.
+#' @param label_pol  Label for current polygon.
+#' @return Dataframe
+#' @export
+#' @examples 
+#' \donttest{magic_label_poly()}
+
+magic_label_poly<-function(df,polygon_df,label_pol="1"){
+  # Initialize class column if it doesn't exist
+  if (!"class" %in% names(df)) {
+    df$class <- "0"  
+  }
+  inside <- sp::point.in.polygon(df[,1], df[,2], polygon_df[,1], polygon_df[,2])
+  df$class[inside == 1] <- label_pol
+  return(df)
+}

@@ -19,7 +19,7 @@ magicPlot(
   apply_manual_scale = T,
   hull_only = F,
   size_points = 1,
-  concavity_val = 5,
+  concavity_val = 20,
   aspect_ratio = NULL,
   x_lim1 = NULL,
   x_lim2 = NULL,
