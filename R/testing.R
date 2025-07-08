@@ -215,7 +215,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
       message("Using list of general models and n_gates model")
       #---- list of models and n_gates model
       if(class(magic_model_n_gates)=="train"){
-        n_gates<-predict(magic_model_n_gates,Xtest)
+        n_gates<-caret::predict.train(magic_model_n_gates,Xtest)
         inds_max_gates<-which.max(table(n_gates))
         max_gate<-names(table(n_gates))[inds_max_gates]
         message("Number of gates predicted")
@@ -226,12 +226,12 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
         message(max_gate)
       }
       magic_model_selected<-magic_model[[max_gate]]
-      classes<-predict(magic_model_selected,Xtest)
+      classes<-caret::predict.train(magic_model_selected,Xtest)
       vec_dist<-0
     }else if(is.null(magic_model_n_gates)==T){
       message("Using general purpose model")
       #---- only  PD models predictions
-      classes<-predict(magic_model,Xtest)
+      classes<-caret::predict.train(magic_model,Xtest)
       # get distance templates - test data
       vec_dist<-0
     }
@@ -239,7 +239,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
   }else if(is.null(ref_model_info)==F){
     message("Using template model")
     #---- only reference predictions
-    classes<-predict(ref_model_info,Xtest)
+    classes<-caret::predict.train(ref_model_info,Xtest)
     # get distance templates - test data
     if(is.null(ref_data_train)==F){
       all_plot_num<-unique(ref_data_train$plot_num)

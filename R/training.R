@@ -156,13 +156,13 @@ magicTrain_nnet<-function(Xtrain,Ytrain,k_cv=10,list_index_train=NULL,list_index
   #----- train model
   print("--- train model")
   if(is.null(list_index_train)==T){
-    model_nnet <- train(
+    model_nnet <- caret::train(
       x=Xtrain, y=Ytrain, method = "nnet",
       tuneGrid = nnGrid,MaxNWts=9000,
       trControl = trainControl(method = "cv",number = k_cv,trim = T,returnData = F)
     )
   }else{
-    model_nnet <- train(
+    model_nnet <- caret::train(
       x=Xtrain, y=Ytrain, method = "nnet",MaxNWts=9000,
       trControl = trainControl(trim = T,returnData = F,index = list_index_train,indexOut = list_index_val),
       tuneLength = tune_lenght
@@ -195,13 +195,13 @@ magicTrain_rf<-function(Xtrain,Ytrain,list_index_train=NULL,list_index_val=NULL,
   print("--- train model")
   if(is.null(list_index_train)==T){
     if(method_control=="oob"){
-      model_rf <- train(
+      model_rf <- caret::train(
         x=Xtrain, y=Ytrain, method = "rf",metric = "Accuracy",ntree=n_tree,
         trControl = trainControl(method = "oob", trim = T,returnData = F),
         tuneGrid = repGrid
       )
     }else if(method_control=="cv"){
-      model_rf <- train(
+      model_rf <- caret::train(
         x=Xtrain, y=Ytrain, method = "rf",metric = "Accuracy",ntree=n_tree,
         trControl = trainControl(method = "cv",number = k_cv,trim = T,returnData = F),
         tuneGrid = repGrid
@@ -209,7 +209,7 @@ magicTrain_rf<-function(Xtrain,Ytrain,list_index_train=NULL,list_index_val=NULL,
     }
 
   }else{
-    model_rf <- train(
+    model_rf <- caret::train(
       x=Xtrain, y=Ytrain, method = "rf",metric = "Accuracy",ntree=n_tree,
       trControl = trainControl(trim = T,returnData = F,index = list_index_train,indexOut = list_index_val),
       tuneGrid = repGrid
@@ -240,13 +240,13 @@ magicTrain_knn<-function(Xtrain,Ytrain,k_cv=10,list_index_train=NULL,list_index_
   #----- train model
   if(is.null(list_index_train)==T){
     print("--- train model")
-    model_nb <- train(
+    model_nb <- caret::train(
       x=Xtrain, y=Ytrain, method = "knn",
       trControl = trainControl(method = "cv",number = k_cv, trim = T)
     )
   }else{
     print("--- train model")
-    model_nb <- train(
+    model_nb <- caret::train(
       x=Xtrain, y=Ytrain, method = "knn",
       trControl = trainControl(trim = T,returnData = F,index = list_index_train,indexOut = list_index_val),
       tuneLength = tune_lenght
@@ -275,13 +275,13 @@ magicTrain_nb<-function(Xtrain,Ytrain,k_cv=10,list_index_train=NULL,list_index_v
   #----- train model
   if(is.null(list_index_train)==T){
     print("--- train model")
-    model_nb <- train(
+    model_nb <- caret::train(
       x=Xtrain, y=Ytrain, method = "nb",
       trControl = trainControl(method = "cv",number = k_cv, trim = T)
     )
   }else{
     print("--- train model")
-    model_nb <- train(
+    model_nb <- caret::train(
       x=Xtrain, y=Ytrain, method = "nb",
       trControl = trainControl(trim = T,returnData = F,index = list_index_train,indexOut = list_index_val),
       tuneLength = tune_lenght
@@ -310,14 +310,14 @@ magicTrain_dt<-function(Xtrain,Ytrain,k_cv=10,list_index_train=NULL,list_index_v
   #----- train model
   print("--- train model")
   if(is.null(list_index_train)==T){
-    model_dt <- train(
+    model_dt <- caret::train(
       x=Xtrain, y=Ytrain, method = "rpart",
       trControl = trainControl(method = "cv",number = k_cv, trim = T,returnData = F),
       tuneLength = tune_lenght,
       parms=list(split="information")
     )
   }else{
-    model_dt <- train(
+    model_dt <- caret::train(
       x=Xtrain, y=Ytrain, method = "rpart",
       trControl = trainControl(trim = T,returnData = F,index = list_index_train,indexOut = list_index_val),
       tuneLength = tune_lenght,
