@@ -351,7 +351,7 @@ magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magi
   all_names_test_data<-names(list_test_data)
   # prediction for each test data
   message("------------- Prediction for each test data")
-  list_all_dfs_pred<-mclapply(1:length(list_test_data),function(i){
+  list_all_dfs_pred<-parallel::mclapply(1:length(list_test_data),function(i){
     message(sprintf("########### %s ##########",all_names_test_data[i]))
     df_test<-list_test_data[[i]]
     if(verbose==T){

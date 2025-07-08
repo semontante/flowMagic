@@ -216,7 +216,7 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
       }
     }
     # downsample df
-    out_part<-createDataPartition(y=factor(df[,"classes"]),times = 1,p = prop_down)
+    out_part<-caret::createDataPartition(y=factor(df[,"classes"]),times = 1,p = prop_down)
     df<-df[out_part$Resample1,]
     # remove some classes if needed
     if(is.null(remove_class)==F){

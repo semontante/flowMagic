@@ -309,4 +309,39 @@ magicplot_3D<-function(df,class_col=F,x_lab="x",y_lab="y",z_lab="z",type="ML",si
  
 }
 
+#' magicPlot_template
+#'
+#' function to interactively generate a template based on bivariate ungated data.
+#' @param df input dataframe composed of two columns reporting markers expression (first column = marker 1, second column = marker 2).
+#' @param size_points Size of points in scatter plot. Default to 1.
+#' @return Dataframe
+#' @export
+#' @examples 
+#' \donttest{magicPlot_template()}
+
+magicPlot_template<-function(df,size_points=1){
+  colPalette <- colorRampPalette(c("blue", "turquoise", "green", "yellow", "orange", "red"))
+  col <- densCols(df[,1], df[,2], colramp = colPalette, nbin = 200)
+  
+  par(mar = c(5, 5, 2, 2))  # Set margins
+  names<-colnames(df)
+  plot(df[,1], df[,2],
+       col = col,
+       pch = 16,
+       cex = size_points,
+       xlab = names[1],
+       ylab = names[2],
+       bty = "n")
+  
+  # Use locator() to draw polygon interactively
+  cat("Click to draw a polygon point-by-point. Press ESC when done.\n")
+  pts <- graphics::locator(type = "o")  # type = "n" means collect points only, not draw
+  
+  # Convert to dataframe
+  polygon_df <- data.frame(x = pts$x, y = pts$y)
+  
+  return(polygon_df)
+  
+}
+
 

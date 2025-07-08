@@ -31,7 +31,7 @@ exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",s
     list_n_gates_all_data <- parallel::mclapply(1:length(list_gated_data), 
                                       function(i) {
                                         name_current_file <- all_names[i]
-                                        name_current_file <- str_remove(name_current_file, 
+                                        name_current_file <- stringr::str_remove(name_current_file, 
                                                                         ".csv")
                                         print(name_current_file)
                                         if ("df_test_original" %in% names(list_gated_data[[i]])) {
@@ -53,7 +53,7 @@ exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",s
     list_n_gates_all_data <- parallel::mclapply(1:length(list_gated_data), 
                                       function(i) {
                                         name_current_file <- all_names[i]
-                                        name_current_file <- str_remove(name_current_file, 
+                                        name_current_file <- stringr::str_remove(name_current_file, 
                                                                         ".csv")
                                         print(name_current_file)
                                         if ("df_test_original" %in% names(list_gated_data[[i]])) {

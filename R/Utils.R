@@ -601,7 +601,7 @@ process_test_data<-function(test_data,prop_down=NULL,n_points_per_plot=500,norma
        prop_down<-(n_points_per_plot/nrow(test_data))
       }
   }
-  out_part<-createDataPartition(y=factor(test_data[,"classes"]),times = 1,p = prop_down)
+  out_part<-caret::createDataPartition(y=factor(test_data[,"classes"]),times = 1,p = prop_down)
   inds_new_df<-out_part$Resample1
   Xtest<-test_data[inds_new_df,c(1,2)]
 
