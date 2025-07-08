@@ -28,7 +28,7 @@ exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",s
   start<-Sys.time()
   all_names<-names(list_gated_data)
  if(export_csv==T){
-    list_n_gates_all_data <- mclapply(1:length(list_gated_data), 
+    list_n_gates_all_data <- parallel::mclapply(1:length(list_gated_data), 
                                       function(i) {
                                         name_current_file <- all_names[i]
                                         name_current_file <- str_remove(name_current_file, 
@@ -50,7 +50,7 @@ exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",s
                                       }, mc.cores = n_cores)
     
   }else{
-    list_n_gates_all_data <- mclapply(1:length(list_gated_data), 
+    list_n_gates_all_data <- parallel::mclapply(1:length(list_gated_data), 
                                       function(i) {
                                         name_current_file <- all_names[i]
                                         name_current_file <- str_remove(name_current_file, 
@@ -111,7 +111,7 @@ export_raw_gs_plots<-function(gs,node_name,channel_x,channel_y,path_output,n_cor
   start <- Sys.time()
   samples_names <- sampleNames(gs)
  if(return_data==T){
-    list_n_gates_all_data <- mclapply(1:length(samples_names), 
+    list_n_gates_all_data <- parallel::mclapply(1:length(samples_names), 
                                       function(i) {
                                         s <- samples_names[i]
                                         print(s)
@@ -126,7 +126,7 @@ export_raw_gs_plots<-function(gs,node_name,channel_x,channel_y,path_output,n_cor
     names(list_n_gates_all_data)<-samples_names
     return(list_n_gates_all_data)
   }else{
-    list_n_gates_all_data <- mclapply(1:length(samples_names), 
+    list_n_gates_all_data <- parallel::mclapply(1:length(samples_names), 
                                       function(i) {
                                         s <- samples_names[i]
                                         print(s)

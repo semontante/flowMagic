@@ -325,7 +325,7 @@ get_centroids<-function(df,low_thr=0.10,up_thr=0.90,thr_dist=0.15,include_zero=F
 assign_events_to_nearest_centroids<-function(gated_df,n_cores=1,method_dist="euclidean",thr_dist=0.15,include_zero=F,remove_centroids=T){
   start<-Sys.time()
   df_centroids<-get_centroids(df = gated_df,thr_dist = thr_dist,include_zero = include_zero,remove_centroids = remove_centroids)
-  list_new_classes<-mclapply(1:nrow(gated_df),function(i){
+  list_new_classes<-parallel::mclapply(1:nrow(gated_df),function(i){
     message(i)
     coords_i<-gated_df[i,c(1,2)]
     colnames(coords_i)<-c("coord_1","coord_2")

@@ -421,7 +421,7 @@ get_indices_cross_val<-function(df_train,n_cores=1,train_inds="plot_num",val_ind
   if(train_inds=="plot_num"){
     all_plot_num<-unique(df_train$plot_num)
     n_folds<-length(all_plot_num)
-    list_inds_train<-mclapply(1:n_folds,function(i){
+    list_inds_train<-parallel::mclapply(1:n_folds,function(i){
       current_plot_num<-all_plot_num[i]
       inds<-which(df_train$plot_num==current_plot_num)
       return(inds)
@@ -439,7 +439,7 @@ get_indices_cross_val<-function(df_train,n_cores=1,train_inds="plot_num",val_ind
       set.seed(seed+f)
       rand_ints<-sample.int(n = length(all_plot_num),size = n_train_plots)
       all_plot_num_selected<-all_plot_num[rand_ints]
-      list_inds_train_temp<-mclapply(1:length(all_plot_num_selected),function(i){
+      list_inds_train_temp<-parallel::mclapply(1:length(all_plot_num_selected),function(i){
         current_plot_num<-all_plot_num_selected[i]
         inds<-which(df_train$plot_num==current_plot_num)
         return(inds)
@@ -464,7 +464,7 @@ get_indices_cross_val<-function(df_train,n_cores=1,train_inds="plot_num",val_ind
           rand_ints<-sample.int(n = length(all_plot_num),size = n_train_plots)
           all_plot_num_selected<-all_plot_num[rand_ints]
         }
-        list_inds_train_temp<-mclapply(1:length(all_plot_num_selected),function(i){
+        list_inds_train_temp<-parallel::mclapply(1:length(all_plot_num_selected),function(i){
           current_plot_num<-all_plot_num_selected[i]
           inds<-which(df_train$plot_num==current_plot_num)
           return(inds)
@@ -485,7 +485,7 @@ get_indices_cross_val<-function(df_train,n_cores=1,train_inds="plot_num",val_ind
       rand_ints<-sample.int(n = length(all_plot_num),size = length(all_plot_num)-1)
       all_plot_num_selected<-all_plot_num[rand_ints]
 
-      list_inds_train_temp<-mclapply(1:length(all_plot_num_selected),function(i){
+      list_inds_train_temp<-parallel::mclapply(1:length(all_plot_num_selected),function(i){
         current_plot_num<-all_plot_num_selected[i]
         inds<-which(df_train$plot_num==current_plot_num)
         return(inds)
@@ -504,7 +504,7 @@ get_indices_cross_val<-function(df_train,n_cores=1,train_inds="plot_num",val_ind
   if(val_inds=="plot_num"){
     all_plot_num<-unique(df_train$plot_num)
     n_folds<-length(all_plot_num)
-    list_inds_val<-mclapply(1:n_folds,function(i){
+    list_inds_val<-parallel::mclapply(1:n_folds,function(i){
       current_plot_num<-all_plot_num[i]
       inds<-which(df_train$plot_num==current_plot_num)
       return(inds)
@@ -522,7 +522,7 @@ get_indices_cross_val<-function(df_train,n_cores=1,train_inds="plot_num",val_ind
       set.seed(seed-f)
       rand_ints<-sample.int(n = length(all_plot_num),size = n_val_plots)
       all_plot_num_selected<-all_plot_num[rand_ints]
-      list_inds_val_temp<-mclapply(1:length(all_plot_num_selected),function(i){
+      list_inds_val_temp<-parallel::mclapply(1:length(all_plot_num_selected),function(i){
         current_plot_num<-all_plot_num_selected[i]
         inds<-which(df_train$plot_num==current_plot_num)
         return(inds)
@@ -549,7 +549,7 @@ get_indices_cross_val<-function(df_train,n_cores=1,train_inds="plot_num",val_ind
           rand_ints<-sample.int(n = length(all_plot_num),size = n_train_plots)
           all_plot_num_selected<-all_plot_num[rand_ints]
         }
-        list_inds_val_temp<-mclapply(1:length(all_plot_num_selected),function(i){
+        list_inds_val_temp<-parallel::mclapply(1:length(all_plot_num_selected),function(i){
           current_plot_num<-all_plot_num_selected[i]
           inds<-which(df_train$plot_num==current_plot_num)
           return(inds)
@@ -750,7 +750,7 @@ flowmagic_pred_to_poly_gates<-function(list_df,pred_label,gate_label,n_cores=1,c
   start <- Sys.time()
   all_names<-names(list_df)
   message("Get selected polygon gate...")
-  list_poly_gates<-mclapply(seq_along(list_df),function(i){
+  list_poly_gates<-parallel::mclapply(seq_along(list_df),function(i){
     current_sample<-all_names[i]
     message(current_sample)
     df <- list_df[[i]]$df_test_original

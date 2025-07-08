@@ -35,7 +35,7 @@ import_reference_csv<-function(path_results,n_cores=1){
   path_data_expr<-list.files(path = path_results,full.names = T,recursive = F)
   
   names_plot<-list.files(path = path_results,full.names = F,recursive = F)
-  list_data_plot<-mclapply(names_plot,function(n){
+  list_data_plot<-parallel::mclapply(names_plot,function(n){
       ind_expr<-grep(n,path_data_expr,fixed=T)
       path_n_expr<-path_data_expr[ind_expr]
       data_plot<-read.csv(path_n_expr,check.names = F)
@@ -117,7 +117,7 @@ import_test_set_fcs<-function(path,n_samples="All",ref_f_n=1){
 import_test_set_csv<-function(path_data,n_cores=1,xy_col=T){
   path_data_all<-list.files(path = path_data,full.names = T,recursive = F)
   names_plot<-list.files(path = path_data,full.names = F,recursive = F)
-  list_test_data<-mclapply(path_data_all,function(p){
+  list_test_data<-parallel::mclapply(path_data_all,function(p){
     df_expr<-read.csv(p,check.names = F)
     if(nrow(df_expr)==0){
       return(NULL)
@@ -174,7 +174,7 @@ get_train_data<-function(paths_file=NULL,df_paths=NULL,n_cores=1,prop_down=NULL,
                          "h_peak_m2_3","pos_peak_m2_3","start_peak_m2_3","end_peak_m2_3",
                          "h_peak_m2_4","pos_peak_m2_4","start_peak_m2_4","end_peak_m2_4")
   
-  list_dfs<-mclapply(1:length(paths_file),function(i){
+  list_dfs<-parallel::mclapply(1:length(paths_file),function(i){
     print(sprintf("plot_num:%s",i))
     #print("----- get or import dataframe with classes")
     if(is.list(paths_file)==F && is.null(df_paths)==T){

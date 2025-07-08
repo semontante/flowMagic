@@ -17,7 +17,7 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,n_cores=1
   n_samples<-length(list_test_sets)
   name_samples<-names(list_test_sets)
   start<-Sys.time()
-  list_gated_data<-mclapply(1:n_samples,function(i){
+  list_gated_data<-parallel::mclapply(1:n_samples,function(i){
     sample_name<-name_samples[i]
     sample_name<-strsplit(sample_name,".fcs")[[1]]
     print(sprintf("########## gating sample %s #########",sample_name))
