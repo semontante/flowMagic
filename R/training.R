@@ -122,7 +122,7 @@ magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
                                decay = decay_nnet)
   }
   if(exists("cl")){
-    ParallelLogger::stopCluster(cl)
+    parallel::stopCluster(cl)
   }
   end<-Sys.time()
   time_taken<-end-start
