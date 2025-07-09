@@ -104,7 +104,7 @@ magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
   print("training...")
   if(method_control != "oob"){
     cl <- parallel::makePSOCKcluster(n_cores)
-    registerDoParallel(cl)
+    doParallel::registerDoParallel(cl)
     # the oob method cannot benefit from parallelization
   }
   set.seed(seed_n)
@@ -122,7 +122,7 @@ magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
                                decay = decay_nnet)
   }
   if(exists("cl")){
-    stopCluster(cl)
+    ParallelLogger::stopCluster(cl)
   }
   end<-Sys.time()
   time_taken<-end-start
