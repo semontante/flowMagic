@@ -103,7 +103,7 @@ magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
   # train model
   print("training...")
   if(method_control != "oob"){
-    cl <- makePSOCKcluster(n_cores)
+    cl <- parallel::makePSOCKcluster(n_cores)
     registerDoParallel(cl)
     # the oob method cannot benefit from parallelization
   }
