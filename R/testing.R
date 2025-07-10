@@ -346,6 +346,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
 magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magic_model_n_gates=NULL,
                         ref_data_train=NULL,prop_down=NULL,n_points_per_plot=NULL,
                         thr_dist=0.05,n_cores=1,normalize_data=T,include_zero_val=T,n_cores_all=1,verbose=F){
+  library(dplyr)                        
   set.seed(40)
   start<-Sys.time()
   all_names_test_data<-names(list_test_data)

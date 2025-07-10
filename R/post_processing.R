@@ -98,7 +98,7 @@ check_polygons_intersection<-function(list_df_hull){
           poly_j<-spa_polys[j]
           poly_i_sf<-sf::st_as_sf(poly_i)
           poly_j_sf<-sf::st_as_sf(poly_j)
-          area_intersect<-sf::st_intersection(sf::st_buffer(poly_i_sf, 0), sf::st_buffer(poly_j_sf, 0)) dplyr::%>% sf::st_area()
+          area_intersect<-sf::st_intersection(sf::st_buffer(poly_i_sf, 0), sf::st_buffer(poly_j_sf, 0)) %>% sf::st_area()
           if(length(area_intersect)==0){
             area_intersect<-0
           }
