@@ -628,7 +628,7 @@ process_test_data<-function(test_data,prop_down=NULL,n_points_per_plot=500,norma
 
 #' get_list_df_gated_plots
 #'
-#' function to get test data correctly formatted.
+#' function to get labelled dataframe based on selected node for each sample in gs.
 #' @param gs GatingSet
 #' @param gate_name Name of the Gating tree node whose gating data needs to be extracted.
 #' @return List.
