@@ -11,7 +11,7 @@
 #' @examples 
 #' \donttest{get_hull_all_gates()}
 
-get_hull_all_gates<-function(gated_df,concavity_val=1,spar_val=0.7,smoothing=F,...){
+get_hull_all_gates<-function(gated_df,concavity_val=1,spar_val=0.7,smoothing=F){
   colnames(gated_df)<-c("x","y","classes")
   all_classes<-unique(gated_df$classes)
   list_df_hull<-list()
@@ -20,7 +20,7 @@ get_hull_all_gates<-function(gated_df,concavity_val=1,spar_val=0.7,smoothing=F,.
     df_current_classes<-gated_df[inds,]
     df_current_classes_hull_values<-as.data.frame(concaveman::concaveman(as.matrix(df_current_classes[,c(1,2)]),concavity=concavity_val))
     if(smoothing == T){
-      df_current_classes_hull_values<-smooth_hull(hull_df=df_current_classes_hull_values,spar=spar_val,...)
+      df_current_classes_hull_values<-smooth_hull(hull_df=df_current_classes_hull_values,spar=spar_val)
     }
     vec_group<-rep(sprintf("%s",classes),nrow(df_current_classes_hull_values))
     df_current_hull<-cbind(df_current_classes_hull_values,vec_group)
@@ -375,31 +375,13 @@ assign_events_to_nearest_centroids<-function(gated_df,n_cores=1,method_dist="euc
 #' @examples 
 #' \donttest{smooth_hull()} 
 
-
-smooth_hull <- function(hull_df, spar = 0.7,buffer_dist = 500){
+smooth_hull <- function(hull_df, spar = 0.7) {
   colnames(hull_df) <- c("x", "y")
-
-  # Close the polygon if not already closed
-  coords <- rbind(hull_df, hull_df[1, ])
-  coords <- coords[!duplicated(coords), ]  # remove exact duplicate rows
-
-  # Construct polygon and buffer
-  hull_sf <- sf::st_polygon(list(as.matrix(coords))) |>
-             sf::st_sfc(crs = NA) |>  # Use no CRS to avoid geodetic errors
-             sf::st_buffer(dist = buffer_dist)
-
-  # Extract buffered coordinates
-  coords_buf <- sf::st_coordinates(hull_sf)[, 1:2]
-  coords_buf <- as.data.frame(coords_buf)
-  colnames(coords_buf) <- c("x", "y")
-
-  coords_buf <- rbind(coords_buf, coords_buf[1, ])  # re-close after buffer
-
-  # Apply smoothing
+  # Ensure it's closed loop
+  hull_df <- rbind(hull_df, hull_df[1, ])
   smoothed <- data.frame(
-    x = smooth.spline(coords_buf$x, spar = spar)$y,
-    y = smooth.spline(coords_buf$y, spar = spar)$y
+    x = smooth.spline(hull_df$x, spar = spar)$y,
+    y = smooth.spline(hull_df$y, spar = spar)$y
   )
-
   return(smoothed)
 }
