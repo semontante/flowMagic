@@ -666,22 +666,22 @@ get_list_df_gated_plots<-function(gs,gate_name){
 
 get_flowframe_from_gs<-function(gs,node_name,sample_id){
   # Get flowFrame
-  ff <- gh_pop_get_data(gs[[sample_id]], node_name)
+  ff <- flowCore::gh_pop_get_data(gs[[sample_id]], node_name)
   # ff is a cytoframe object not compatible with flowDensity
   # we need to build a flowFrame from the cytoframe
   # Note: as(ff, "flowFrame") does not work because the cytoframe 
   # is only a visual representation of data not real data
   
   # Extract expression data
-  exprs_mat <- exprs(ff)  # or exprs(ff_temp)
+  exprs_mat <- flowCore::exprs(ff)  # or exprs(ff_temp)
   
   # Extract parameter data
-  param_data <- pData(parameters(ff)) 
+  param_data <- flowCore::pData(parameters(ff)) 
   
   # Extract metadata/keywords
-  desc <- keyword(ff)
+  desc <- flowCore::keyword(ff)
   
-  ff <- flowFrame(exprs = exprs_mat, parameters = AnnotatedDataFrame(param_data), description = desc)
+  ff <- flowFrame(exprs = exprs_mat, parameters = Biobase::AnnotatedDataFrame(param_data), description = desc)
   
   return(ff)
 }
@@ -794,7 +794,7 @@ flowmagic_pred_to_gs<-function(list_poly_gates,gs,parent_node){
     current_poly<-list_poly_gates[[i]]
     print(current_poly)
     suppressWarnings({
-      add(gs[[current_sample]], current_poly, parent = parent_node, name = current_poly@filterId)
+      flowWorkspace::add(gs[[current_sample]], current_poly, parent = parent_node, name = current_poly@filterId)
     })
     
   }
@@ -824,7 +824,7 @@ convert_to_integers_chr<-function(df){
     unique_labels <- unique(classes_vec[is_label])
 
     # Create a named mapping: text label -> integer (starting from 1)
-    label_map <- setNames(seq_along(unique_labels), unique_labels)
+    label_map <- stats::setNames(seq_along(unique_labels), unique_labels)
 
     classes_vec[is_label] <- label_map[classes_vec[is_label]]
 
