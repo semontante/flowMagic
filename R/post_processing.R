@@ -378,23 +378,27 @@ assign_events_to_nearest_centroids<-function(gated_df,n_cores=1,method_dist="euc
 
 smooth_hull <- function(hull_df, spar = 0.7,buffer_dist = 500){
   colnames(hull_df) <- c("x", "y")
-  hull_df <- rbind(hull_df, hull_df[1, ])
+
+  # Close the polygon if not already closed
+  coords <- rbind(hull_df, hull_df[1, ])
   coords <- coords[!duplicated(coords), ]  # remove exact duplicate rows
-  # Buffer the polygon before smoothing
-  hull_sf <- sf::st_polygon(list(as.matrix(hull_df))) |>
-             sf::st_sfc(crs = NA) |>
+
+  # Construct polygon and buffer
+  hull_sf <- sf::st_polygon(list(as.matrix(coords))) |>
+             sf::st_sfc(crs = NA) |>  # Use no CRS to avoid geodetic errors
              sf::st_buffer(dist = buffer_dist)
 
-  coords <- sf::st_coordinates(hull_sf)[, 1:2]
-  coords <- as.data.frame(coords)
-  colnames(coords) <- c("x", "y")
+  # Extract buffered coordinates
+  coords_buf <- sf::st_coordinates(hull_sf)[, 1:2]
+  coords_buf <- as.data.frame(coords_buf)
+  colnames(coords_buf) <- c("x", "y")
 
-  coords <- rbind(coords, coords[1, ])  # close loop again
+  coords_buf <- rbind(coords_buf, coords_buf[1, ])  # re-close after buffer
 
-  # Apply smoothing without t
+  # Apply smoothing
   smoothed <- data.frame(
-    x = smooth.spline(coords$x, spar = spar)$y,
-    y = smooth.spline(coords$y, spar = spar)$y
+    x = smooth.spline(coords_buf$x, spar = spar)$y,
+    y = smooth.spline(coords_buf$y, spar = spar)$y
   )
 
   return(smoothed)
