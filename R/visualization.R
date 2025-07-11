@@ -148,10 +148,20 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
       # Now assign colors, Separating "0|background" from other classes still keyed to the original factor levels, but color vector keys to new labels
       other_levels <- setdiff(levels(df$classes_legend), "background")
       n_other <- length(other_levels)
-      if (n_other > 8) stop("Set2 supports only up to 8 colors for classes other than '0'")
-      # Assign colors
-      colors_other <- RColorBrewer::brewer.pal(n_other, "Set2")
-      names(colors_other) <- other_levels
+      if(n_other<3){
+        n_min_colors<-3
+        # Assign colors
+        colors_other_all <- RColorBrewer::brewer.pal(n_min_colors, "Set2")
+        colors_other <- colors_other_all[1:n_other]
+        names(colors_other) <- other_levels
+      }else if(n_other > 3 & n_other <=8){
+        # Assign colors
+        colors_other <- RColorBrewer::brewer.pal(n_other, "Set2")
+        names(colors_other) <- other_levels
+      }else if(n_other > 8 ){
+        stop("Set2 supports only up to 8 colors for classes other than '0'")
+        
+      }
 
       # Assign black for "0|background"
       colors_all <- c("background" = "black", colors_other)
