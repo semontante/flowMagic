@@ -4,13 +4,14 @@
 #' function to get the convex hull of all gates.
 #' @param gated_df dataframe with labels (third column).
 #' @param concavity_val Values of concavity. Default to 1.
-#' @param spar_val Values of spar. Default to 0.7.
+#' @param spar_val Value of spar. Default to 0.7.
+#' @param smoothing Apply smoothing of lines? Default to F.
 #' @return List of dataframes.
 #' @export
 #' @examples 
 #' \donttest{get_hull_all_gates()}
 
-get_hull_all_gates<-function(gated_df,concavity_val=1,spar_val=0.7){
+get_hull_all_gates<-function(gated_df,concavity_val=1,spar_val=0.7,smoothing=F,...){
   colnames(gated_df)<-c("x","y","classes")
   all_classes<-unique(gated_df$classes)
   list_df_hull<-list()
@@ -18,8 +19,8 @@ get_hull_all_gates<-function(gated_df,concavity_val=1,spar_val=0.7){
     inds<-which(gated_df$classes==classes)
     df_current_classes<-gated_df[inds,]
     df_current_classes_hull_values<-as.data.frame(concaveman::concaveman(as.matrix(df_current_classes[,c(1,2)]),concavity=concavity_val))
-    if(concavity_val <= 3){
-      df_current_classes_hull_values<-smooth_hull(hull_df=df_current_classes_hull_values,spar=spar_val)
+    if(smoothing == T){
+      df_current_classes_hull_values<-smooth_hull(hull_df=df_current_classes_hull_values,spar=spar_val,...)
     }
     vec_group<-rep(sprintf("%s",classes),nrow(df_current_classes_hull_values))
     df_current_hull<-cbind(df_current_classes_hull_values,vec_group)
@@ -368,19 +369,33 @@ assign_events_to_nearest_centroids<-function(gated_df,n_cores=1,method_dist="euc
 #' function to smooth concave polygons
 #' @param hull_df Dataframe generate by  concaveman functions inside get_huget_hull_all_gates function
 #' @param spar Spar value to regulate smoothing process: higher value (max 1) higher smoothing.
+#' @param buffer_dist Regulate buffer distance before smoothing. Default to 500.
 #' @return Dataframe.
 #' @export
 #' @examples 
 #' \donttest{smooth_hull()} 
 
 
-smooth_hull <- function(hull_df, spar = 0.7) {
+smooth_hull <- function(hull_df, spar = 0.7,buffer_dist = 500){
   colnames(hull_df) <- c("x", "y")
-  # Ensure it's closed loop
   hull_df <- rbind(hull_df, hull_df[1, ])
+
+  # Buffer the polygon before smoothing
+  hull_sf <- sf::st_polygon(list(as.matrix(hull_df))) |>
+             sf::st_sfc(crs = 4326) |>
+             sf::st_buffer(dist = buffer_dist)
+
+  coords <- sf::st_coordinates(hull_sf)[, 1:2]
+  coords <- as.data.frame(coords)
+  colnames(coords) <- c("x", "y")
+
+  coords <- rbind(coords, coords[1, ])  # close loop again
+
+  # Apply smoothing without t
   smoothed <- data.frame(
-    x = smooth.spline(hull_df$x, spar = spar)$y,
-    y = smooth.spline(hull_df$y, spar = spar)$y
+    x = smooth.spline(coords$x, spar = spar)$y,
+    y = smooth.spline(coords$y, spar = spar)$y
   )
+
   return(smoothed)
 }

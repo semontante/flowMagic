@@ -28,7 +28,8 @@ magicPlot(
   add_labels = F,
   map_label_polygon = NULL,
   size_pol_name = 6,
-  show_marginals = F
+  show_marginals = F,
+  ...
 )
 }
 \arguments{

@@ -4,12 +4,14 @@
 \alias{smooth_hull}
 \title{smooth_hull}
 \usage{
-smooth_hull(hull_df, spar = 0.7)
+smooth_hull(hull_df, spar = 0.7, buffer_dist = 500)
 }
 \arguments{
 \item{hull_df}{Dataframe generate by  concaveman functions inside get_huget_hull_all_gates function}
 
 \item{spar}{Spar value to regulate smoothing process: higher value (max 1) higher smoothing.}
+
+\item{buffer_dist}{Regulate buffer distance before smoothing. Default to 500.}
 }
 \value{
 Dataframe.
