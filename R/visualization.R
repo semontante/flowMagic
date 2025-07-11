@@ -342,10 +342,8 @@ magicplot_3D<-function(df,class_col=F,x_lab="x",y_lab="y",z_lab="z",type="ML",si
         ) %>% plotly::layout(layout_settings)
       
     }
-
-  }
   return(plotly_plot)
- 
+
 }
 
 #' magicPlot_template
