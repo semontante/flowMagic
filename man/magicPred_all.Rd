@@ -17,7 +17,8 @@ magicPred_all(
   normalize_data = T,
   include_zero_val = T,
   n_cores_all = 1,
-  verbose = F
+  verbose = F,
+  ...
 )
 }
 \arguments{

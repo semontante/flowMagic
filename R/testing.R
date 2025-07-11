@@ -189,7 +189,7 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,n_cores=1
 
 
 magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_model_info=NULL,n_cores=1,ref_data_train=NULL,
-                    prop_down=NULL,thr_dist=0.05,n_points_per_plot=NULL,normalize_data=T,include_zero_val=T){
+                    prop_down=NULL,thr_dist=0.05,n_points_per_plot=NULL,normalize_data=T,include_zero_val=T,...){
   set.seed(40)
   start<-Sys.time()
   if(ncol(test_data)>2){
@@ -272,19 +272,19 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
       # ------- no template model ---------
       if(length(all_classes)==1){
         final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = include_zero_val,thr_dist = thr_dist,
-                                       type="dist")
+                                       type="dist",...)
         
       }else{
-        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = thr_dist,type="dist")
+        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = thr_dist,type="dist",...)
       }
     }else{
       # ------- Yes template model ---------
       if(length(all_classes)<=4){
       message("Yes template model with less than 4 polygons")
-        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,type = "polygon",normalize_data = normalize_data)
+        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,type = "polygon",normalize_data = normalize_data,...)
       }else{
       message("Yes template model with more than 4 polygons")
-        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = thr_dist,type="dist")
+        final_df<-post_process_gates(gated_df=final_df,n_cores=n_cores,include_zero = F,thr_dist = thr_dist,type="dist",...)
       }
     }
   }
@@ -345,7 +345,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
 
 magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magic_model_n_gates=NULL,
                         ref_data_train=NULL,prop_down=NULL,n_points_per_plot=NULL,
-                        thr_dist=0.05,n_cores=1,normalize_data=T,include_zero_val=T,n_cores_all=1,verbose=F){
+                        thr_dist=0.05,n_cores=1,normalize_data=T,include_zero_val=T,n_cores_all=1,verbose=F,...){
   if (("package:dplyr" %in% search())==F) {
   library(dplyr)
   }                      
@@ -362,13 +362,13 @@ magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magi
                                             ref_model_info=ref_model_info,n_cores=n_cores,
                                             ref_data_train=ref_data_train,prop_down=prop_down,thr_dist=thr_dist,
                                             magic_model_n_gates = magic_model_n_gates,n_points_per_plot=n_points_per_plot,
-                                            normalize_data=normalize_data,include_zero_val=include_zero_val)
+                                            normalize_data=normalize_data,include_zero_val=include_zero_val,...)
     }else{
     out_pred<-tryCatch(suppressMessages(magicPred(test_data = df_test,magic_model=magic_model,
                                                   ref_model_info=ref_model_info,n_cores=n_cores,
                                                   ref_data_train=ref_data_train,prop_down=prop_down,thr_dist=thr_dist,
                                                   magic_model_n_gates = magic_model_n_gates,n_points_per_plot=n_points_per_plot,
-                                                  normalize_data=normalize_data,include_zero_val=include_zero_val)),error=function(e){return(NULL)})
+                                                  normalize_data=normalize_data,include_zero_val=include_zero_val,...)),error=function(e){return(NULL)})
     }
 
     

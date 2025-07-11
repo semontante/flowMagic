@@ -4,12 +4,14 @@
 \alias{get_hull_all_gates}
 \title{get_hull_all_gates}
 \usage{
-get_hull_all_gates(gated_df, concavity_val = 1)
+get_hull_all_gates(gated_df, concavity_val = 1, spar_val = 0.7)
 }
 \arguments{
 \item{gated_df}{dataframe with labels (third column).}
 
 \item{concavity_val}{Values of concavity. Default to 1.}
+
+\item{spar_val}{Values of spar. Default to 0.7.}
 }
 \value{
 List of dataframes.

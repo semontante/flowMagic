@@ -4,12 +4,13 @@
 #' function to get the convex hull of all gates.
 #' @param gated_df dataframe with labels (third column).
 #' @param concavity_val Values of concavity. Default to 1.
+#' @param spar_val Values of spar. Default to 0.7.
 #' @return List of dataframes.
 #' @export
 #' @examples 
 #' \donttest{get_hull_all_gates()}
 
-get_hull_all_gates<-function(gated_df,concavity_val=1){
+get_hull_all_gates<-function(gated_df,concavity_val=1,spar_val=0.7){
   colnames(gated_df)<-c("x","y","classes")
   all_classes<-unique(gated_df$classes)
   list_df_hull<-list()
@@ -18,7 +19,7 @@ get_hull_all_gates<-function(gated_df,concavity_val=1){
     df_current_classes<-gated_df[inds,]
     df_current_classes_hull_values<-as.data.frame(concaveman::concaveman(as.matrix(df_current_classes[,c(1,2)]),concavity=concavity_val))
     if(concavity_val <= 3){
-      df_current_classes_hull_values<-smooth_hull(hull_df=df_current_classes_hull_values,spar=0.7)
+      df_current_classes_hull_values<-smooth_hull(hull_df=df_current_classes_hull_values,spar=spar_val)
     }
     vec_group<-rep(sprintf("%s",classes),nrow(df_current_classes_hull_values))
     df_current_hull<-cbind(df_current_classes_hull_values,vec_group)
@@ -38,7 +39,7 @@ get_hull_all_gates<-function(gated_df,concavity_val=1){
 #' @examples 
 #' \donttest{extract_polygon_gates()}
 
-extract_polygon_gates<-function(gated_df,concavity_val=1){
+extract_polygon_gates<-function(gated_df,concavity_val=1,...){
   row.names(gated_df)<-NULL
   colnames(gated_df)<-c("x","y","classes") 
   gated_df$classes<-as.character(gated_df$classes)
@@ -54,7 +55,7 @@ extract_polygon_gates<-function(gated_df,concavity_val=1){
   message(sprintf("all classes: %s",paste0(all_classes,collapse = ",")))
   ########################## find convex hull for each class ###################
   message(" ############# find convex hull for each class ############")
-  list_df_hull<-get_hull_all_gates(gated_df,concavity_val=concavity_val)
+  list_df_hull<-get_hull_all_gates(gated_df,concavity_val=concavity_val,...)
   # we don't consider the 0 class (no gate) 
   vec<-names(list_df_hull)
   inds<-which(vec=="0")
@@ -166,7 +167,7 @@ compute_gates<-function(gated_df,list_final_polygons_coords,no_classes=F){
 #' \donttest{post_process_gates()}
 
 post_process_gates<-function(gated_df,n_cores=1,thr_dist=0.15,include_zero=F,remove_centroids=T,type="dist",
-                             concavity_val=5,normalize_data=T){
+                             concavity_val=5,normalize_data=T,...){
   colnames(gated_df)<-c("x","y","classes")
   gated_df$classes<-as.character(gated_df$classes)
   if(type=="dist"){
@@ -176,7 +177,7 @@ post_process_gates<-function(gated_df,n_cores=1,thr_dist=0.15,include_zero=F,rem
                                                include_zero = include_zero,remove_centroids = remove_centroids)
   }else if(type=="polygon"){
     message("post-process based on events distance checking polygons intersection")
-    list_df_hull<-extract_polygon_gates(gated_df = gated_df,concavity_val=concavity_val)
+    list_df_hull<-extract_polygon_gates(gated_df = gated_df,concavity_val=concavity_val,...)
     if(normalize_data==T){
       # check polygons intersections
       max_area_intersect<-check_polygons_intersection(list_df_hull = list_df_hull)

@@ -12,7 +12,8 @@ post_process_gates(
   remove_centroids = T,
   type = "dist",
   concavity_val = 5,
-  normalize_data = T
+  normalize_data = T,
+  ...
 )
 }
 \arguments{

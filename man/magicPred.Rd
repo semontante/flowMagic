@@ -15,7 +15,8 @@ magicPred(
   thr_dist = 0.05,
   n_points_per_plot = NULL,
   normalize_data = T,
-  include_zero_val = T
+  include_zero_val = T,
+  ...
 )
 }
 \arguments{

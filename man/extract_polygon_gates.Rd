@@ -4,7 +4,7 @@
 \alias{extract_polygon_gates}
 \title{extract_polygon_gates}
 \usage{
-extract_polygon_gates(gated_df, concavity_val = 1)
+extract_polygon_gates(gated_df, concavity_val = 1, ...)
 }
 \arguments{
 \item{gated_df}{dataframe with labels (third column).}
