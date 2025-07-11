@@ -257,50 +257,62 @@ magic_plot_wrap<-function(list_gated_data,n_col_wrap=3,size_title=10,...){
 #' \donttest{magicplot_3D()}
 
 magicplot_3D<-function(df,class_col=F,x_lab="x",y_lab="y",z_lab="z",type="ML",size_p=1){
-  if(class_col==F){
-    if(ncol(df)!=3){
-      stop("the input df is expected to have 3 columns if class_col==F")
-    }
-    plotly_plot<-plot_ly(x = df[,1], y = df[,2], 
-                         z = df[,3], type = "scatter3d", mode = "markers",
-                         marker = list(size = size_p))
-    
-    plotly_plot<- plotly_plot %>% layout(scene = list(
+  if (!requireNamespace("plotly", quietly = TRUE)) {
+    stop("The 'plotly' package is required for this function. Please install it.")
+  }
+  if (!requireNamespace("magrittr", quietly = TRUE)) {
+    stop("The 'magrittr' package is required for piping (%>%). Please install it.")
+  }
+    # Check input dimensions
+  if (!class_col && ncol(df) != 3) {
+    stop("The input df must have 3 columns if class_col is FALSE")
+  }
+  if (class_col && ncol(df) != 4) {
+    stop("The input df must have 4 columns if class_col is TRUE")
+  }
+  # Common layout
+  layout_settings <- list(
+    scene = list(
       xaxis = list(title = x_lab),
       yaxis = list(title = y_lab),
       zaxis = list(title = z_lab)
-    ))
-  }else if(class_col==T){
-    if(ncol(df)!=4){
-      stop("the input df is expected to have 4 columns if class_col==T")
-    }
-    if(type=="ML"){
-      df[,4]<-as.factor(df[,4])
-      
-      plotly_plot<-plot_ly(x = df[,1], y = df[,2], 
-                           z = df[,3], type = "scatter3d", mode = "markers",marker = list(size = size_p),
-                           color =df[,4],colors = c("blue", "red"))
-      
-      plotly_plot<- plotly_plot %>% layout(scene = list(
-        xaxis = list(title = x_lab),
-        yaxis = list(title = y_lab),
-        zaxis = list(title = z_lab)
-      ))
-      plotly_plot<- plotly_plot %>% layout(showlegend = FALSE)
-      
-    }else if(type=="mesh"){
+    ),
+    showlegend = FALSE
+  )
+  if (!class_col) {
+    plotly_plot <- plotly::plot_ly(
+      x = df[,1], y = df[,2], z = df[,3],
+      type = "scatter3d", mode = "markers",
+      marker = list(size = size_p)
+    ) %>%
+      plotly::layout(layout_settings)
+  }else if(class_col && type == "ML") {
+    df[,4] <- as.factor(df[,4])
+
+    plotly_plot <- plotly::plot_ly(
+      x = df[,1], y = df[,2], z = df[,3],
+      type = "scatter3d", mode = "markers",
+      marker = list(size = size_p),
+      color = df[,4],
+      colors = c("blue", "red")
+    ) %>%
+      plotly::layout(layout_settings)
+  }else if(class_col && type == "mesh"){
+      if (!requireNamespace("geometry", quietly = TRUE)) {
+        stop("The 'geometry' package is required for mesh plotting. Please install it.")
+      }
       df_class<-df[df[,4]==1,]
       
       coords<-cbind(df_class[,1], df_class[,2],
                     df_class[,3])
       
-      hull <- convhulln(coords)
+      hull <- geometry::convhulln(coords)
       
       red_rgb <- rep("rgb(255,0,0)", nrow(coords))
       
-      plotly_plot<-plot_ly() %>%
+      plotly_plot<-plotly::plot_ly() %>%
         # Full data as scatter
-        add_trace(
+        plotly::add_trace(
           type = "scatter3d",
           mode = "markers",
           x = df[,1],
@@ -312,7 +324,7 @@ magicplot_3D<-function(df,class_col=F,x_lab="x",y_lab="y",z_lab="z",type="ML",si
           name = "Parent"
         ) %>%
         # Add convex hull as simulated 3D gate
-        add_trace(
+        plotly::add_trace(
           type = "mesh3d",
           x = coords[, 1],
           y = coords[, 2],
@@ -327,15 +339,7 @@ magicplot_3D<-function(df,class_col=F,x_lab="x",y_lab="y",z_lab="z",type="ML",si
           lighting = list(ambient = 1, diffuse = 0, specular = 0, roughness = 0, fresnel = 0),
           lightposition = list(x = 0, y = 0, z = 100),
           name = "Gated pop"
-        )
-      
-      plotly_plot<- plotly_plot %>% layout(scene = list(
-        xaxis = list(title = x_lab),
-        yaxis = list(title = y_lab),
-        zaxis = list(title = z_lab)
-      ))
-      
-      plotly_plot<- plotly_plot %>% layout(showlegend = FALSE)
+        ) %>% plotly::layout(layout_settings)
       
     }
 
