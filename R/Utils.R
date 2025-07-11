@@ -666,7 +666,7 @@ get_list_df_gated_plots<-function(gs,gate_name){
 
 get_flowframe_from_gs<-function(gs,node_name,sample_id){
   # Get flowFrame
-  ff <- flowCore::gh_pop_get_data(gs[[sample_id]], node_name)
+  ff <- flowWorkspace::gh_pop_get_data(gs[[sample_id]], node_name)
   # ff is a cytoframe object not compatible with flowDensity
   # we need to build a flowFrame from the cytoframe
   # Note: as(ff, "flowFrame") does not work because the cytoframe 
