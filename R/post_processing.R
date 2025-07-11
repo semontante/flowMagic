@@ -18,7 +18,7 @@ get_hull_all_gates<-function(gated_df,concavity_val=1){
     df_current_classes<-gated_df[inds,]
     df_current_classes_hull_values<-as.data.frame(concaveman::concaveman(as.matrix(df_current_classes[,c(1,2)]),concavity=concavity_val))
     if(concavity_val <= 3){
-      df_current_classes_hull_values<-smooth_hull(hull_df=df_current_classes_hull_values,spar=0.7)
+      df_current_classes_hull_values<-smooth_hull(hull_df=df_current_classes_hull_values,spar=0.5)
     }
     vec_group<-rep(sprintf("%s",classes),nrow(df_current_classes_hull_values))
     df_current_hull<-cbind(df_current_classes_hull_values,vec_group)
