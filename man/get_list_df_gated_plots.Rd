@@ -15,7 +15,7 @@ get_list_df_gated_plots(gs, gate_name)
 List.
 }
 \description{
-function to get test data correctly formatted.
+function to get labelled dataframe based on selected node for each sample in gs.
 }
 \examples{
 \donttest{get_list_df_gated_plots()}

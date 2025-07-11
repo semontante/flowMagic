@@ -16,7 +16,7 @@ magicPlot(
   x_lab = "x",
   y_lab = "y",
   gates_to_plot = NULL,
-  apply_manual_scale = T,
+  apply_manual_scale = F,
   hull_only = F,
   size_points = 1,
   concavity_val = 20,
