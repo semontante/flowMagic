@@ -11,8 +11,8 @@
 #' @param size_title_x Size x axis label.
 #' @param size_title_y Size y axis label.
 #' @param aspect_ratio Set aspect ratio. Default to NULL> If = 1, y and x axis ticks have same distance.
-#' @param w_val width value. Default to 7.
-#' @param h_val height value. Default to 7.
+#' @param w_val width value. Default to 16.
+#' @param h_val height value. Default to 10.
 #' @param size_axis_text Size of ticks labels.
 #' @param export_csv Export plot data as csv files. Default to False.
 #' @param side_by_side Arrange dens plot and ML plot side-by-side. Default to False.
@@ -24,7 +24,7 @@
 
 
 exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",show_legend=T,x_lab="x",
-                        y_lab="y",size_title_x=23,size_title_y=23,aspect_ratio=NULL,w_val=7,h_val=7,
+                        y_lab="y",size_title_x=23,size_title_y=23,aspect_ratio=NULL,w_val=16,h_val=10,
                         size_axis_text=25,export_csv=F,side_by_side=F,...){
   start<-Sys.time()
   all_names<-names(list_gated_data)
@@ -87,6 +87,8 @@ exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",s
                                             plot_dens<-magicPlot(df_p, type = "dens",...)
                                             plot_ml<-magicPlot(df_p, type = "ML",...)
                                             plot_name<-plot_dens + plot_ml
+                                            w_val<-30
+                                            h_val<-20
                                         }
                                         print("---- export plot")
                                         path_output_file <- paste0(path_output, sprintf("/%s.png", 

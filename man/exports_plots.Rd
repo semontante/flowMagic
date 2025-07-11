@@ -15,11 +15,12 @@ exports_plots(
   size_title_x = 23,
   size_title_y = 23,
   aspect_ratio = NULL,
-  w_val = 7,
-  h_val = 7,
+  w_val = 16,
+  h_val = 10,
   size_axis_text = 25,
   export_csv = F,
-  side_by_side = F...
+  side_by_side = F,
+  ...
 )
 }
 \arguments{
@@ -43,9 +44,9 @@ exports_plots(
 
 \item{aspect_ratio}{Set aspect ratio. Default to NULL> If = 1, y and x axis ticks have same distance.}
 
-\item{w_val}{width value. Default to 7.}
+\item{w_val}{width value. Default to 16.}
 
-\item{h_val}{height value. Default to 7.}
+\item{h_val}{height value. Default to 10.}
 
 \item{size_axis_text}{Size of ticks labels.}
 
