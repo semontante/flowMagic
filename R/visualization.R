@@ -117,34 +117,25 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
                                               aes(x = x, y = y, group = group_gate), fill = NA, 
                                               color = "black", linewidth = 1)
     magicggplot <- magicggplot + xlab(x_lab) + ylab(y_lab)
-  }
-  else if (type == "ML") {
+  }else if (type == "ML") {
     if(apply_manual_scale==T){
       # check if there are real text labels (like full strings,not just numbers-like strings)
       df<-convert_to_integers_chr(df=df)
-    }
-    df$classes <- as.factor(df$classes)
-    magicggplot <- ggplot(data = df, aes(x = x, y = y)) + 
-      geom_point(aes(color = classes), size = size_points, 
-                 shape = 16)
-    magicggplot <- magicggplot + theme(axis.text = element_text(size = size_axis_text), 
-                                       axis.title.x = element_text(size = size_title_x, 
-                                                                   face = "bold"), axis.title.y = element_text(size = size_title_y, 
-                                                                                                               face = "bold"))
-    magicggplot <- magicggplot + theme(panel.grid.major = element_blank(), 
-                                       panel.grid.minor = element_blank(), panel.background = element_blank(), 
-                                       axis.line = element_line(colour = "black"))
-    if (apply_manual_scale == T){
+      df$classes <- as.factor(df$classes)
+      magicggplot <- ggplot(data = df, aes(x = x, y = y)) + 
+        geom_point(aes(color = classes), size = size_points, 
+                   shape = 16)
       magicggplot <- magicggplot + scale_color_manual(values = c(`0` = "black", 
                                                                  `1` = "red", `2` = "blue", `3` = "green", `4` = "yellow", 
                                                                  `5` = "purple", `6` = "orange", `7` = "pink", 
                                                                  `8` = "brown", `9` = "gray"))
     }else{
+      df$classes <- as.factor(df$classes)
       all_levels <- levels(df$classes)
       # Rename "0" to "background" in a copy of the factor for plotting
       df$classes_legend <- df$classes
       levels(df$classes_legend)[levels(df$classes_legend) == "0"] <- "background"
-
+      
       # Now assign colors, Separating "0|background" from other classes still keyed to the original factor levels, but color vector keys to new labels
       other_levels <- setdiff(levels(df$classes_legend), "background")
       n_other <- length(other_levels)
@@ -162,11 +153,22 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
         stop("Set2 supports only up to 8 colors for classes other than '0'")
         
       }
-
+      
       # Assign black for "0|background"
       colors_all <- c("background" = "black", colors_other)
+      magicggplot <- ggplot(data = df, aes(x = x, y = y)) + 
+        geom_point(aes(color = classes_legend), size = size_points, 
+                   shape = 16)
       magicggplot <- magicggplot + scale_color_manual(values = colors_all)
     }
+    
+    magicggplot <- magicggplot + theme(axis.text = element_text(size = size_axis_text), 
+                                       axis.title.x = element_text(size = size_title_x, 
+                                                                   face = "bold"), axis.title.y = element_text(size = size_title_y, 
+                                                                                                               face = "bold"))
+    magicggplot <- magicggplot + theme(panel.grid.major = element_blank(), 
+                                       panel.grid.minor = element_blank(), panel.background = element_blank(), 
+                                       axis.line = element_line(colour = "black"))
     magicggplot <- magicggplot + theme(legend.key.size = unit(1, 
                                                               "cm"), legend.title = element_text(size = 20), legend.text = element_text(size = 20))
     magicggplot <- magicggplot + guides(color = guide_legend(override.aes = list(size = 10))) + 
@@ -187,7 +189,7 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
   if (!is.null(y_lim1) && !is.null(y_lim2)) {
     magicggplot <- magicggplot + ylim(y_lim1, y_lim2)
   }
-  if(add_labels==T){
+  if(add_labels==T & type=="dens"){
     if(is.null(map_label_polygon)==F){
       df_hull$group_gate<-map_label_polygon[df_hull$group_gate]
     }
