@@ -480,24 +480,21 @@ get_indices_cross_val<-function(df_train,n_cores=1,train_inds="plot_num",val_ind
     list_inds_train<-list()
     list_inds_val_one_out<-list()
     all_plot_num<-unique(df_train$plot_num)
-    n_folds<-length(all_plot_num)
-    for(f in 1:n_folds){
-      rand_ints<-sample.int(n = length(all_plot_num),size = length(all_plot_num)-1)
-      all_plot_num_selected<-all_plot_num[rand_ints]
-
-      list_inds_train_temp<-parallel::mclapply(1:length(all_plot_num_selected),function(i){
-        current_plot_num<-all_plot_num_selected[i]
-        inds<-which(df_train$plot_num==current_plot_num)
-        return(inds)
-      },mc.cores = n_cores)
-      inds_all_plot_num_selected<-unlist(list_inds_train_temp)
-      list_inds_train[[sprintf("fold_%s",f)]]<-inds_all_plot_num_selected
-      plot_num_out<-all_plot_num[-rand_ints]
-      inds_val_out<-which(df_train$plot_num==plot_num_out)
-      list_inds_val_one_out[[sprintf("fold_%s",f)]]<-inds_val_out
+    for (f in seq_along(all_plot_num)){
+      # Identify the one group to leave out
+      plot_num_out <- all_plot_num[f]
       
+      # Validation indices: those with the left-out group
+      inds_val_out <- which(df_train$plot_num == plot_num_out)
+      
+      # Training indices: all others
+      inds_train <- which(df_train$plot_num != plot_num_out)
+      
+      # Store in list format that caret expects
+      fold_name <- sprintf("fold_%s", f)
+      list_inds_train[[fold_name]] <- inds_train
+      list_inds_val_one_out[[fold_name]] <- inds_val_out
     }
-  }
   
   #------- get validation indices
   print("----- get validation indices")
