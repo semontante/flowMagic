@@ -29,7 +29,9 @@ Imports:
 	sm,
 	pracma,
 	patchwork,
-	ggExtra
+	ggExtra,
+	RColorBrewer,
+	dplyr
 Suggests:
 	flowCore,
 	flowWorkspace,
@@ -38,5 +40,6 @@ Suggests:
 	visNetwork,
 	klaR(<= 0.6-12),
 	remotes,
-	CytoML
+	CytoML,
+	plotly
 	

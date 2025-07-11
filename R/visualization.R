@@ -119,8 +119,10 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     magicggplot <- magicggplot + xlab(x_lab) + ylab(y_lab)
   }
   else if (type == "ML") {
-  # check if there are real text labels (like full strings,not just numbers-like strings)
-    df<-convert_to_integers_chr(df=df)
+    if(apply_manual_scale==T){
+      # check if there are real text labels (like full strings,not just numbers-like strings)
+      df<-convert_to_integers_chr(df=df)
+    }
     df$classes <- as.factor(df$classes)
     magicggplot <- ggplot(data = df, aes(x = x, y = y)) + 
       geom_point(aes(color = classes), size = size_points, 
@@ -132,11 +134,26 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     magicggplot <- magicggplot + theme(panel.grid.major = element_blank(), 
                                        panel.grid.minor = element_blank(), panel.background = element_blank(), 
                                        axis.line = element_line(colour = "black"))
-    if (apply_manual_scale == T) {
+    if (apply_manual_scale == T){
       magicggplot <- magicggplot + scale_color_manual(values = c(`0` = "black", 
                                                                  `1` = "red", `2` = "blue", `3` = "green", `4` = "yellow", 
                                                                  `5` = "purple", `6` = "orange", `7` = "pink", 
                                                                  `8` = "brown", `9` = "gray"))
+    }else{
+      all_levels <- levels(df$classes)
+
+      # Separate "0" from other classes
+      other_levels <- setdiff(all_levels, "0")
+      n_other <- length(other_levels)
+      if (n_other > 8) stop("Set2 supports only up to 8 colors for classes other than '0'")
+
+      # Assign colors
+      colors_other <- RColorBrewer::brewer.pal(n_other, "Set2")
+      names(colors_other) <- other_levels
+
+      # Assign black for "0"
+      colors_all <- c("0" = "black", colors_other)
+      magicggplot <- magicggplot + scale_color_manual(values = colors_all)
     }
     magicggplot <- magicggplot + theme(legend.key.size = unit(1, 
                                                               "cm"), legend.title = element_text(size = 20), legend.text = element_text(size = 20))
