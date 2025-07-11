@@ -80,7 +80,7 @@ magicTrain_hierarchy<-function(list_train_sets,n_tree=10,train_model="rf",method
 #' @param tune_lenght Number of parameters values trained during cross-validation.
 #' @param size_nnet_units Number of units in hidden layer (if train_model=nnet).
 #' @param decay_nnet Decay parameter value for nnet model.
-#' @param method_control Type of training control: oob or cv. Default to oob. 
+#' @param method_control Type of training control: oob or cv or auto. Default to auto.
 #' @param type_y Type of response variable: classes (train to predict gates boundaries) or n_gates_info(train to predict number of gates).
 #' @param seed_n Set seed. Default to 40.
 #' @return model object.
@@ -91,7 +91,7 @@ magicTrain_hierarchy<-function(list_train_sets,n_tree=10,train_model="rf",method
 
 magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
                                      list_index_train=NULL,list_index_val=NULL,n_tree=10,tune_lenght=3,size_nnet_units=100,
-                                     decay_nnet=0.1,method_control="oob",type_y="classes",seed_n=40){
+                                     decay_nnet=0.1,method_control="auto",type_y="classes",seed_n=40){
   start<-Sys.time()
   # Get Xtrain, Ytrain and f_info
   print("prepare data")
@@ -102,6 +102,17 @@ magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
   Ytrain<-as.character(df_info[,type_y]) # or n_gates_info
   # train model
   print("training...")
+  n_train_plots<-length(unique(df_train$plot_num))
+  if(n_train_plots>1 && method_control=="auto"){
+    message("More than one training plot, method_control switch to leave_one_out cross validation")
+    out_indices<-flowMagic::get_indices_cross_val(df_train = df_train,train_inds = "leave_one_out",val_inds = "leave_one_out")
+    list_index_train <- out_indices$inds_train
+    list_index_val <- out_indices$inds_val
+  }else if(n_train_plots==1 && method_control=="auto"){
+    message("method_control switch to oob")
+    method_control<-"oob"
+  }
+
   if(method_control != "oob"){
     cl <- parallel::makePSOCKcluster(n_cores)
     doParallel::registerDoParallel(cl)

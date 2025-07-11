@@ -15,7 +15,7 @@ magicTrain(
   tune_lenght = 3,
   size_nnet_units = 100,
   decay_nnet = 0.1,
-  method_control = "oob",
+  method_control = "auto",
   type_y = "classes",
   seed_n = 40
 )
@@ -41,7 +41,7 @@ magicTrain(
 
 \item{decay_nnet}{Decay parameter value for nnet model.}
 
-\item{method_control}{Type of training control: oob or cv. Default to oob.}
+\item{method_control}{Type of training control: oob or cv or auto. Default to auto.}
 
 \item{type_y}{Type of response variable: classes (train to predict gates boundaries) or n_gates_info(train to predict number of gates).}
 
