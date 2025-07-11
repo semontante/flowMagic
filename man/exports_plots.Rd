@@ -19,7 +19,7 @@ exports_plots(
   h_val = 7,
   size_axis_text = 25,
   export_csv = F,
-  ...
+  side_by_side = F...
 )
 }
 \arguments{
@@ -50,6 +50,8 @@ exports_plots(
 \item{size_axis_text}{Size of ticks labels.}
 
 \item{export_csv}{Export plot data as csv files. Default to False.}
+
+\item{side_by_side}{Arrange dens plot and ML plot side-by-side. Default to False.}
 }
 \description{
 function to generate plots (no hierarchy) from list of labelled dataframes.

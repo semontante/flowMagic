@@ -4,13 +4,7 @@
 \alias{get_hull_all_gates}
 \title{get_hull_all_gates}
 \usage{
-get_hull_all_gates(
-  gated_df,
-  concavity_val = 1,
-  spar_val = 0.7,
-  smoothing = F,
-  ...
-)
+get_hull_all_gates(gated_df, concavity_val = 1, spar_val = 0.7, smoothing = F)
 }
 \arguments{
 \item{gated_df}{dataframe with labels (third column).}
