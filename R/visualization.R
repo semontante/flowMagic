@@ -263,32 +263,30 @@ magicplot_3D<-function(df,class_col=F,x_lab="x",y_lab="y",z_lab="z",type="ML",si
   if (!requireNamespace("magrittr", quietly = TRUE)) {
     stop("The 'magrittr' package is required for piping (%>%). Please install it.")
   }
-    # Check input dimensions
+
   if (!class_col && ncol(df) != 3) {
     stop("The input df must have 3 columns if class_col is FALSE")
   }
   if (class_col && ncol(df) != 4) {
     stop("The input df must have 4 columns if class_col is TRUE")
   }
-  # Common layout
-  layout_settings <- list(
-    scene = list(
-      xaxis = list(title = x_lab),
-      yaxis = list(title = y_lab),
-      zaxis = list(title = z_lab)
-    ),
-    showlegend = FALSE
-  )
+
   if (!class_col) {
     plotly_plot <- plotly::plot_ly(
       x = df[,1], y = df[,2], z = df[,3],
       type = "scatter3d", mode = "markers",
       marker = list(size = size_p)
     ) %>%
-      plotly::layout(layout_settings)
-  }else if(class_col && type == "ML") {
+      plotly::layout(
+        scene = list(
+          xaxis = list(title = x_lab),
+          yaxis = list(title = y_lab),
+          zaxis = list(title = z_lab)
+        ),
+        showlegend = FALSE
+      )
+  } else if (class_col && type == "ML") {
     df[,4] <- as.factor(df[,4])
-
     plotly_plot <- plotly::plot_ly(
       x = df[,1], y = df[,2], z = df[,3],
       type = "scatter3d", mode = "markers",
@@ -296,54 +294,57 @@ magicplot_3D<-function(df,class_col=F,x_lab="x",y_lab="y",z_lab="z",type="ML",si
       color = df[,4],
       colors = c("blue", "red")
     ) %>%
-      plotly::layout(layout_settings)
-  }else if(class_col && type == "mesh"){
-      if (!requireNamespace("geometry", quietly = TRUE)) {
-        stop("The 'geometry' package is required for mesh plotting. Please install it.")
-      }
-      df_class<-df[df[,4]==1,]
-      
-      coords<-cbind(df_class[,1], df_class[,2],
-                    df_class[,3])
-      
-      hull <- geometry::convhulln(coords)
-      
-      red_rgb <- rep("rgb(255,0,0)", nrow(coords))
-      
-      plotly_plot<-plotly::plot_ly() %>%
-        # Full data as scatter
-        plotly::add_trace(
-          type = "scatter3d",
-          mode = "markers",
-          x = df[,1],
-          y = df[,2],
-          z = df[,3],
-          color = df[,4],
-          marker = list(size = size_p),
-          colors = c("blue", "black"),
-          name = "Parent"
-        ) %>%
-        # Add convex hull as simulated 3D gate
-        plotly::add_trace(
-          type = "mesh3d",
-          x = coords[, 1],
-          y = coords[, 2],
-          z = coords[, 3],
-          i = hull[, 1] - 1,
-          j = hull[, 2] - 1,
-          k = hull[, 3] - 1,
-          vertexcolor = red_rgb,
-          opacity = 0.3,
-          color = I("red"),
-          flatshading = TRUE,
-          lighting = list(ambient = 1, diffuse = 0, specular = 0, roughness = 0, fresnel = 0),
-          lightposition = list(x = 0, y = 0, z = 100),
-          name = "Gated pop"
-        ) %>% plotly::layout(layout_settings)
-      
+      plotly::layout(
+        scene = list(
+          xaxis = list(title = x_lab),
+          yaxis = list(title = y_lab),
+          zaxis = list(title = z_lab)
+        ),
+        showlegend = FALSE
+      )
+  } else if (class_col && type == "mesh") {
+    if (!requireNamespace("geometry", quietly = TRUE)) {
+      stop("The 'geometry' package is required for mesh plotting. Please install it.")
     }
-  return(plotly_plot)
 
+    df_class <- df[df[,4] == 1, ]
+    coords <- cbind(df_class[,1], df_class[,2], df_class[,3])
+    hull <- geometry::convhulln(coords)
+    red_rgb <- rep("rgb(255,0,0)", nrow(coords))
+
+    plotly_plot <- plotly::plot_ly() %>%
+      plotly::add_trace(
+        type = "scatter3d",
+        mode = "markers",
+        x = df[,1], y = df[,2], z = df[,3],
+        color = df[,4],
+        marker = list(size = size_p),
+        colors = c("blue", "black"),
+        name = "Parent"
+      ) %>%
+      plotly::add_trace(
+        type = "mesh3d",
+        x = coords[,1], y = coords[,2], z = coords[,3],
+        i = hull[,1] - 1, j = hull[,2] - 1, k = hull[,3] - 1,
+        vertexcolor = red_rgb,
+        opacity = 0.3,
+        color = I("red"),
+        flatshading = TRUE,
+        lighting = list(ambient = 1, diffuse = 0, specular = 0, roughness = 0, fresnel = 0),
+        lightposition = list(x = 0, y = 0, z = 100),
+        name = "Gated pop"
+      ) %>%
+      plotly::layout(
+        scene = list(
+          xaxis = list(title = x_lab),
+          yaxis = list(title = y_lab),
+          zaxis = list(title = z_lab)
+        ),
+        showlegend = FALSE
+      )
+  }
+
+  return(plotly_plot)
 }
 
 #' magicPlot_template
