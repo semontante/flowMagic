@@ -32,7 +32,7 @@
 magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend = T, 
           size_axis_text = 18, size_title_x = 20, size_title_y = 20, 
           treat_0_as_gate = F, x_lab = "x", y_lab = "y", gates_to_plot = NULL, 
-          apply_manual_scale = T, hull_only = F, size_points = 1, concavity_val = 20, 
+          apply_manual_scale = F, hull_only = F, size_points = 1, concavity_val = 20, 
           aspect_ratio = NULL, x_lim1 = NULL, x_lim2 = NULL, y_lim1 = NULL, 
           y_lim2 = NULL,add_labels=F,map_label_polygon=NULL,size_pol_name=6,show_marginals=F){
 
@@ -141,18 +141,20 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
                                                                  `8` = "brown", `9` = "gray"))
     }else{
       all_levels <- levels(df$classes)
+      # Rename "0" to "background" in a copy of the factor for plotting
+      df$classes_legend <- df$classes
+      levels(df$classes_legend)[levels(df$classes_legend) == "0"] <- "background"
 
-      # Separate "0" from other classes
-      other_levels <- setdiff(all_levels, "0")
+      # Now assign colors, Separating "0|background" from other classes still keyed to the original factor levels, but color vector keys to new labels
+      other_levels <- setdiff(levels(df$classes_legend), "background")
       n_other <- length(other_levels)
       if (n_other > 8) stop("Set2 supports only up to 8 colors for classes other than '0'")
-
       # Assign colors
       colors_other <- RColorBrewer::brewer.pal(n_other, "Set2")
       names(colors_other) <- other_levels
 
-      # Assign black for "0"
-      colors_all <- c("0" = "black", colors_other)
+      # Assign black for "0|background"
+      colors_all <- c("background" = "black", colors_other)
       magicggplot <- magicggplot + scale_color_manual(values = colors_all)
     }
     magicggplot <- magicggplot + theme(legend.key.size = unit(1, 
@@ -216,7 +218,7 @@ magic_plot_wrap<-function(list_gated_data,n_col_wrap=3,size_title=10,...){
   all_names<-names(list_gated_data)
   plot_list <- lapply(seq_along(list_gated_data),function(i){
     df <- list_gated_data[[i]]
-    p <- magicPlot(df, type = "dens",...) + ggtitle(all_names[i]) + theme(plot.title = element_text(size = size_title))
+    p <- magicPlot(df,...) + ggtitle(all_names[i]) + theme(plot.title = element_text(size = size_title))
     return(p)
   })
   
