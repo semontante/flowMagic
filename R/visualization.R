@@ -69,6 +69,7 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     return(p)
   }
   colnames(df) <- c("x", "y", "classes")
+  # performing some modifications on the classes column based on user choice
   df$classes <- as.character(df$classes)
   if (treat_0_as_gate == T) {
     df$classes <- as.numeric(df$classes)
@@ -80,8 +81,9 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     check_classes <- df$classes %in% gates_to_plot
     inds <- which(check_classes == T)
     df$classes[-inds] <- "0"
-  }
-  if (type == "dens") {
+    }
+  # Plotting with either "dens" or "ML" type plot
+  if(type == "dens"){
     colPalette <- colorRampPalette(c("blue", "turquoise", 
                                      "green", "yellow", "orange", "red"))
     col <- densCols(df[, c(1, 2)], colramp = colPalette, 
@@ -117,6 +119,8 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     magicggplot <- magicggplot + xlab(x_lab) + ylab(y_lab)
   }
   else if (type == "ML") {
+  # check if there are real text labels (like full strings,not just numbers-like strings)
+    df<-convert_to_integers_chr(df=df)
     df$classes <- as.factor(df$classes)
     magicggplot <- ggplot(data = df, aes(x = x, y = y)) + 
       geom_point(aes(color = classes), size = size_points, 

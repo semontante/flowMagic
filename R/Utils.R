@@ -804,3 +804,36 @@ flowmagic_pred_to_gs<-function(list_poly_gates,gs,parent_node){
   recompute(gs)
   return(gs)
 }
+
+#' convert_to_integers_chr
+#'
+#' function to text classes to integers-like classes if necessary.
+#' @param df Dataframe with classes (third column) to check and eventually modify
+#' @return Dataframe
+#' @export
+#' @examples 
+#' \donttest{convert_to_integers_chr()}
+
+convert_to_integers_chr<-function(df){
+  classes<-df[,3]
+  has_real_text_labels <- any(!grepl("^[0-9]$", classes))
+  if(has_real_text_labels){
+    message("converting to integers-like characters")
+    classes_vec<-df$classes
+    # Create a logical index for non-zero (i.e., character) labels
+    is_label <- classes_vec != "0"
+
+    # Get unique labels (excluding "0")
+    unique_labels <- unique(classes_vec[is_label])
+
+    # Create a named mapping: text label -> integer (starting from 1)
+    label_map <- setNames(seq_along(unique_labels), unique_labels)
+
+    classes_vec[is_label] <- label_map[classes_vec[is_label]]
+
+    df$classes<-classes_vec
+    }
+  return(df)
+}
+
+
