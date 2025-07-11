@@ -495,7 +495,7 @@ get_indices_cross_val<-function(df_train,n_cores=1,train_inds="plot_num",val_ind
       list_inds_train[[fold_name]] <- inds_train
       list_inds_val_one_out[[fold_name]] <- inds_val_out
     }
-  
+  }
   #------- get validation indices
   print("----- get validation indices")
   if(val_inds=="plot_num"){
