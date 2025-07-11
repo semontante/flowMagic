@@ -17,6 +17,9 @@ get_hull_all_gates<-function(gated_df,concavity_val=1){
     inds<-which(gated_df$classes==classes)
     df_current_classes<-gated_df[inds,]
     df_current_classes_hull_values<-as.data.frame(concaveman::concaveman(as.matrix(df_current_classes[,c(1,2)]),concavity=concavity_val))
+    if(concavity_val <= 3){
+      df_current_classes_hull_values<-smooth_hull(hull_df,spar=0.7)
+    }
     vec_group<-rep(sprintf("%s",classes),nrow(df_current_classes_hull_values))
     df_current_hull<-cbind(df_current_classes_hull_values,vec_group)
     colnames(df_current_hull)<-c("x","y","group_gate")
@@ -359,3 +362,24 @@ assign_events_to_nearest_centroids<-function(gated_df,n_cores=1,method_dist="euc
 }
 
 
+#' smooth_hull
+#' 
+#' function to smooth concave polygons
+#' @param hull_df Dataframe generate by  concaveman functions inside get_huget_hull_all_gates function
+#' @param spar Spar value to regulate smoothing process: higher value (max 1) higher smoothing.
+#' @return Dataframe.
+#' @export
+#' @examples 
+#' \donttest{smooth_hull()} 
+
+
+smooth_hull <- function(hull_df, spar = 0.7) {
+  colnames(hull_df) <- c("x", "y")
+  # Ensure it's closed loop
+  hull_df <- rbind(hull_df, hull_df[1, ])
+  smoothed <- data.frame(
+    x = smooth.spline(hull_df$x, spar = spar)$y,
+    y = smooth.spline(hull_df$y, spar = spar)$y
+  )
+  return(smoothed)
+}
