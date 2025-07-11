@@ -34,7 +34,7 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
           treat_0_as_gate = F, x_lab = "x", y_lab = "y", gates_to_plot = NULL, 
           apply_manual_scale = F, hull_only = F, size_points = 1, concavity_val = 20, 
           aspect_ratio = NULL, x_lim1 = NULL, x_lim2 = NULL, y_lim1 = NULL, 
-          y_lim2 = NULL,add_labels=F,map_label_polygon=NULL,size_pol_name=6,show_marginals=F){
+          y_lim2 = NULL,add_labels=F,map_label_polygon=NULL,size_pol_name=6,show_marginals=F,...){
 
   if (type == "no_gate" || ncol(df) == 2) {
     colPalette <- colorRampPalette(c("blue", "turquoise", "green", "yellow", "orange", "red"))
