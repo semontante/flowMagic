@@ -25,7 +25,7 @@
 
 exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",show_legend=T,x_lab="x",
                         y_lab="y",size_title_x=23,size_title_y=23,aspect_ratio=NULL,w_val=7,h_val=7,
-                        size_axis_text=25,export_csv=F,side_by_side=F...){
+                        size_axis_text=25,export_csv=F,side_by_side=F,...){
   start<-Sys.time()
   all_names<-names(list_gated_data)
  if(export_csv==T){
