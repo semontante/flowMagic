@@ -379,10 +379,10 @@ assign_events_to_nearest_centroids<-function(gated_df,n_cores=1,method_dist="euc
 smooth_hull <- function(hull_df, spar = 0.7,buffer_dist = 500){
   colnames(hull_df) <- c("x", "y")
   hull_df <- rbind(hull_df, hull_df[1, ])
-
+  coords <- coords[!duplicated(coords), ]  # remove exact duplicate rows
   # Buffer the polygon before smoothing
   hull_sf <- sf::st_polygon(list(as.matrix(hull_df))) |>
-             sf::st_sfc(crs = 4326) |>
+             sf::st_sfc(crs = NA) |>
              sf::st_buffer(dist = buffer_dist)
 
   coords <- sf::st_coordinates(hull_sf)[, 1:2]
