@@ -145,7 +145,7 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
         colors_other_all <- RColorBrewer::brewer.pal(n_min_colors, "Set2")
         colors_other <- colors_other_all[1:n_other]
         names(colors_other) <- other_levels
-      }else if(n_other > 3 & n_other <=8){
+      }else if(n_other >= 3 & n_other <=8){
         # Assign colors
         colors_other <- RColorBrewer::brewer.pal(n_other, "Set2")
         names(colors_other) <- other_levels
