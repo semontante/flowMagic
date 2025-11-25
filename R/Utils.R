@@ -794,7 +794,7 @@ flowmagic_pred_to_gs<-function(list_poly_gates,gs,parent_node){
     current_poly<-list_poly_gates[[i]]
     print(current_poly)
     suppressWarnings({
-      flowWorkspace::add(gs[[current_sample]], current_poly, parent = parent_node, name = current_poly@filterId)
+      flowWorkspace::gs_pop_add(gs[[current_sample]], current_poly, parent = parent_node, name = current_poly@filterId)
     })
     
   }
