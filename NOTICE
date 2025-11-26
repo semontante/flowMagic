@@ -1,6 +1,17 @@
 Copyright 2024 Sebastiano Montante
 
-This software package, flowMagic, is licensed under the Apache License, Version 2.0 (the "License");
+This product includes the software package "flowMagic"
+which was developed entirely by Sebastiano Montante.
+
+Attribution Requirement:
+Redistributions of this software, in source or binary form,
+must retain this NOTICE file, including the attribution above.
+Any documentation, "About" page, or software credits associated
+with a redistributed version must include the following attribution:
+
+"flowMagic was developed by Sebastiano Montante."
+
+Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 

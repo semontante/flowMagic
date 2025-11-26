@@ -382,4 +382,30 @@ magicPlot_template<-function(df,size_points=1){
   
 }
 
+#' magicPlot_fs
+#'
+#' function to plot FCM data directly from objects of class flowSet or flowFrame. The data is shown in a density scatter plot.
+#' @param fs object of class flowSet or flowFrame.
+#' @param sample_id Name of the sample data to plot. No effect if fs is an object of class flowFrame.
+#' @param channel_x Name of the channel to plot (x-axis).
+#' @param channel_y Name of the channel to plot (y-axis).
+#' @return Object of class ggplot
+#' @export
+#' @examples 
+#' \donttest{magicPlot_fs()}
+
+magicPlot_fs<-function(fs,sample_id,channel_x,channel_y,...){
+  if(class(fs)=="flowFrame"){
+    ff<-fs
+  }else if(class(fs)=="flowSet"){
+    ff<-fs[[sample_id]]
+  }else{
+    stop("Error input: fs needs to be an object of either flowSet or flowFrame class")
+  }
+  expr_matrix_ff <- exprs(ff) # get expression matrix of selected flowFrame
+  df_exprs<-as.data.frame(expr_matrix_ff) # convert to dataframes.
+  df_exprs_selected_channels<-df_exprs[,c(channel_x,channel_y)]
+  out<-flowMagic::magicPlot(df = df_exprs_selected_channels,...)
+  return(out)
+}
 
