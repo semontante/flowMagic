@@ -13,8 +13,8 @@ magicPlot(
   size_title_x = 20,
   size_title_y = 20,
   treat_0_as_gate = F,
-  x_lab = "x",
-  y_lab = "y",
+  x_lab = NULL,
+  y_lab = NULL,
   gates_to_plot = NULL,
   apply_manual_scale = F,
   hull_only = F,
@@ -49,9 +49,9 @@ magicPlot(
 
 \item{treat_0_as_gate}{Treat 0 label as gate. Defaul to False (0 label is background)}
 
-\item{x_lab}{Label of x axis.}
+\item{x_lab}{Label of x axis. Default to NULL.}
 
-\item{y_lab}{Label off y axis.}
+\item{y_lab}{Label of y axis. Default to NULL.}
 
 \item{gates_to_plot}{Select labels to plot.}
 
@@ -88,3 +88,4 @@ function to generate the scatter plot with colored density of the events.
 \examples{
 \donttest{magicPlot()}
 }
+\keyword{flowMagic}
