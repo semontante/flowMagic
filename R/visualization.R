@@ -9,8 +9,8 @@
 #' @param size_title_x Size of x axis label title.
 #' @param size_title_y Size of y axis label title.
 #' @param treat_0_as_gate Treat 0 label as gate. Defaul to False (0 label is background)
-#' @param x_lab Label of x axis.
-#' @param y_lab Label off y axis.
+#' @param x_lab Label of x axis. Default to NULL.
+#' @param y_lab Label of y axis. Default to NULL.
 #' @param gates_to_plot Select labels to plot.
 #' @param apply_manual_scale Apply predifined scale of colors. Default to True.
 #' @param size_points Size of points in scatter plot.
@@ -25,13 +25,14 @@
 #' @param size_pol_name size polygon labels. Default to 6.
 #' @param show_marginals show 1D density next to axis. Default to False.
 #' @return ggplot.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicPlot()}
 
 magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend = T, 
           size_axis_text = 18, size_title_x = 20, size_title_y = 20, 
-          treat_0_as_gate = F, x_lab = "x", y_lab = "y", gates_to_plot = NULL, 
+          treat_0_as_gate = F, x_lab = NULL, y_lab = NULL, gates_to_plot = NULL, 
           apply_manual_scale = F, hull_only = F, size_points = 1, concavity_val = 20, 
           aspect_ratio = NULL, x_lim1 = NULL, x_lim2 = NULL, y_lim1 = NULL, 
           y_lim2 = NULL,add_labels=F,map_label_polygon=NULL,size_pol_name=6,show_marginals=F,...){
@@ -42,8 +43,16 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     
     df_plot <- data.frame(x = df[[1]], y = df[[2]], col = col)
     
-    p <- ggplot(df_plot, aes(x = x, y = y)) + geom_point(color = df_plot$col, size = size_points, shape = 16) 
-    p <- p + xlab(x_lab) + ylab(y_lab)
+    p <- ggplot(df_plot, aes(x = x, y = y)) + geom_point(color = df_plot$col, size = size_points, shape = 16)
+
+    if(is.null(x_lab)==NULL && is.null(y_lab)==NULL){
+      col_names_df<-colnames(df)
+      p <- p + xlab(col_names_df[1]) + ylab(col_names_df[2])
+    }else if(is.null(x_lab)!=NULL || is.null(y_lab)!=NULL){
+      p <- p + xlab(x_lab) + ylab(y_lab)
+    }
+
+   
     p <- p + theme(legend.position = "none")
     p <- p + theme(axis.text = element_text(size = size_axis_text), 
                                        axis.title.x = element_text(size = size_title_x, 
@@ -116,7 +125,6 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     magicggplot <- magicggplot + geom_polygon(data = df_hull, 
                                               aes(x = x, y = y, group = group_gate), fill = NA, 
                                               color = "black", linewidth = 1)
-    magicggplot <- magicggplot + xlab(x_lab) + ylab(y_lab)
   }else if (type == "ML") {
     if(apply_manual_scale==T){
       # check if there are real text labels (like full strings,not just numbers-like strings)
@@ -176,7 +184,12 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     if (show_legend == F) {
       magicggplot <- magicggplot + theme(legend.position = "none")
     }
-    magicggplot <- magicggplot + xlab(x_lab) + ylab(y_lab)
+  }
+  if(is.null(x_lab)==NULL && is.null(y_lab)==NULL){
+    col_names_df<-colnames(df)
+    p <- p + xlab(col_names_df[1]) + ylab(col_names_df[2])
+  }else if(is.null(x_lab)!=NULL || is.null(y_lab)!=NULL){
+    p <- p + xlab(x_lab) + ylab(y_lab)
   }
   if (is.null(aspect_ratio) == F) {
     magicggplot <- magicggplot + coord_fixed(ratio = aspect_ratio) + 
