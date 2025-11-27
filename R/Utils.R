@@ -769,7 +769,6 @@ flowmagic_pred_to_poly_gates<-function(list_df,pred_label,gate_label,n_cores=1,c
   list_poly_gates<-parallel::mclapply(seq_along(list_df),function(i){
     current_sample<-all_names[i]
     message(current_sample)
-    df <- list_df[[i]]$df_test_original
     if ("df_test_original" %in% names(list_df[[i]])) {
       df <- list_df[[i]]$df_test_original
     }else{
