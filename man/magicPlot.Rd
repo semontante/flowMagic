@@ -35,7 +35,7 @@ magicPlot(
 \arguments{
 \item{df}{Dataframe of bivariate markers expression (with labels if gates to plot).}
 
-\item{type}{Type of plot to generated. "dens"=bivariate density plot. "ML"=events assignments plot}
+\item{type}{Type of plot to generated. "dens"= plot with bivariate density. "ML"= plot with color layer based on machine learning class assignments}
 
 \item{polygons_coords_list}{list of gates coordinates. Needed if labels not included in df. Default to NULL.}
 

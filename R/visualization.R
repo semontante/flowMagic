@@ -2,7 +2,7 @@
 #'
 #' function to generate the scatter plot with colored density of the events.
 #' @param df Dataframe of bivariate markers expression (with labels if gates to plot).
-#' @param type Type of plot to generated. "dens"=bivariate density plot. "ML"=events assignments plot
+#' @param type Type of plot to generated. "dens"= plot with bivariate density. "ML"= plot with color layer based on machine learning class assignments 
 #' @param polygons_coords_list list of gates coordinates. Needed if labels not included in df. Default to NULL.
 #' @param show_legend Show legend if type="ML". Default to True.
 #' @param size_axis_text Size of axis ticks labels. Default to 18.
@@ -37,6 +37,9 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
           aspect_ratio = NULL, x_lim1 = NULL, x_lim2 = NULL, y_lim1 = NULL, 
           y_lim2 = NULL,add_labels=F,map_label_polygon=NULL,size_pol_name=6,show_marginals=F,...){
 
+  # save original column names
+  original_col_names<-colnames(df)
+  # ----------- plot with no gates --------------
   if (type == "no_gate" || ncol(df) == 2) {
     colPalette <- colorRampPalette(c("blue", "turquoise", "green", "yellow", "orange", "red"))
     col <- densCols(df[, c(1, 2)], colramp = colPalette, nbin = 200)
@@ -44,23 +47,22 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     df_plot <- data.frame(x = df[[1]], y = df[[2]], col = col)
     
     p <- ggplot(df_plot, aes(x = x, y = y)) + geom_point(color = df_plot$col, size = size_points, shape = 16)
-
+    
     if(is.null(x_lab)==T && is.null(y_lab)==T){
-      col_names_df<-colnames(df)
-      p <- p + xlab(col_names_df[1]) + ylab(col_names_df[2])
+      p <- p + xlab(original_col_names[1]) + ylab(original_col_names[2])
     }else if(is.null(x_lab)==F || is.null(y_lab)==F){
       p <- p + xlab(x_lab) + ylab(y_lab)
     }
-
-   
+    
+    
     p <- p + theme(legend.position = "none")
     p <- p + theme(axis.text = element_text(size = size_axis_text), 
-                                       axis.title.x = element_text(size = size_title_x, 
-                                                                   face = "bold"), axis.title.y = element_text(size = size_title_y, 
-                                                                                                               face = "bold"))
+                   axis.title.x = element_text(size = size_title_x, 
+                                               face = "bold"), axis.title.y = element_text(size = size_title_y, 
+                                                                                           face = "bold"))
     p <- p + theme(panel.grid.major = element_blank(), 
-                                       panel.grid.minor = element_blank(), panel.background = element_blank(), 
-                                       axis.line = element_line(colour = "black"))
+                   panel.grid.minor = element_blank(), panel.background = element_blank(), 
+                   axis.line = element_line(colour = "black"))
     # Apply limits if specified
     if (!is.null(x_lim1) && !is.null(x_lim2)) {
       p <- p + xlim(x_lim1, x_lim2)
@@ -90,9 +92,11 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     check_classes <- df$classes %in% gates_to_plot
     inds <- which(check_classes == T)
     df$classes[-inds] <- "0"
-    }
-  # Plotting with either "dens" or "ML" type plot
+  }
+  # ----------- plot with gates --------------
   if(type == "dens"){
+    # Plotting with density layer ------
+
     colPalette <- colorRampPalette(c("blue", "turquoise", 
                                      "green", "yellow", "orange", "red"))
     col <- densCols(df[, c(1, 2)], colramp = colPalette, 
@@ -126,6 +130,8 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
                                               aes(x = x, y = y, group = group_gate), fill = NA, 
                                               color = "black", linewidth = 1)
   }else if (type == "ML") {
+    # Plotting with ML class color layer ------
+
     if(apply_manual_scale==T){
       # check if there are real text labels (like full strings,not just numbers-like strings)
       df<-convert_to_integers_chr(df=df)
@@ -185,9 +191,9 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
       magicggplot <- magicggplot + theme(legend.position = "none")
     }
   }
+  #----- additional options ------------
   if(is.null(x_lab)==T && is.null(y_lab)==T){
-    col_names_df<-colnames(df)
-    magicggplot <- magicggplot + xlab(col_names_df[1]) + ylab(col_names_df[2])
+    magicggplot <- magicggplot + xlab(original_col_names[1]) + ylab(original_col_names[2])
   }else if(is.null(x_lab)==F || is.null(y_lab)==F){
     magicggplot <- magicggplot + xlab(x_lab) + ylab(y_lab)
   }
@@ -220,7 +226,7 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
   # Add marginal densities
   if (show_marginals == TRUE) {
     magicggplot <- ggExtra::ggMarginal(magicggplot, type = "density", margins = "both", 
-                             groupColour = FALSE, groupFill = F, fill="gray")
+                                       groupColour = FALSE, groupFill = F, fill="gray")
   }
   return(magicggplot)
 }
