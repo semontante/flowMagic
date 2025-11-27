@@ -24,7 +24,7 @@
 #' @param map_label_polygon map of polygon labels (to assign custom labels). Default to NULL.
 #' @param size_pol_name size polygon labels. Default to 6.
 #' @param show_marginals show 1D density next to axis. Default to False.
-#' @return ggplot.
+#' @return Object of class ggplot
 #' @keywords flowMagic
 #' @export
 #' @examples 
@@ -45,10 +45,10 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     
     p <- ggplot(df_plot, aes(x = x, y = y)) + geom_point(color = df_plot$col, size = size_points, shape = 16)
 
-    if(is.null(x_lab)==NULL && is.null(y_lab)==NULL){
+    if(is.null(x_lab)==T && is.null(y_lab)==T){
       col_names_df<-colnames(df)
       p <- p + xlab(col_names_df[1]) + ylab(col_names_df[2])
-    }else if(is.null(x_lab)!=NULL || is.null(y_lab)!=NULL){
+    }else if(is.null(x_lab)==F || is.null(y_lab)==F){
       p <- p + xlab(x_lab) + ylab(y_lab)
     }
 
@@ -185,11 +185,11 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
       magicggplot <- magicggplot + theme(legend.position = "none")
     }
   }
-  if(is.null(x_lab)==NULL && is.null(y_lab)==NULL){
+  if(is.null(x_lab)==T && is.null(y_lab)==T){
     col_names_df<-colnames(df)
-    p <- p + xlab(col_names_df[1]) + ylab(col_names_df[2])
-  }else if(is.null(x_lab)!=NULL || is.null(y_lab)!=NULL){
-    p <- p + xlab(x_lab) + ylab(y_lab)
+    magicggplot <- magicggplot + xlab(col_names_df[1]) + ylab(col_names_df[2])
+  }else if(is.null(x_lab)==F || is.null(y_lab)==F){
+    magicggplot <- magicggplot + xlab(x_lab) + ylab(y_lab)
   }
   if (is.null(aspect_ratio) == F) {
     magicggplot <- magicggplot + coord_fixed(ratio = aspect_ratio) + 
