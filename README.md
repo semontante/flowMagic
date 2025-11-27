@@ -10,7 +10,7 @@ The flowMagic algorithm is the first algorithm trained on both expert-generated 
 ![License](https://img.shields.io/github/license/semontante/flowMagic) 
 ![Issues](https://img.shields.io/github/issues/semontante/flowMagic)
 [![PDF](https://img.shields.io/badge/flowMagic_manual-PDF-red)](https://github.com/semontante/flowMagic/blob/main/pk_manual/flowMagic_manual.pdf)
-[![PDF](https://img.shields.io/badge/flowMagic_doc-PDF-red)](https://github.com/semontante/flowMagic/blob/main/pk_manual/flowMagic_documentation.pdf)
+[![PDF](https://img.shields.io/badge/flowMagic_vignette-PDF-red)](https://github.com/semontante/flowMagic/blob/main/pk_manual/flowMagic_documentation.pdf)
 
 # Overview
 
@@ -33,7 +33,7 @@ All of these functionalities are actively maintained and continuously updated to
 
 # Documentation
 
-The full technical documentation for the flowMagic R package can be found inside the `pk_manual` directory above. Click on the red pdf badge (flowMagic doc) to download and visualize the flowMagic introduction (vignette). Click on the red pdf badge named flowMagic manual to download a guide to all flowMagic functions and arguments.
+The full technical documentation for the flowMagic R package can be found inside the `pk_manual` directory above. Click on the red pdf badge (flowMagic vignette) to download and visualize the flowMagic introduction (vignette). Click on the red pdf badge named flowMagic manual to download a guide to all flowMagic functions and arguments.
 
 # Installation
 
