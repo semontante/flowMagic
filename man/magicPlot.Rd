@@ -80,7 +80,7 @@ magicPlot(
 \item{show_marginals}{show 1D density next to axis. Default to False.}
 }
 \value{
-ggplot.
+Object of class ggplot
 }
 \description{
 function to generate the scatter plot with colored density of the events.
