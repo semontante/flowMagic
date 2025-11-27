@@ -24,3 +24,4 @@ the sample manually gated (local training set) and the project discovery data (g
 \examples{
 \donttest{get_hierarchy_all_pops()}
 }
+\keyword{flowMagic}

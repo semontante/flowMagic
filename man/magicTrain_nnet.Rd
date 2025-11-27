@@ -39,3 +39,4 @@ function to generate a neural net training model.
 \examples{
 \donttest{magicTrain_nnet()}
 }
+\keyword{flowMagic}

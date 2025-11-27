@@ -20,3 +20,4 @@ function to get labelled dataframe based on selected node for each sample in gs.
 \examples{
 \donttest{get_list_df_gated_plots()}
 }
+\keyword{flowMagic}

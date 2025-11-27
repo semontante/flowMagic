@@ -45,3 +45,4 @@ function to generate ungated plots from selected gs node
 \examples{
 \donttest{export_raw_gs_plots()}
 }
+\keyword{flowMagic}

@@ -23,3 +23,4 @@ The ungated fcs are assumed to be already cleaned,compensated,and transformed.
 \examples{
 \donttest{import_test_set()}
 }
+\keyword{flowMagic}

@@ -8,6 +8,7 @@
 #' @param df_tree contains the info related to the populations hierarchy.
 #' @param n_cores Number of cores to use. Default to 1.
 #' @return List of Dataframes.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicPred_hierarchy()}
@@ -183,6 +184,7 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,n_cores=1
 #' @param normalize_data If True, data is normalized to 0-1 range. Default to True.
 #' @param include_zero_val considering events labeled as 0 as an additional gate when there is only one gate. Default to  True.
 #' @return List of Dataframes.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicPred()}
@@ -339,6 +341,7 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
 #' @param n_cores_all Number of cores to use across all samples. Default to 1.
 #' @param verbose If True, print all message and disable tryCatch (any error will stop the execution). Default to False.
 #' @return List of Dataframes.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicPred_all()}

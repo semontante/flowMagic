@@ -24,3 +24,4 @@ function to predict the gates on the ungated .fcs samples.
 \examples{
 \donttest{magicPred_hierarchy()}
 }
+\keyword{flowMagic}

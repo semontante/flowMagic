@@ -40,3 +40,4 @@ function to post process the events after model prediction.
 \examples{
 \donttest{post_process_gates()}
 }
+\keyword{flowMagic}

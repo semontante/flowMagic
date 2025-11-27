@@ -17,6 +17,7 @@
 #' @param export_csv Export plot data as csv files. Default to False.
 #' @param side_by_side Arrange dens plot and ML plot side-by-side. Default to False.
 #' @return NULL
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{exports_plots()}
@@ -118,6 +119,7 @@ exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",s
 #' @param size_points Size points scatter plot.
 #' @param return_data  If TRUE, return the list of dataframes used to generate the plots. Default to FALSE.
 #' @return NULL
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{export_raw_gs_plots()}

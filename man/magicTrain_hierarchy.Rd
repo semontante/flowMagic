@@ -32,3 +32,4 @@ function to generate the local training models using the list of hierarchical tr
 \examples{
 \donttest{magicTrain_local()}
 }
+\keyword{flowMagic}

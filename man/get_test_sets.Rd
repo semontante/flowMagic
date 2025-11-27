@@ -22,3 +22,4 @@ Each dataframe is the expression matrix of the root.
 \examples{
 \donttest{get_test_sets()} 
 }
+\keyword{flowMagic}

@@ -20,3 +20,4 @@ function to import plain gold standards data (no hierarchy)
 \examples{
 \donttest{import_reference_csv()}
 }
+\keyword{flowMagic}

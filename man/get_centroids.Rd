@@ -35,3 +35,4 @@ function to get centroids for each label
 \examples{
 \donttest{get_centroids()} 
 }
+\keyword{flowMagic}

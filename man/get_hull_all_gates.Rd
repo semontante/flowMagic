@@ -24,3 +24,4 @@ function to get the convex hull of all gates.
 \examples{
 \donttest{get_hull_all_gates()}
 }
+\keyword{flowMagic}

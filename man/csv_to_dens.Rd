@@ -24,3 +24,4 @@ function to get density of events (with classes associated if present).
 \examples{
 \donttest{csv_to_dens()}
 }
+\keyword{flowMagic}

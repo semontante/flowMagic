@@ -41,3 +41,4 @@ function to get indices for cross val.
 \examples{
 \donttest{get_indices_cross_val()}
 }
+\keyword{flowMagic}

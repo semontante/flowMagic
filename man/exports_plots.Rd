@@ -60,3 +60,4 @@ function to generate plots (no hierarchy) from list of labelled dataframes.
 \examples{
 \donttest{exports_plots()}
 }
+\keyword{flowMagic}

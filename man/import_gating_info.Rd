@@ -22,3 +22,4 @@ convert a flowWorkspace or a GatingMl file of the train data folder into a gated
 \examples{
 \donttest{import_sample_gated()}
 }
+\keyword{flowMagic}

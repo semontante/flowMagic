@@ -24,3 +24,4 @@ function to plot FCM data directly from objects of class flowSet or flowFrame. T
 \examples{
 \donttest{magicPlot_fs()}
 }
+\keyword{flowMagic}

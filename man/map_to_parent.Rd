@@ -20,3 +20,4 @@ function to get binary dataset with gate assignation based on the mother populat
 \examples{
 \donttest{map_to_parent()}
 }
+\keyword{flowMagic}

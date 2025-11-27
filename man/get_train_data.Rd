@@ -41,3 +41,4 @@ function to import training data based on paths to files.
 \examples{
 \donttest{get_train_data()}
 }
+\keyword{flowMagic}

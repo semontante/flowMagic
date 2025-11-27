@@ -7,6 +7,7 @@
 #' @param method_control Cross-validation method. Default to out-of-the-bag method (oob).
 #' @param n_cores Number of cores to use. Default to 1.
 #' @return List of models objects.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicTrain_local()}
@@ -84,6 +85,7 @@ magicTrain_hierarchy<-function(list_train_sets,n_tree=10,train_model="rf",method
 #' @param type_y Type of response variable: classes (train to predict gates boundaries) or n_gates_info(train to predict number of gates).
 #' @param seed_n Set seed. Default to 40.
 #' @return model object.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicTrain()}
@@ -155,6 +157,7 @@ magicTrain<-function(df_train,n_cores=1,train_model="rf",k_cv=10,
 #' @param size  Number of units in hidden layer (if train_model=nnet).
 #' @param decay  Decay parameter value for nnet model.
 #' @return model object.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicTrain_nnet()}
@@ -195,6 +198,7 @@ magicTrain_nnet<-function(Xtrain,Ytrain,k_cv=10,list_index_train=NULL,list_index
 #' @param n_tree  Number of trees for random forest.
 #' @param method_control Type of training control: oob or cv. Default to oob. 
 #' @return model object.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicTrain_rf()}
@@ -241,6 +245,7 @@ magicTrain_rf<-function(Xtrain,Ytrain,list_index_train=NULL,list_index_val=NULL,
 #' @param list_index_val  List of vector of indices to use as held out data for each fold.
 #' @param tune_lenght  Number of hyper parameters to test. Default to 5.
 #' @return model object.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicTrain_knn()}
@@ -277,6 +282,7 @@ magicTrain_knn<-function(Xtrain,Ytrain,k_cv=10,list_index_train=NULL,list_index_
 #' @param list_index_val  List of vector of indices to use as held out data for each fold.
 #' @param tune_lenght  Number of hyper parameters to test. Default to 5.
 #' @return model object.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicTrain_nb()}
@@ -312,6 +318,7 @@ magicTrain_nb<-function(Xtrain,Ytrain,k_cv=10,list_index_train=NULL,list_index_v
 #' @param list_index_val  List of vector of indices to use as held out data for each fold.
 #' @param tune_lenght  Number of hyper parameters to test. Default to 5.
 #' @return model object.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicTrain_dt()}

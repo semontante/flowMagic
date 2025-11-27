@@ -24,3 +24,4 @@ function to compare the similiraty between current test data and local training 
 \examples{
 \donttest{get_distance_loc_vs_test()}
 }
+\keyword{flowMagic}

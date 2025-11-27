@@ -23,3 +23,4 @@ gh and pop are mandatory arguments, dim and mode have a default value.
 \examples{
 \donttest{map_to_root()}
 }
+\keyword{flowMagic}

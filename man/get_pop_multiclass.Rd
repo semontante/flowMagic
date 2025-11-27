@@ -21,3 +21,4 @@ useful for multiclass classification. The output is only the pops with same dime
 \examples{
 \donttest{get_pop_multiclass()}
 }
+\keyword{flowMagic}

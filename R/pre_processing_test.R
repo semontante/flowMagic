@@ -9,6 +9,7 @@
 #' @param fs flowSet to gate.
 #' @param gh Gating hierarchy.
 #' @return List of dataframes.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{get_test_sets()} 

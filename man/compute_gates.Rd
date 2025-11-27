@@ -22,3 +22,4 @@ function to assign events based on polygon gates.
 \examples{
 \donttest{compute_gates()}
 }
+\keyword{flowMagic}

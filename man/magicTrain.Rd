@@ -56,3 +56,4 @@ function to generate one training model based on a list of training sets (no hie
 \examples{
 \donttest{magicTrain()}
 }
+\keyword{flowMagic}

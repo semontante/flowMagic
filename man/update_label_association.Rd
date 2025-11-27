@@ -18,3 +18,4 @@ function to update label association.
 \examples{
 \donttest{update_label_association()}
 }
+\keyword{flowMagic}

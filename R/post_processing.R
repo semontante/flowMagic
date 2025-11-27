@@ -7,6 +7,7 @@
 #' @param spar_val Value of spar. Default to 0.7.
 #' @param smoothing Apply smoothing of lines? Default to F.
 #' @return List of dataframes.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{get_hull_all_gates()}
@@ -36,6 +37,7 @@ get_hull_all_gates<-function(gated_df,concavity_val=1,spar_val=0.7,smoothing=F){
 #' @param gated_df dataframe with labels (third column).
 #' @param concavity_val Concavity of polygons. Default to 1.
 #' @return List of dataframes.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{extract_polygon_gates()}
@@ -71,6 +73,7 @@ extract_polygon_gates<-function(gated_df,concavity_val=1,...){
 #' function to check polygons intersection.
 #' @param list_df_hull List of polygons coordinates
 #' @return float
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{check_polygons_intersection()}
@@ -125,6 +128,7 @@ check_polygons_intersection<-function(list_df_hull){
 #' @param list_final_polygons_coords List of dataframes containing polygon coordinates.
 #' @param no_classes  Generate third column of labels. Default to False.
 #' @return Dataframe.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{compute_gates()}
@@ -163,6 +167,7 @@ compute_gates<-function(gated_df,list_final_polygons_coords,no_classes=F){
 #' @param type  Type of post-processing.
 #' @param concavity_val  Concavity of polygons for the "polygon" type of post-processing
 #' @return Dataframe.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{post_process_gates()}
@@ -210,6 +215,7 @@ post_process_gates<-function(gated_df,n_cores=1,thr_dist=0.15,include_zero=F,rem
 #' @param include_zero  Consider centroid of label 0. Default to False.
 #' @param remove_centroids  Remove centroids too near each other based on thr_dist value.
 #' @return Dataframe.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{get_centroids()} 
@@ -322,6 +328,7 @@ get_centroids<-function(df,low_thr=0.10,up_thr=0.90,thr_dist=0.15,include_zero=F
 #' @param include_zero  Consider centroid of label 0. Default to False.
 #' @param remove_centroids  Remove centroids too near each other based on thr_dist value.
 #' @return Dataframe.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{assign_events_to_nearest_centroids()} 
@@ -371,6 +378,7 @@ assign_events_to_nearest_centroids<-function(gated_df,n_cores=1,method_dist="euc
 #' @param spar Spar value to regulate smoothing process: higher value (max 1) higher smoothing.
 #' @param buffer_dist Regulate buffer distance before smoothing. Default to 500.
 #' @return Dataframe.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{smooth_hull()} 

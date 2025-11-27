@@ -22,3 +22,4 @@ Based on the hierarchy calculated using the get_hierarchy function, we generate 
 \examples{
 \donttest{get_local_train_sets()}
 }
+\keyword{flowMagic}

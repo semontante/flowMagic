@@ -22,3 +22,4 @@ function to wrap all plots in one plot
 \examples{
 \donttest{magic_plot_wrap()}
 }
+\keyword{flowMagic}

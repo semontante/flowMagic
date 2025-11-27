@@ -38,3 +38,4 @@ function to make a 3D plot of data.
 \examples{
 \donttest{magicplot_3D()}
 }
+\keyword{flowMagic}

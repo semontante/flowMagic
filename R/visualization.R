@@ -241,6 +241,7 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
 #' @param n_col_wrap number of columns in the wrapped plot. Default to 3.
 #' @param size_title size of title of each plot. Default to 10.
 #' @return wrapped plot
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magic_plot_wrap()}
@@ -271,6 +272,7 @@ magic_plot_wrap<-function(list_gated_data,n_col_wrap=3,size_title=10,...){
 #' @param type Assuming class_col==T, If type==ML, Generate a plot colored based on the gate assignment. If type=="mesh", generate a 3d polygon gate.
 #' @param size_p size of scatter plot points. Default to 1.
 #' @return plotly plot
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicplot_3D()}
@@ -372,6 +374,7 @@ magicplot_3D<-function(df,class_col=F,x_lab="x",y_lab="y",z_lab="z",type="ML",si
 #' @param df input dataframe composed of two columns reporting markers expression (first column = marker 1, second column = marker 2).
 #' @param size_points Size of points in scatter plot. Default to 1.
 #' @return Dataframe
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicPlot_template()}
@@ -409,6 +412,7 @@ magicPlot_template<-function(df,size_points=1){
 #' @param channel_x Name of the channel to plot (x-axis).
 #' @param channel_y Name of the channel to plot (y-axis).
 #' @return Object of class ggplot
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{magicPlot_fs()}

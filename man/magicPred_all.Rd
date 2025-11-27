@@ -53,3 +53,4 @@ function to predict on plain test data (no hierarchy)
 \examples{
 \donttest{magicPred_all()}
 }
+\keyword{flowMagic}

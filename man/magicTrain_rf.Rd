@@ -38,3 +38,4 @@ function to generate a random forest training model.
 \examples{
 \donttest{magicTrain_rf()}
 }
+\keyword{flowMagic}

@@ -20,3 +20,4 @@ function to extract the polygon gates objects based on the convex hull and class
 \examples{
 \donttest{extract_polygon_gates()}
 }
+\keyword{flowMagic}

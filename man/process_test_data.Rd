@@ -29,3 +29,4 @@ function to get test data correctly formatted.
 \examples{
 \donttest{process_test_data()}
 }
+\keyword{flowMagic}

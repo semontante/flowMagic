@@ -20,3 +20,4 @@ function to add label association column.
 \examples{
 \donttest{add_labels_column()}
 }
+\keyword{flowMagic}

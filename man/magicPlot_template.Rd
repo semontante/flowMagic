@@ -20,3 +20,4 @@ function to interactively generate a template based on bivariate ungated data.
 \examples{
 \donttest{magicPlot_template()}
 }
+\keyword{flowMagic}

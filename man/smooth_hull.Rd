@@ -22,3 +22,4 @@ function to smooth concave polygons
 \examples{
 \donttest{smooth_hull()} 
 }
+\keyword{flowMagic}

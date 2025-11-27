@@ -22,3 +22,4 @@ function to label points of dataframe based on polygon coordinates
 \examples{
 \donttest{magic_label_poly()}
 }
+\keyword{flowMagic}

@@ -35,3 +35,4 @@ function to assign events to class with nearest centroid.
 \examples{
 \donttest{assign_events_to_nearest_centroids()} 
 }
+\keyword{flowMagic}

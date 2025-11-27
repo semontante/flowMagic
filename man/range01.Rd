@@ -18,3 +18,4 @@ function to put data in range 0-1.
 \examples{
 \donttest{range01()}
 }
+\keyword{flowMagic}

@@ -18,3 +18,4 @@ function to calculate final score based on density features.
 \examples{
 \donttest{get_weights_density_features()}
 }
+\keyword{flowMagic}

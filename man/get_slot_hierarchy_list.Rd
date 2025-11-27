@@ -20,3 +20,4 @@ function to access a slot of results from the hierarchy list based on the pop se
 \examples{
 \donttest{get_slot_hierarchy_list()}
 }
+\keyword{flowMagic}

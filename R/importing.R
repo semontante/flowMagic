@@ -5,6 +5,7 @@
 #' @param type type of object.
 #' @param group_wsp Group of wsp to import.
 #' @return GatingSet object
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{import_sample_gated()}
@@ -25,6 +26,7 @@ import_gating_info<-function(path,type="gs",group_wsp=NULL){
 #' @param path_results path to directory containing the csv files  to read (with third column of labels).
 #' @param n_cores Number of cores to use. Default to 1.
 #' @return list of dataframes
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{import_reference_csv()}
@@ -59,6 +61,7 @@ import_reference_csv<-function(path_results,n_cores=1){
 #' @param n_samples Number of samples. Default to All.
 #' @param ref_f_n Set reference flowFrame to match channel names. Default to 1(first flowFrame).
 #' @return flowSet.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{import_test_set()}
@@ -110,6 +113,7 @@ import_test_set_fcs<-function(path,n_samples="All",ref_f_n=1){
 #' @param n_cores Number cores. Default to 1.
 #' @param xy_col Colnames equal to x and y. Default to True.
 #' @return List of dataframes.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{import_test_set_csv()}
@@ -153,6 +157,7 @@ import_test_set_csv<-function(path_data,n_cores=1,xy_col=T){
 #' @param normalize_data If True, data is normalized to 0-1 range. Default to True.
 #' @param vec_col vector of columns names if the input dataframes have more than 3 columns. The third column name must always refer to the column with the gate label of each event. Default to NULL.
 #' @return Dataframe.
+#' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{get_train_data()}

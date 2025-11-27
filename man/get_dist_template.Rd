@@ -20,3 +20,4 @@ function to get distance between template and test data.
 \examples{
 \donttest{get_dist_template()}
 }
+\keyword{flowMagic}

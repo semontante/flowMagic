@@ -22,3 +22,4 @@ function to import test set in csv format.
 \examples{
 \donttest{import_test_set_csv()}
 }
+\keyword{flowMagic}

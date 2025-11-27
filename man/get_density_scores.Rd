@@ -22,3 +22,4 @@ function to get scores for distance template calculation.
 \examples{
 \donttest{get_density_scores()}
 }
+\keyword{flowMagic}

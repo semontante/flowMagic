@@ -20,3 +20,4 @@ function to get density features only given a bivarite density csv.
 \examples{
 \donttest{get_density_features()}
 }
+\keyword{flowMagic}

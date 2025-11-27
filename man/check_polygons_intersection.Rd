@@ -18,3 +18,4 @@ function to check polygons intersection.
 \examples{
 \donttest{check_polygons_intersection()}
 }
+\keyword{flowMagic}
