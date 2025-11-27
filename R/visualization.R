@@ -108,7 +108,7 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     df <- cbind(df, col)
     df$col <- as.character(df$col)
     if (is.null(polygons_coords_list) == T) {
-      list_df_hull<- do.call(get_hull_all_gates,c(list(df=df,concavity_val = concavity_val), args_get_hull))
+      list_df_hull<- do.call(get_hull_all_gates,c(list(gated_df=df,concavity_val = concavity_val), args_get_hull))
       vec <- names(list_df_hull)
       inds <- which(vec == "0")
       if (length(inds) != 0) {
