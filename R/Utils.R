@@ -853,4 +853,66 @@ convert_to_integers_chr<-function(df){
   return(df)
 }
 
+#' magicGating
+#'
+#' function to manually gate samples in a flowSet.
+#' @param fs An object of class flowSet.
+#' @param sample_id Names of the samples to gate. 
+#' @param channel_x Name of the channel (x-axis).
+#' @param channel_y Name of the channel (y-axis).
+#' @param label_pol Label of the gate polygon. Default to "1".
+#' @return List of two objects of class List. 
+#'         list_poly_gates: List of polygon coordinates. Each element refers to the coordinates of one sample. 
+#'         list_gated_data: List of gated data. Each element refers to the gated data of one sample. 
+#' @keywords flowMagic
+#' @export
+#' @examples 
+#' \donttest{magicGating()}
+
+magicGating<-function(fs,sample_id,channel_x,channel_y, label_pol="1",...){
+  # capture all extra arguments
+  args_list <- list(...)
+  
+  # Arguments for magicPlot_template
+  args_plot <- args_list[names(args_list) %in% names(formals(magicPlot_template))]
+  
+  # Arguments for flowmagic_pred_to_poly_gates
+  args_gates <- args_list[names(args_list) %in% names(formals(flowmagic_pred_to_poly_gates))]
+  
+  if(length(sample_id)==1){
+    sample_id<-c(sample_id)
+  }
+  list_gated_data<-rep(list(0), length(sample_id))
+  names(list_gated_data)<-as.character(sample_id)
+  for(id in sample_id){
+    print("--- Gating sample with id:")
+    print(id)
+    ff <- fs[[id]]
+    expr_matrix_ff <- exprs(ff)
+    df_exprs <- as.data.frame(expr_matrix_ff)
+    df_exprs_selected_channels <- df_exprs[, c(channel_x, channel_y)]
+    
+    # get gate coordinates
+    print("Get gate coordinates")
+    
+    polygon_df <- do.call(magicPlot_template, c(list(df = df_exprs_selected_channels), args_plot))
+    
+    df_gated<-flowMagic::magic_label_poly(df = df_exprs_selected_channels,polygon_df = polygon_df,label_pol = label_pol)
+    # add gated data to list
+    print("Add gated data to list")
+    list_gated_data[[as.character(id)]]<-df_gated
+    
+
+  }
+  
+  # add gates coordinates to list of polygon gates
+  print("Add gates coordinates to list")
+  list_poly_gates <- do.call(flowmagic_pred_to_poly_gates,
+                             c(list(list_df = list_gated_data,
+                                    pred_label = label_pol,
+                                    gate_label = label_pol),
+                               args_gates))
+  
+  return(list(list_poly_gates=list_poly_gates,list_gated_data=list_gated_data))
+}
 

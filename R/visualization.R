@@ -36,6 +36,10 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
           apply_manual_scale = F, hull_only = F, size_points = 1, concavity_val = 20, 
           aspect_ratio = NULL, x_lim1 = NULL, x_lim2 = NULL, y_lim1 = NULL, 
           y_lim2 = NULL,add_labels=F,map_label_polygon=NULL,size_pol_name=6,show_marginals=F,...){
+  # capture all extra arguments
+  args_list <- list(...)
+  # Arguments for get_hull_all_gates
+  args_get_hull <- args_list[names(args_list) %in% names(formals(get_hull_all_gates))]
 
   # save original column names
   original_col_names<-colnames(df)
@@ -104,7 +108,7 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     df <- cbind(df, col)
     df$col <- as.character(df$col)
     if (is.null(polygons_coords_list) == T) {
-      list_df_hull <- get_hull_all_gates(df, concavity_val = concavity_val,...)
+      list_df_hull<- do.call(get_hull_all_gates,c(list(df=df,concavity_val = concavity_val), args_get_hull))
       vec <- names(list_df_hull)
       inds <- which(vec == "0")
       if (length(inds) != 0) {
