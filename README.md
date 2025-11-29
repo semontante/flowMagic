@@ -31,7 +31,7 @@ flowMagic framework includes several key functionalities:
 
 All of these functionalities are actively maintained and continuously updated to improve performance, usability and compatibility with the broader FCM analysis ecosystem.
 
-# Video flowMagic: automated gating using template ML model
+# Video: automated gating using template ML model
 
 [Download Introduction Video](https://github.com/semontante/flowMagic/raw/main/intro/intro_flowMagic.mp4)
 
