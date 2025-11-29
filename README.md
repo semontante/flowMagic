@@ -33,7 +33,7 @@ All of these functionalities are actively maintained and continuously updated to
 
 # Video introduction to flowMagic: automated gatig using a template ML model
 
-[Download/Watch Video](https://github.com/semontante/flowMagic/raw/main/intro/intro_flowMagic)
+[Download/Watch Video](https://github.com/semontante/flowMagic/raw/main/intro/intro_flowMagic.mp4)
 
 
 # Documentation
