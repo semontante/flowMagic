@@ -31,6 +31,11 @@ flowMagic framework includes several key functionalities:
 
 All of these functionalities are actively maintained and continuously updated to improve performance, usability and compatibility with the broader FCM analysis ecosystem.
 
+# Video introduction to flowMagic: automated gatig using a template ML model
+
+[Download/Watch Video](https://github.com/semontante/flowMagic/raw/main/intro/intro_flowMagic)
+
+
 # Documentation
 
 The full technical documentation for the flowMagic R package can be found inside the `pk_manual` directory above. Click on the red pdf badge (flowMagic vignette) to download and visualize the flowMagic introduction (vignette). Click on the red pdf badge named flowMagic manual to download a guide to all flowMagic functions and arguments.
