@@ -689,16 +689,18 @@ get_flowframe_from_gs<-function(gs,node_name,sample_id){
   # is only a visual representation of data not real data
   
   # Extract expression data
-  exprs_mat <- flowCore::exprs(ff)  # or exprs(ff_temp)
+  # exprs_mat <- flowCore::exprs(ff)  # or exprs(ff_temp)
   
   # Extract parameter data
-  param_data <- flowCore::pData(parameters(ff)) 
+  # param_data <- flowCore::pData(parameters(ff)) 
   
   # Extract metadata/keywords
-  desc <- flowCore::keyword(ff)
+  # desc <- flowCore::keyword(ff)
   
-  ff <- flowFrame(exprs = exprs_mat, parameters = Biobase::AnnotatedDataFrame(param_data), description = desc)
+  # ff <- flowFrame(exprs = exprs_mat, parameters = Biobase::AnnotatedDataFrame(param_data), description = desc)
   
+  ff<-cytoframe_to_flowFrame(cf = ff)
+
   return(ff)
 }
 
@@ -856,10 +858,12 @@ convert_to_integers_chr<-function(df){
 #' magicGating
 #'
 #' function to manually gate samples in a flowSet.
-#' @param fs An object of class flowSet.
-#' @param sample_id Names of the samples to gate. 
+#' @param fs An object of class flowSet. Can be also an object of class cytoset (it will be converted to flowSet) or a GatingSet object (in this case, gs_node is mandatory)
+#' @param sample_id Names of the samples to gate. It can also be the numerical index of the sample. Default to sample 1.
 #' @param channel_x Name of the channel (x-axis).
 #' @param channel_y Name of the channel (y-axis).
+#' @param gs_node Name of the node to extract data, if fs is a GatingSet object this a mandatory argument.
+
 #' @param label_pol Label of the gate polygon. Default to "1".
 #' @return List of two objects of class List. 
 #'         list_poly_gates: List of polygon coordinates. Each element refers to the coordinates of one sample. 
@@ -869,7 +873,8 @@ convert_to_integers_chr<-function(df){
 #' @examples 
 #' \donttest{magicGating()}
 
-magicGating<-function(fs,sample_id,channel_x,channel_y, label_pol="1",...){
+magicGating<-function(fs,sample_id=1,channel_x,channel_y, gs_node=NULL, label_pol="1",...){
+
   # capture all extra arguments
   args_list <- list(...)
   
@@ -878,7 +883,20 @@ magicGating<-function(fs,sample_id,channel_x,channel_y, label_pol="1",...){
   
   # Arguments for flowmagic_pred_to_poly_gates
   args_gates <- args_list[names(args_list) %in% names(formals(flowmagic_pred_to_poly_gates))]
-  
+
+  if(class(fs)=="cytoset"){
+    fs<-cytoset_to_flowSet(cs = fs)
+  }
+  if(class(fs)=="GatingSet"){
+    if(is.null(gs_node)==T){
+      stop("fs is a GatingSet object, please provide a valid node name in the gs_node argument")
+    }
+    fs<-gh_pop_get_data(obj = gs,y = gs_node)
+    fs<-cytoset_to_flowSet(cs = fs)
+  }
+  if(class(fs)=="cytoframe" || class(fs)=="flowFrame"){
+    stop("fs need to be a flowSet,cytoset or GatingSet object")
+  }
   if(length(sample_id)==1){
     sample_id<-c(sample_id)
   }

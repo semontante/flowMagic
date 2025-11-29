@@ -4,16 +4,26 @@
 \alias{magicGating}
 \title{magicGating}
 \usage{
-magicGating(fs, sample_id, channel_x, channel_y, label_pol = "1", ...)
+magicGating(
+  fs,
+  sample_id = 1,
+  channel_x,
+  channel_y,
+  gs_node = NULL,
+  label_pol = "1",
+  ...
+)
 }
 \arguments{
-\item{fs}{An object of class flowSet.}
+\item{fs}{An object of class flowSet. Can be also an object of class cytoset (it will be converted to flowSet) or a GatingSet object (in this case, gs_node is mandatory)}
 
-\item{sample_id}{Names of the samples to gate.}
+\item{sample_id}{Names of the samples to gate. It can also be the numerical index of the sample. Default to sample 1.}
 
 \item{channel_x}{Name of the channel (x-axis).}
 
 \item{channel_y}{Name of the channel (y-axis).}
+
+\item{gs_node}{Name of the node to extract data, if fs is a GatingSet object this a mandatory argument.}
 
 \item{label_pol}{Label of the gate polygon. Default to "1".}
 }
