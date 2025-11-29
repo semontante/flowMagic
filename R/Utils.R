@@ -886,12 +886,11 @@ magicGating<-function(fs,sample_id=1,channel_x,channel_y, gs_node=NULL, label_po
 
   if(class(fs)=="cytoset"){
     fs<-cytoset_to_flowSet(cs = fs)
-  }
-  if(class(fs)=="GatingSet"){
+  }else if(class(fs)=="GatingSet"){
     if(is.null(gs_node)==T){
       stop("fs is a GatingSet object, please provide a valid node name in the gs_node argument")
     }
-    fs<-gh_pop_get_data(obj = gs,y = gs_node)
+    fs<-gs_pop_get_data(obj = fs,y = gs_node)
     fs<-cytoset_to_flowSet(cs = fs)
   }
   if(class(fs)=="cytoframe" || class(fs)=="flowFrame"){
