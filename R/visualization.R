@@ -254,7 +254,7 @@ magic_plot_wrap<-function(list_gated_data,n_col_wrap=3,size_title=10,...){
   all_names<-names(list_gated_data)
   plot_list <- lapply(seq_along(list_gated_data),function(i){
     df <- list_gated_data[[i]]
-    if("df_test_original" %in% colnames(df)){
+    if("df_test_original" %in% names(df)){
       df<-df$df_test_original
     }
     p <- magicPlot(df,...) + ggtitle(all_names[i]) + theme(plot.title = element_text(size = size_title))
@@ -262,7 +262,7 @@ magic_plot_wrap<-function(list_gated_data,n_col_wrap=3,size_title=10,...){
   })
   
   # Combine into a grid layout, e.g., 3 columns
-  combined_plot <- wrap_plots(plot_list, ncol = n_col_wrap)
+  combined_plot <- patchwork::wrap_plots(plot_list, ncol = n_col_wrap)
   
   return(combined_plot)
 }
