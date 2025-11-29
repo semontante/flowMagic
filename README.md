@@ -35,7 +35,7 @@ All of these functionalities are actively maintained and continuously updated to
 
 ![Demo](https://github.com/semontante/flowMagic/raw/main/intro/intro_flowMagic_gif.gif)
 
-[Download Introduction Video](https://github.com/semontante/flowMagic/raw/main/intro/intro_flowMagic.mp4)
+[Download Full Introduction Video](https://github.com/semontante/flowMagic/raw/main/intro/intro_flowMagic.mp4)
 
 
 # Documentation
