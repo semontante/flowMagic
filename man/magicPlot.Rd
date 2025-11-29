@@ -43,15 +43,15 @@ magicPlot(
 
 \item{size_axis_text}{Size of axis ticks labels. Default to 18.}
 
-\item{size_title_x}{Size of x axis label title.}
+\item{size_title_x}{Size of x axis label title. Default to 20.}
 
-\item{size_title_y}{Size of y axis label title.}
+\item{size_title_y}{Size of y axis label title. Default to 20.}
 
 \item{treat_0_as_gate}{Treat 0 label as gate. Defaul to False (0 label is background)}
 
-\item{x_lab}{Label of x axis. Default to NULL.}
+\item{x_lab}{Label of x axis. Default to NULL (inherited from input dataframe by default).}
 
-\item{y_lab}{Label of y axis. Default to NULL.}
+\item{y_lab}{Label of y axis. Default to NULL (inherited from input dataframe by default).}
 
 \item{gates_to_plot}{Select labels to plot.}
 
@@ -59,7 +59,7 @@ magicPlot(
 
 \item{size_points}{Size of points in scatter plot.}
 
-\item{concavity_val}{Concavity value. Default to 5. Higher value, less jagged boundaries}
+\item{concavity_val}{Concavity value. Default to 20. Higher value, less jagged boundaries}
 
 \item{aspect_ratio}{Aspect ratio value. If = 1, y and x axis have equal distance between the ticks labels. Default to NULL.}
 

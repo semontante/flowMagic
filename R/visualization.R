@@ -6,15 +6,15 @@
 #' @param polygons_coords_list list of gates coordinates. Needed if labels not included in df. Default to NULL.
 #' @param show_legend Show legend if type="ML". Default to True.
 #' @param size_axis_text Size of axis ticks labels. Default to 18.
-#' @param size_title_x Size of x axis label title.
-#' @param size_title_y Size of y axis label title.
+#' @param size_title_x Size of x axis label title. Default to 20.
+#' @param size_title_y Size of y axis label title. Default to 20.
 #' @param treat_0_as_gate Treat 0 label as gate. Defaul to False (0 label is background)
-#' @param x_lab Label of x axis. Default to NULL.
-#' @param y_lab Label of y axis. Default to NULL.
+#' @param x_lab Label of x axis. Default to NULL (inherited from input dataframe by default).
+#' @param y_lab Label of y axis. Default to NULL (inherited from input dataframe by default).
 #' @param gates_to_plot Select labels to plot.
 #' @param apply_manual_scale Apply predifined scale of colors. Default to True.
 #' @param size_points Size of points in scatter plot.
-#' @param concavity_val Concavity value. Default to 5. Higher value, less jagged boundaries
+#' @param concavity_val Concavity value. Default to 20. Higher value, less jagged boundaries
 #' @param aspect_ratio Aspect ratio value. If = 1, y and x axis have equal distance between the ticks labels. Default to NULL.
 #' @param x_lim1 Minimum limit x axis. Default to NULL.
 #' @param x_lim2 Max limit x axis. Default to NULL.
