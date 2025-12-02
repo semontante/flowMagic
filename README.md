@@ -78,7 +78,7 @@ library(grDevices)
 library(flowMagic)
 #------------ using template model with 1 template
 # get path to directory with files to analyze
-path_dir<-system.file("extdata",package = "flowMagic")
+path_dir<-system.file("extdata/csv_files",package = "flowMagic")
 # import data with labels that we use as template data.
 list_data_ref<-import_reference_csv(path_results = path_dir,n_cores = 1)
 # import data without labels
