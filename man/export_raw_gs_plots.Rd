@@ -11,8 +11,8 @@ export_raw_gs_plots(
   channel_y,
   path_output,
   n_cores = 1,
-  x_lab = "x",
-  y_lab = "y",
+  x_lab = NULL,
+  y_lab = NULL,
   w_val = 7,
   h_val = 7,
   size_points = 1,
@@ -27,9 +27,9 @@ export_raw_gs_plots(
 
 \item{n_cores}{Number of cores to use. Default to 1.}
 
-\item{x_lab}{x-axis label.}
+\item{x_lab}{x-axis label. Default to NULL (inherited from GatingSet metadata).}
 
-\item{y_lab}{y-axis label.}
+\item{y_lab}{y-axis label. Default to NULL (inherited from GatingSet metadata).}
 
 \item{w_val}{width value. Default to 7 inches.}
 

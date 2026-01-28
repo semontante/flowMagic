@@ -112,8 +112,8 @@ exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",s
 #' @param gs GatingSet
 #' @param n_cores Number of cores to use. Default to 1.
 #' @param path_output Path to the directory where to export the plots.
-#' @param x_lab x-axis label.
-#' @param y_lab y-axis label.
+#' @param x_lab x-axis label. Default to NULL (inherited from GatingSet metadata).
+#' @param y_lab y-axis label. Default to NULL (inherited from GatingSet metadata).
 #' @param w_val width value. Default to 7 inches.
 #' @param h_val height value. Default to 7 inches.
 #' @param size_points Size points scatter plot.
@@ -124,7 +124,7 @@ exports_plots<-function(list_gated_data,path_output,n_cores=1,type_plot="dens",s
 #' @examples 
 #' \donttest{export_raw_gs_plots()}
 
-export_raw_gs_plots<-function(gs,node_name,channel_x,channel_y,path_output,n_cores=1,x_lab = "x", y_lab = "y", 
+export_raw_gs_plots<-function(gs,node_name,channel_x,channel_y,path_output,n_cores=1,x_lab = NULL, y_lab = NULL, 
                                w_val = 7, h_val = 7,size_points=1,return_data=F,...){
   start <- Sys.time()
   samples_names <- sampleNames(gs)

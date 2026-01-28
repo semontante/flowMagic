@@ -6,12 +6,14 @@
 \usage{
 magicPred_all(
   list_test_data,
+  sample_id,
   magic_model = NULL,
   ref_model_info = NULL,
   magic_model_n_gates = NULL,
   ref_data_train = NULL,
   prop_down = NULL,
   n_points_per_plot = NULL,
+  n_gates_df = NULL,
   thr_dist = 0.05,
   n_cores = 1,
   normalize_data = T,
@@ -24,6 +26,8 @@ magicPred_all(
 \arguments{
 \item{list_test_data}{List of unlabeled  dataframes. It has only the two columns of marker expression.}
 
+\item{sample_id}{Id of the samples to gate. Could be a vector containing the names or numerical indices (position) of the samples to gate. If NULL, all samples in list_test_data are gated. Default to NULL.}
+
 \item{magic_model}{Global trained model to predict gates. It can be a single model or list of named models (each model trained on selected number of gates).}
 
 \item{ref_model_info}{Template model to predic gates.}
@@ -32,7 +36,11 @@ magicPred_all(
 
 \item{ref_data_train}{Template data used to generate ref_model_info. Needed to calculate target-template distance.}
 
-\item{n_points_per_plot}{Number of points to consider for downsampling. Default to 500.}
+\item{n_points_per_plot}{Number of points to consider for downsampling. Default to 500. Note: the gates in the downsampled data are projected back to the original data to get the actual populations.}
+
+\item{n_gates_df}{Dataframe pairing the sample name (first column) with the user-defined number of gates (second column). Default to NULL.}
+
+\item{thr_dist}{Distance threshold for centroids calculation during post processing. Default to 0.15.}
 
 \item{n_cores}{Number of cores to use to process one sample. Default to 1.}
 

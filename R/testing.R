@@ -330,12 +330,15 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
 #' 
 #' function to predict on plain test data (no hierarchy)
 #' @param list_test_data List of unlabeled  dataframes. It has only the two columns of marker expression.
+#' @param sample_id  Id of the samples to gate. Could be a vector containing the names or numerical indices (position) of the samples to gate. If NULL, all samples in list_test_data are gated. Default to NULL.
 #' @param magic_model Global trained model to predict gates. It can be a single model or list of named models (each model trained on selected number of gates).
 #' @param magic_model_n_gates  Global trained model to predict number of gates. If different from NULL, magic_model is expected to be a list of models to predict certain gates (e.g., 5 models for 2,3,4,5 or 6 gates).
 #' @param ref_model_info Template model to predic gates.
+#' @param thr_dist  Distance threshold for centroids calculation during post processing. Default to 0.15.
 #' @param n_cores Number of cores to use to process one sample. Default to 1.
 #' @param ref_data_train Template data used to generate ref_model_info. Needed to calculate target-template distance.
-#' @param n_points_per_plot Number of points to consider for downsampling. Default to 500.
+#' @param n_points_per_plot Number of points to consider for downsampling. Default to 500. Note: the gates in the downsampled data are projected back to the original data to get the actual populations.
+#' @param n_gates_df Dataframe pairing the sample name (first column) with the user-defined number of gates (second column). Default to NULL.
 #' @param normalize_data If True, data is normalized to 0-1 range. Default to True.
 #' @param include_zero_val considering events labeled as 0 as an additional gate when there is only one gate. Default to  True.
 #' @param n_cores_all Number of cores to use across all samples. Default to 1.
@@ -346,20 +349,33 @@ magicPred<-function(test_data,magic_model=NULL,magic_model_n_gates=NULL,ref_mode
 #' @examples 
 #' \donttest{magicPred_all()}
 
-magicPred_all<-function(list_test_data,magic_model=NULL,ref_model_info=NULL,magic_model_n_gates=NULL,
-                        ref_data_train=NULL,prop_down=NULL,n_points_per_plot=NULL,
+magicPred_all<-function(list_test_data,sample_id,magic_model=NULL,ref_model_info=NULL,magic_model_n_gates=NULL,
+                        ref_data_train=NULL,prop_down=NULL,n_points_per_plot=NULL,n_gates_df=NULL,
                         thr_dist=0.05,n_cores=1,normalize_data=T,include_zero_val=T,n_cores_all=1,verbose=F,...){
+  # check if necessary packages are loaded
   if (("package:dplyr" %in% search())==F) {
   library(dplyr)
   }                      
   set.seed(40)
   start<-Sys.time()
+  if(is.null(sample_id)==F){
+    list_test_data<-list_test_data[sample_id]
+  }
   all_names_test_data<-names(list_test_data)
   # prediction for each test data
   message("------------- Prediction for each test data")
   list_all_dfs_pred<-parallel::mclapply(1:length(list_test_data),function(i){
     message(sprintf("########### %s ##########",all_names_test_data[i]))
     df_test<-list_test_data[[i]]
+    if(is.null(n_gates_df)==F){
+      print("provided dataframe with number of gates based on samples")
+      ind<-which(n_gates_df[,1] %in% all_names_test_data[i])
+      if(length(ind)!=1){
+        stop("multiple or no matches for samples names in n_gates_df")
+      }
+      magic_model_n_gates<-as.integer(n_gates_df[ind,2])
+      print(sprintf("number of gates current sample:%d",magic_model_n_gates))
+    }
     if(verbose==T){
     out_pred<-magicPred(test_data = df_test,magic_model=magic_model,
                                             ref_model_info=ref_model_info,n_cores=n_cores,
