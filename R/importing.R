@@ -56,7 +56,6 @@ import_reference_csv<-function(path_results,n_cores=1){
 #' import_test_set
 #' 
 #' Read the ungated fcs files into a flowSet.
-#' The ungated fcs are assumed to be already cleaned,compensated,and transformed.
 #' @param path path of directory containig the fcs files.
 #' @param n_samples Number of samples. Default to All.
 #' @param ref_f_n Set reference flowFrame to match channel names. Default to 1(first flowFrame).

@@ -944,7 +944,7 @@ magicGating<-function(fs,sample_id=1,channel_x,channel_y, gs_node=NULL, label_po
 #'
 #' function to merge magicGating outputs when gating multiple gates in templates.
 #' @param list_out_1 List of Dataframes to update.
-#' @param list_out_2 List of Dataframes to merge with list_out_1 dataframes.s
+#' @param list_out_2 List of Dataframes to merge with list_out_1 dataframes.
 #' @return list of Dataframes 
 #' @keywords flowMagic
 #' @export
