@@ -295,6 +295,10 @@ get_hierarchy_all_pops<-function(gh,export_visnet=F,path.output="None"){
     warning("visNetwork library not loaded, attempt to loading...")
     library(visNetwork)
   }
+    if (("package:randomcoloR" %in% search()) == F) {
+    warning("randomcoloR library not loaded, attempt to loading...")
+    library(randomcoloR)
+  }
   ################################ get info about the hierarchy #####################
   all_pops<-name_pop_gating(gh)
   print("------- list all pops in gh--------")
@@ -511,7 +515,7 @@ get_local_train_sets<-function(gh,hierarchical_tree,info_hierarchy){
       print("---- Generate train set of pops with different dims -----")
       vec_labels_pops_diff_dims<-c()
       for(pop in selected_pops_current_level_different_dims){
-        binary_df_root_pop<-pre_process_manual_binary(gh=gh,pop=pop)
+        binary_df_root_pop<-map_to_root(gh=gh,pop=pop)
         binary_df_mother_pop<-subsetting_binary_df(gh=gh,binary_df=binary_df_root_pop) # train set current pop
         list_df_pops_current_level[[sprintf("%s",pop)]]<-binary_df_mother_pop
         vec_labels_pops_diff_dims<-append(vec_labels_pops_diff_dims,sprintf("%s:%s",pop,1))
@@ -535,12 +539,12 @@ get_local_train_sets<-function(gh,hierarchical_tree,info_hierarchy){
         pops_same_plot<-df_tree$Children[inds]
         print(sprintf("current pops same plot:%s",paste0(pops_same_plot,collapse = " ")))
         pop_temp<-pops_same_plot[1]
-        binary_df_root_pop<-pre_process_manual_binary(gh=gh,pop=pop_temp)
+        binary_df_root_pop<-map_to_root(gh=gh,pop=pop_temp)
         multiclass_df_mother_pop_temp<-subsetting_binary_df(gh=gh,binary_df=binary_df_root_pop) # needs to be modified with the correct labels
         dims_element<-colnames(multiclass_df_mother_pop_temp)[c(1,2)]
         vec_rownames_all_pop<-c() # vector that contains the rownames of all pops of the current element
         for (pop in pops_same_plot){
-          binary_df_root_pop<-pre_process_manual_binary(gh=gh,pop=pop)
+          binary_df_root_pop<-map_to_root(gh=gh,pop=pop)
           binary_df_mother_pop<-subsetting_binary_df(gh=gh,binary_df=binary_df_root_pop) # train set current pop. Binary,but we need it multiclass
           inds<-which(binary_df_mother_pop[,ncol(binary_df_mother_pop)]==1)
           binary_df_mother_pop<-binary_df_mother_pop[inds,]
