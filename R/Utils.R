@@ -642,13 +642,14 @@ process_test_data<-function(test_data,prop_down=NULL,n_points_per_plot=500,norma
 #' function to get labelled dataframe based on selected node for each sample in gs.
 #' @param gs GatingSet
 #' @param gate_name Name of the Gating tree node whose gating data needs to be extracted.
+#' @param label_pop Set label for selected gate.
 #' @return List.
 #' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{get_list_df_gated_plots()}
 
-get_list_df_gated_plots<-function(gs,gate_name){
+get_list_df_gated_plots<-function(gs,gate_name,label_pop=NULL){
   list_gated_data <- list()
   # Loop over all samples in the GatingSet
   for(s in sampleNames(gs)){
@@ -659,11 +660,16 @@ get_list_df_gated_plots<-function(gs,gate_name){
     df_pop_root<-map_to_root(gh = gh,pop = gate_name)
     
     # df_pop_mother = mapping of selected pop events to mother of selected pop
-
-    df_pop_mother<-map_to_parent(gh = gh,binary_df = df_pop_root)
     
+    df_pop_mother<-map_to_parent(gh = gh,binary_df = df_pop_root)
+    if(is.null(label_pop)==F){
+      # change label
+      inds<-which(df_pop_mother[,3]==1)
+      df_pop_mother[inds,3]<-label_pop
+    }
     # Store in list
     list_gated_data[[s]] <- df_pop_mother
+    
   }
   return(list_gated_data)
 }
@@ -942,28 +948,44 @@ magicGating<-function(fs,sample_id=1,channel_x,channel_y, gs_node=NULL, label_po
 
 #' merge_magicGating_labels
 #'
-#' function to merge magicGating outputs when gating multiple gates in templates.
+#' function to merge list of gated data when gating multiple gates.
 #' @param list_out_1 List of Dataframes to update.
 #' @param list_out_2 List of Dataframes to merge with list_out_1 dataframes.
+#' @param from_gs Gated data imported from gs. Default to False.
 #' @return list of Dataframes 
 #' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{merge_magicGating_labels()}
 
-merge_magicGating_labels<-function(list_out_1,list_out_2){
+merge_magicGating_labels<-function(list_out_1,list_out_2,from_gs=F){
   list_new_out<-list()
-  all_samples_names<-names(list_out_1$list_gated_data)
-  for(s in all_samples_names){
-    print(sprintf("combining sample:%s",s))
-    df_s_1<-list_out_1$list_gated_data[[s]]
-    df_s_2<-list_out_2$list_gated_data[[s]]
-    inds_no_0<-which(df_s_2[,3]!="0")
-    unique_labels_s2<-unique(df_s_2[,3])
-    inds_no_0_unique<-which(unique_labels_s2!="0")
-    s2_label<-unique_labels_s2[inds_no_0_unique]
-    df_s_1[inds_no_0,3]<-s2_label
-    list_new_out[[s]]<-df_s_1
+  if(from_gs==T){
+    all_samples_names<-names(list_out_1)
+    for(s in all_samples_names){
+      print(sprintf("combining sample:%s",s))
+      df_s_1<-list_out_1[[s]]
+      df_s_2<-list_out_2[[s]]
+      inds_no_0<-which(df_s_2[,3]!="0")
+      unique_labels_s2<-unique(df_s_2[,3])
+      inds_no_0_unique<-which(unique_labels_s2!="0")
+      s2_label<-unique_labels_s2[inds_no_0_unique]
+      df_s_1[inds_no_0,3]<-s2_label
+      list_new_out[[s]]<-df_s_1
+    }
+  }else{
+    all_samples_names<-names(list_out_1$list_gated_data)
+    for(s in all_samples_names){
+      print(sprintf("combining sample:%s",s))
+      df_s_1<-list_out_1$list_gated_data[[s]]
+      df_s_2<-list_out_2$list_gated_data[[s]]
+      inds_no_0<-which(df_s_2[,3]!="0")
+      unique_labels_s2<-unique(df_s_2[,3])
+      inds_no_0_unique<-which(unique_labels_s2!="0")
+      s2_label<-unique_labels_s2[inds_no_0_unique]
+      df_s_1[inds_no_0,3]<-s2_label
+      list_new_out[[s]]<-df_s_1
+    }
   }
   return(list_new_out)
 }
