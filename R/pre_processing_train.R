@@ -282,6 +282,19 @@ get_pop_multiclass<-function(gh,pop){
 
 get_hierarchy_all_pops<-function(gh,export_visnet=F,path.output="None"){
   start<-Sys.time()
+  ##### check loading of necessary libraries #############
+  if (("package:stringr" %in% search()) == F) {
+    warning("stringr library not loaded, attempt to loading...")
+    library(stringr)
+  }
+  if (("package:data.tree" %in% search()) == F) {
+    warning("data.tree library not loaded, attempt to loading...")
+    library(data.tree)
+  }
+  if (("package:visNetwork" %in% search()) == F) {
+    warning("visNetwork library not loaded, attempt to loading...")
+    library(visNetwork)
+  }
   ################################ get info about the hierarchy #####################
   all_pops<-name_pop_gating(gh)
   print("------- list all pops in gh--------")

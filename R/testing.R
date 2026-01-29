@@ -354,6 +354,7 @@ magicPred_all<-function(list_test_data,sample_id=NULL,magic_model=NULL,ref_model
                         thr_dist=0.05,n_cores=1,normalize_data=T,include_zero_val=T,n_cores_all=1,verbose=F,...){
   # check if necessary packages are loaded
   if (("package:dplyr" %in% search())==F) {
+  warning("dplyr library not loaded, attempt to loading...")
   library(dplyr)
   }                      
   set.seed(40)

@@ -777,6 +777,12 @@ flowmagic_pred_to_poly_gates<-function(list_df,pred_label,gate_label,n_cores=1,c
       df <- list_df[[i]]
     }
     names_columns<-colnames(df)
+    check_label_presence<-pred_label %in% df[,3]
+    if(check_label_presence==F){
+      warning("selected label not present in current sample. Pred_label matched to 0 labeled events.")
+      inds<-which(df[,3]=="0")
+      df[inds,3]<-pred_label
+    }
     list_coords<-flowMagic::extract_polygon_gates(gated_df = df,concavity_val = concavity_val)
     df_coord_label_selected<-list_coords[[pred_label]]
     coords<-as.matrix(df_coord_label_selected[,c(1,2)])
@@ -931,5 +937,34 @@ magicGating<-function(fs,sample_id=1,channel_x,channel_y, gs_node=NULL, label_po
                                args_gates))
   
   return(list(list_poly_gates=list_poly_gates,list_gated_data=list_gated_data))
+}
+
+
+#' merge_magicGating_labels
+#'
+#' function to merge magicGating outputs when gating multiple gates in templates.
+#' @param list_out_1 List of Dataframes to update.
+#' @param list_out_2 List of Dataframes to merge with list_out_1 dataframes.s
+#' @return list of Dataframes 
+#' @keywords flowMagic
+#' @export
+#' @examples 
+#' \donttest{merge_magicGating_labels()}
+
+merge_magicGating_labels<-function(list_out_1,list_out_2){
+  list_new_out<-list()
+  all_samples_names<-names(list_out_1$list_gated_data)
+  for(s in all_samples_names){
+    print(sprintf("combining sample:%s",s))
+    df_s_1<-list_out_1$list_gated_data[[s]]
+    df_s_2<-list_out_2$list_gated_data[[s]]
+    inds_no_0<-which(df_s_2[,3]!="0")
+    unique_labels_s2<-unique(df_s_2[,3])
+    inds_no_0_unique<-which(unique_labels_s2!="0")
+    s2_label<-unique_labels_s2[inds_no_0_unique]
+    df_s_1[inds_no_0,3]<-s2_label
+    list_new_out[[s]]<-df_s_1
+  }
+  return(list_new_out)
 }
 

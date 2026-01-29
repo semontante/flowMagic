@@ -55,21 +55,25 @@ import_reference_csv<-function(path_results,n_cores=1){
 
 #' import_test_set
 #' 
-#' read the ungated fcs files into a flowSet.
+#' Read the ungated fcs files into a flowSet.
 #' The ungated fcs are assumed to be already cleaned,compensated,and transformed.
 #' @param path path of directory containig the fcs files.
 #' @param n_samples Number of samples. Default to All.
 #' @param ref_f_n Set reference flowFrame to match channel names. Default to 1(first flowFrame).
+#' @param pattern_filter Filter files to import based on string patterns. Default to NULL.
 #' @return flowSet.
 #' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{import_test_set()}
 
-
-import_test_set_fcs<-function(path,n_samples="All",ref_f_n=1){
+import_test_set_fcs<-function(path,n_samples="All",ref_f_n=1,pattern_filter=NULL){
   start<-Sys.time()
-  paths_files<-list.files(path,full.names = T)
+  if(is.null(pattern_filter)==F){
+    paths_files<-list.files(path,full.names = T,pattern=pattern_filter)
+  }else{
+    paths_files<-list.files(path,full.names = T)
+  }
   if(is.character(n_samples)==F){
     paths_files<-paths_files[n_samples]
   }
