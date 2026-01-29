@@ -516,7 +516,7 @@ get_local_train_sets<-function(gh,hierarchical_tree,info_hierarchy){
       vec_labels_pops_diff_dims<-c()
       for(pop in selected_pops_current_level_different_dims){
         binary_df_root_pop<-map_to_root(gh=gh,pop=pop)
-        binary_df_mother_pop<-subsetting_binary_df(gh=gh,binary_df=binary_df_root_pop) # train set current pop
+        binary_df_mother_pop<-map_to_parent(gh=gh,binary_df=binary_df_root_pop) # train set current pop
         list_df_pops_current_level[[sprintf("%s",pop)]]<-binary_df_mother_pop
         vec_labels_pops_diff_dims<-append(vec_labels_pops_diff_dims,sprintf("%s:%s",pop,1))
       }
@@ -540,12 +540,12 @@ get_local_train_sets<-function(gh,hierarchical_tree,info_hierarchy){
         print(sprintf("current pops same plot:%s",paste0(pops_same_plot,collapse = " ")))
         pop_temp<-pops_same_plot[1]
         binary_df_root_pop<-map_to_root(gh=gh,pop=pop_temp)
-        multiclass_df_mother_pop_temp<-subsetting_binary_df(gh=gh,binary_df=binary_df_root_pop) # needs to be modified with the correct labels
+        multiclass_df_mother_pop_temp<-map_to_parent(gh=gh,binary_df=binary_df_root_pop) # needs to be modified with the correct labels
         dims_element<-colnames(multiclass_df_mother_pop_temp)[c(1,2)]
         vec_rownames_all_pop<-c() # vector that contains the rownames of all pops of the current element
         for (pop in pops_same_plot){
           binary_df_root_pop<-map_to_root(gh=gh,pop=pop)
-          binary_df_mother_pop<-subsetting_binary_df(gh=gh,binary_df=binary_df_root_pop) # train set current pop. Binary,but we need it multiclass
+          binary_df_mother_pop<-map_to_parent(gh=gh,binary_df=binary_df_root_pop) # train set current pop. Binary,but we need it multiclass
           inds<-which(binary_df_mother_pop[,ncol(binary_df_mother_pop)]==1)
           binary_df_mother_pop<-binary_df_mother_pop[inds,]
           rownames_pop<-row.names(binary_df_mother_pop)
