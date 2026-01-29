@@ -6,7 +6,7 @@
 \usage{
 magicPred_all(
   list_test_data,
-  sample_id,
+  sample_id = NULL,
   magic_model = NULL,
   ref_model_info = NULL,
   magic_model_n_gates = NULL,

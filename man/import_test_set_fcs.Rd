@@ -4,7 +4,12 @@
 \alias{import_test_set_fcs}
 \title{import_test_set}
 \usage{
-import_test_set_fcs(path, n_samples = "All", ref_f_n = 1)
+import_test_set_fcs(
+  path,
+  n_samples = "All",
+  ref_f_n = 1,
+  pattern_filter = NULL
+)
 }
 \arguments{
 \item{path}{path of directory containig the fcs files.}
@@ -12,12 +17,14 @@ import_test_set_fcs(path, n_samples = "All", ref_f_n = 1)
 \item{n_samples}{Number of samples. Default to All.}
 
 \item{ref_f_n}{Set reference flowFrame to match channel names. Default to 1(first flowFrame).}
+
+\item{pattern_filter}{Filter files to import based on string patterns. Default to NULL.}
 }
 \value{
 flowSet.
 }
 \description{
-read the ungated fcs files into a flowSet.
+Read the ungated fcs files into a flowSet.
 The ungated fcs are assumed to be already cleaned,compensated,and transformed.
 }
 \examples{
