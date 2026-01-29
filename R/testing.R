@@ -36,7 +36,15 @@ magicPred_hierarchy<-function(list_test_sets,list_models_local,df_tree,n_cores=1
         print(sprintf("########## gating pop %s #########",pop))
         model_current_pops_to_gate<-current_level[[pop]]
         # check if pop to gate is binary or multiclass
-        stringsplitted<-strsplit(pop,"_")[[1]]
+        # protect "_cells"
+        tmp <- gsub("_cells", "@@CELLS@@", pop)
+        
+        # split on remaining underscores
+        stringsplitted <- strsplit(tmp, "_")[[1]]
+        
+        # restore "_cells"
+        stringsplitted <- gsub("@@CELLS@@", "_cells", stringsplitted)
+        
         if(length(stringsplitted)>1){
           print("multiclass pop")
           # check hierarchy position of the pops
