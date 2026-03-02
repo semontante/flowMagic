@@ -6,7 +6,7 @@ Welcome to the flowMagic github repository!
 flowMagic is an automated gating tool designed to automate the gating of bivariate flow cytometry (FCM) data. 
 The flowMagic algorithm is the first algorithm trained on both expert-generated data and a large dataset of gated bivariate FCM data annotated by the players of EVE Online, the online role-playing game developed by the CCP Games company.
 
-![Project Logo](https://github.com/semontante/flowMagic/raw/main/intro/logo_flowMagic.tiff) 
+![Project Logo](https://github.com/semontante/flowMagic/raw/main/intro/logo_flowMagic.png) 
 ![License](https://img.shields.io/github/license/semontante/flowMagic) 
 ![Issues](https://img.shields.io/github/issues/semontante/flowMagic)
 [![PDF](https://img.shields.io/badge/flowMagic_manual-PDF-red)](https://github.com/semontante/flowMagic/blob/main/pk_manual/flowMagic_manual.pdf)
