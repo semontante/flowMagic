@@ -41,5 +41,7 @@ Suggests:
 	klaR(<= 0.6-12),
 	remotes,
 	CytoML,
-	plotly
+	plotly,
+	magrittr,
+	geometry
 	
