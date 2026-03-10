@@ -45,7 +45,7 @@ WORKDIR /home/rstudio
 
 # Set username
 ENV USER=rstudio
-# Set environment variables
+# Set password
 ENV PASSWORD=1234
 
 # Expose the RStudio port
