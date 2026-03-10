@@ -1,0 +1,33 @@
+name: Build and Push Docker Image
+
+# Trigger workflow on push to main branch or when Dockerfile changes
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'Dockerfile'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read        # needed to checkout repo
+      packages: write       # needed to push to GHCR
+
+    steps:
+      # 1️⃣ Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Login to GitHub Container Registry
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      # 3️⃣ Build the Docker image
+      - name: Build Docker image
+        run: docker build -t ghcr.io/${{ github.repository_owner }}/flowmagic_docker:latest .
+
+      # 4️⃣ Push the Docker image
+      - name: Push Docker image
+        run: docker push ghcr.io/${{ github.repository_owner }}/flowmagic_docker:latest
