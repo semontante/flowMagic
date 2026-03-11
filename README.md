@@ -44,18 +44,41 @@ The full technical documentation for the flowMagic R package can be found inside
 
 # Installation
 
-The flowMagic package can be installed within R using the devtools library:
+The recommended approach is to use the **Docker container**, which already includes all the packages needed to run **flowMagic**.
+
+## Requirements
+- **Docker Desktop** installed on your system  
+- Minimum **2 GB of free memory** (more is recommended for large datasets)  
+- (Optional) **RStudio-compatible browser** for viewing the server (any modern browser works)
+
+## Using the Launcher and Docker image (Recommended)
+
+1. Go to the **[GitHub Releases](https://github.com/semontante/flowMagic/releases)** section of this repository.  
+2. Download the **flowMagic launcher** (`.exe` file) for your operating system.  
+3. Run the launcher:
+   - It will automatically **pull the latest flowMagic Docker image** from the GitHub Container Registry.  
+   - It will prompt you to **choose a folder on your computer** to mount into the container (so your data is accessible).  
+   - It will open **RStudio in your default browser**.
+
+The default port mapping is **8788:8787**.  
+
+The launcher automatically stops and removes any previously running container based on the same image.
+
+## Using direct installation 
+
+If you prefer not to use Docker, you can install the package in R directly within R using devtools:
 
 ```R
 library(devtools)
 install_github("semontante/flowMagic")
 ```
 
-Alternatively, the user can download the flowMagic package and install it from their local directory:
+Alternatively, users can download the flowMagic package and install it from a local directory:
 
 ```R
 install.packages("path/to/flowMagic.tar.gz",repos=NULL,type="source")
 ```
+
 # Test script
 
 The script below can be used to test the correct installation of the flowMagic package.
