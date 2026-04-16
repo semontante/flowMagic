@@ -5,7 +5,7 @@ library(ggplot2)
 library(flowWorkspace)
 library(devtools)
 library(CytoML)
-
+library(randomcoloR)
 # Import data and preprocessing ####
 
 # Import FCS files from flowMagic extdata directory
