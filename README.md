@@ -11,6 +11,7 @@ The flowMagic algorithm is the first algorithm trained on both expert-generated 
 ![Issues](https://img.shields.io/github/issues/semontante/flowMagic)
 [![PDF](https://img.shields.io/badge/flowMagic_manual-PDF-red)](https://github.com/semontante/flowMagic/blob/main/pk_manual/flowMagic_manual.pdf)
 [![PDF](https://img.shields.io/badge/flowMagic_vignette-PDF-red)](https://github.com/semontante/flowMagic/blob/main/pk_manual/flowMagic_vignette.pdf)
+[![Code](https://img.shields.io/badge/vignette_code-R_script-blue)](https://github.com/semontante/flowMagic/blob/main/pk_manual/flowmagic_vignette_code.R)
 
 # Overview
 
@@ -65,7 +66,7 @@ The recommended approach is to use the **Docker container**, which already inclu
 
 ## Requirements
 - **Docker Desktop** installed on your system  
-- Minimum **2 GB of free memory** (more is recommended for large datasets)  
+- Minimum **8 GB of free memory** (more is recommended for large datasets)  
 - (Optional) **RStudio-compatible browser** for viewing the server (any modern browser works)
 
 ## Using the Launcher and Docker image (Recommended)
