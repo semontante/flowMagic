@@ -31,12 +31,29 @@ flowMagic framework includes several key functionalities:
 
 All of these functionalities are actively maintained and continuously updated to improve performance, usability and compatibility with the broader FCM analysis ecosystem.
 
-# Video: automated gating using template ML model
+# Video: automated gating using the template ML model
 
 ![Demo](https://github.com/semontante/flowMagic/raw/main/intro/intro_flowMagic_gif.gif)
 
 [Download Full Introduction Video](https://github.com/semontante/flowMagic/raw/main/intro/intro_flowMagic.mp4)
 
+# Automated gating using the generalized ML model
+
+The generalized model approach is composed of two models: Model A predicts the number of gates (optional) and Model B predicts the gates boundaries based either the number of gates indicated by the user or the number of gates predicted by Model A.  In order to use this approach, the user needs to download the R objects of these two models from the Federated Research Data Repository (FRDR) at this link: https://www.frdr-dfdr.ca/repo/dataset/abd523c1-7530-40b7-8807-2e4a4a3e7a5e
+
+The user needs to download the ALL_GP_models.tar.gz file and extract it. The archive contains two folders, one for the model trained on curated data and full data(consensus named folder). Go to the curated data folder (the one without the consensus suffix). 
+
+1) Model A: training_rf_index_3000train10val_2ntree_500points_100folds_31000_consensus_plots_pred_n_gates.RData in models_trained_to_predict_n_gates_final folder.
+
+2) Model B: list_models_all_n_gates.RData in models_trained_to_predict_classes_final folder.
+
+Once they are downloaded, follow the flowMagic manual pdf guide to discover how to use them. 
+
+Note that the generalized approach works only with abundant single density peaks populations, like shown below:
+
+![Example Pop](https://github.com/semontante/flowMagic/raw/main/intro/example_pop_GP_model.png) 
+
+For more complex populations (e.g., populations with multiple peaks or rare populations), please use the Template model.
 
 # Documentation
 
