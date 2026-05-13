@@ -68,16 +68,16 @@ The recommended approach is to use the **Docker container**, which already inclu
 
 Before using the launcher, please install Docker.
 
-- **Docker Desktop** installed and running on Windows or macOS  
-- **Docker Engine** installed and running on Linux  
-- Minimum **8 GB of free memory**; more is recommended for large datasets  
-- A modern web browser for accessing RStudio Server  
+- **Windows/macOS/Linux:** Docker Desktop is recommended for most users.
+- **Linux advanced users:** Docker Engine can also be used instead of Docker Desktop.
+- Minimum **8 GB of free memory**; more is recommended for large datasets.
+- A modern web browser for accessing RStudio Server.
 
 Download Docker Desktop here:
 
 [Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-Linux users can install Docker Engine using the official instructions:
+Linux users who prefer Docker Engine can use the official installation instructions:
 
 [Install Docker Engine](https://docs.docker.com/engine/install/)
 
