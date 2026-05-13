@@ -62,40 +62,220 @@ The full technical documentation for the flowMagic R package can be found inside
 
 # Installation
 
-The recommended approach is to use the **Docker container**, which already includes all the packages needed to run **flowMagic**.
+The recommended approach is to use the **Docker container**, which already includes the packages and system dependencies needed to run **flowMagic**.
 
 ## Requirements
-- **Docker Desktop** installed on your system  
-- Minimum **8 GB of free memory** (more is recommended for large datasets)  
-- (Optional) **RStudio-compatible browser** for viewing the server (any modern browser works)
 
-## Using the Launcher and Docker image (Recommended)
+Before using the launcher, please install Docker.
 
-1. Go to the **[GitHub Releases](https://github.com/semontante/flowMagic/releases)** section of this repository.  
-2. Download the **flowMagic launcher** (`.exe` file) for your operating system.  
-3. Run the launcher:
-   - It will automatically **pull the latest flowMagic Docker image** from the GitHub Container Registry.  
-   - It will prompt you to **choose a folder on your computer** to mount into the container (so your data is accessible).  
-   - It will open **RStudio in your default browser**.
+- **Docker Desktop** installed and running on Windows or macOS  
+- **Docker Engine** installed and running on Linux  
+- Minimum **8 GB of free memory**; more is recommended for large datasets  
+- A modern web browser for accessing RStudio Server  
 
-The default port mapping is **8788:8787**.  
+Download Docker Desktop here:
 
-The launcher automatically stops and removes any previously running container based on the same image.
+[Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-## Using direct installation 
+Linux users can install Docker Engine using the official instructions:
 
-If you prefer not to use Docker, you can install the package in R directly within R using devtools:
+[Install Docker Engine](https://docs.docker.com/engine/install/)
 
-```R
+## Using the launcher and Docker image recommended
+
+The easiest way to use flowMagic is through the launcher scripts provided in the **GitHub Releases** section of this repository:
+
+[flowMagic releases](https://github.com/semontante/flowMagic/releases)
+
+The launchers use the following Docker image:
+
+```text
+ghcr.io/semontante/flowmagic_docker:latest
+```
+
+When launched, RStudio Server will be available locally in your browser at:
+
+```text
+http://localhost:8787
+```
+
+Login details:
+
+```text
+Username: rstudio
+Password: 1234
+```
+
+## Windows
+
+Download the Windows launcher from the release page:
+
+```text
+launch_flowmagic_windows.bat
+```
+
+Then double-click the file.
+
+The launcher will:
+
+1. Ask you to select a folder containing your data.
+2. Download the latest flowMagic Docker image if needed.
+3. Start the Docker container.
+4. Open RStudio Server in your default browser.
+
+Your selected folder will be available inside RStudio at:
+
+```text
+/home/rstudio/main
+```
+
+Keep the launcher window open while using RStudio.
+
+When you are finished, press any key in the launcher window to stop and remove the running container.
+
+This will **not** delete your data files.
+
+## macOS and Linux
+
+Download the macOS/Linux launcher from the release page:
+
+```text
+launch_flowmagic_mac_linux.sh
+```
+
+Open a terminal in the folder where you downloaded the file and run:
+
+```bash
+chmod +x launch_flowmagic_mac_linux.sh
+./launch_flowmagic_mac_linux.sh
+```
+
+The launcher will:
+
+1. Ask you to select a folder containing your data.
+2. Download the latest flowMagic Docker image if needed.
+3. Start the Docker container.
+4. Open RStudio Server in your default browser.
+
+Your selected folder will be available inside RStudio at:
+
+```text
+/home/rstudio/main
+```
+
+Keep the terminal window open while using RStudio.
+
+When you are finished, press Enter in the terminal to stop and remove the running container.
+
+This will **not** delete your data files.
+
+## First run
+
+The first time you run the launcher, Docker will need to download the flowMagic image.
+
+The image may take several minutes to download depending on your internet connection.
+
+Subsequent runs should be faster because Docker stores the image locally.
+
+## Manual Docker command
+
+If you prefer not to use the launcher, you can run the Docker image manually.
+
+Replace `/path/to/your/data` with the folder containing your data.
+
+```bash
+docker run -d \
+  --pull always \
+  --name flowmagic_rstudio \
+  -p 8787:8787 \
+  -e PASSWORD=1234 \
+  -v /path/to/your/data:/home/rstudio/main \
+  ghcr.io/semontante/flowmagic_docker:latest
+```
+
+Then open:
+
+```text
+http://localhost:8787
+```
+
+Login with:
+
+```text
+Username: rstudio
+Password: 1234
+```
+
+To stop and remove the container:
+
+```bash
+docker stop flowmagic_rstudio
+docker rm flowmagic_rstudio
+```
+
+## Troubleshooting
+
+### Docker is not running
+
+Make sure Docker Desktop or Docker Engine is installed and running before using the launcher.
+
+### Port 8787 is already in use
+
+RStudio Server uses port `8787`.
+
+If another program is already using this port, the launcher may fail. Close the other program or edit the launcher script and change the host port.
+
+### The browser does not open automatically
+
+Open your browser manually and go to:
+
+```text
+http://localhost:8787
+```
+
+### Login does not work
+
+Use:
+
+```text
+Username: rstudio
+Password: 1234
+```
+
+### The image download is slow
+
+The Docker image may take several minutes to download the first time.
+
+Subsequent runs should be faster because Docker stores the image locally.
+
+## Using direct installation
+
+The Docker container is the recommended option because it already includes the required R packages and system dependencies.
+
+Direct installation is mainly recommended for users who are comfortable managing R packages, Bioconductor packages, and system libraries themselves.
+
+### Install from GitHub
+
+First, install `devtools` if it is not already installed:
+
+```r
+install.packages("devtools")
+```
+
+Then install flowMagic from GitHub:
+
+```r
 library(devtools)
 install_github("semontante/flowMagic")
 ```
 
-Alternatively, users can download the flowMagic package and install it from a local directory:
+Alternatively, you can use `remotes`:
 
-```R
-install.packages("path/to/flowMagic.tar.gz",repos=NULL,type="source")
+```r
+install.packages("remotes")
+remotes::install_github("semontante/flowMagic")
 ```
+
 
 # Test script
 
