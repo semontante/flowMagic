@@ -921,15 +921,27 @@ magicGating<-function(fs,sample_id=1,channel_x,channel_y, gs_node=NULL, label_po
     df_exprs <- as.data.frame(expr_matrix_ff)
     df_exprs_selected_channels <- df_exprs[, c(channel_x, channel_y)]
     
-    # get gate coordinates
     print("Get gate coordinates")
     
-    polygon_df <- do.call(magicPlot_template, c(list(df = df_exprs_selected_channels), args_plot))
+    polygon_df <- do.call(
+      magicPlot_template, 
+      c(list(df = df_exprs_selected_channels), args_plot)
+    )
     
-    df_gated<-flowMagic::magic_label_poly(df = df_exprs_selected_channels,polygon_df = polygon_df,label_pol = label_pol)
-    # add gated data to list
+    df_gated <- flowMagic::magic_label_poly(
+      df = df_exprs_selected_channels, 
+      polygon_df = polygon_df, 
+      label_pol = label_pol
+    )
+    
+    polygon_df$group_gate <- label_pol
+    
+    attr(df_gated, "manual_polygon") <- polygon_df
+    attr(df_gated, "gate_source") <- "manual"
+    
     print("Add gated data to list")
-    list_gated_data[[as.character(id)]]<-df_gated
+    
+    list_gated_data[[as.character(id)]] <- df_gated
     
 
   }

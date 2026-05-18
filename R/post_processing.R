@@ -13,21 +13,53 @@
 #' \donttest{get_hull_all_gates()}
 
 get_hull_all_gates<-function(gated_df,concavity_val=1,spar_val=0.7,smoothing=F){
-  colnames(gated_df)<-c("x","y","classes")
-  all_classes<-unique(gated_df$classes)
-  list_df_hull<-list()
-  for(classes in all_classes){
-    inds<-which(gated_df$classes==classes)
-    df_current_classes<-gated_df[inds,]
-    df_current_classes_hull_values<-as.data.frame(concaveman::concaveman(as.matrix(df_current_classes[,c(1,2)]),concavity=concavity_val))
-    if(smoothing == T){
-      df_current_classes_hull_values<-smooth_hull(hull_df=df_current_classes_hull_values,spar=spar_val)
-    }
-    vec_group<-rep(sprintf("%s",classes),nrow(df_current_classes_hull_values))
-    df_current_hull<-cbind(df_current_classes_hull_values,vec_group)
-    colnames(df_current_hull)<-c("x","y","group_gate")
-    list_df_hull[[sprintf("%s",classes)]]<-df_current_hull
+  manual_polygon <- attr(gated_df, "manual_polygon")
+  gate_source <- attr(gated_df, "gate_source")
+  
+  if (!is.null(manual_polygon) && identical(gate_source, "manual")) {
+    out <- list()
+    
+    gate_name <- as.character(unique(manual_polygon$group_gate)[1])
+    out[[gate_name]] <- manual_polygon
+    
+    return(out)
   }
+  
+  colnames(gated_df) <- c("x", "y", "classes")
+  all_classes <- unique(gated_df$classes)
+  
+  list_df_hull <- list()
+  
+  for (classes in all_classes) {
+    inds <- which(gated_df$classes == classes)
+    df_current_classes <- gated_df[inds, ]
+    
+    df_current_classes_hull_values <- as.data.frame(
+      concaveman::concaveman(
+        as.matrix(df_current_classes[, c(1, 2)]), 
+        concavity = concavity_val
+      )
+    )
+    
+    if (smoothing == TRUE) {
+      df_current_classes_hull_values <- smooth_hull(
+        hull_df = df_current_classes_hull_values, 
+        spar = spar_val
+      )
+    }
+    
+    vec_group <- rep(sprintf("%s", classes), nrow(df_current_classes_hull_values))
+    
+    df_current_hull <- cbind(
+      df_current_classes_hull_values, 
+      vec_group
+    )
+    
+    colnames(df_current_hull) <- c("x", "y", "group_gate")
+    
+    list_df_hull[[sprintf("%s", classes)]] <- df_current_hull
+  }
+  
   return(list_df_hull)
 }
 

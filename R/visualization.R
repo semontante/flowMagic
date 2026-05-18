@@ -36,6 +36,9 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
           apply_manual_scale = F, hull_only = F, size_points = 1, concavity_val = 20, 
           aspect_ratio = NULL, x_lim1 = NULL, x_lim2 = NULL, y_lim1 = NULL, 
           y_lim2 = NULL,add_labels=F,map_label_polygon=NULL,size_pol_name=6,show_marginals=F,...){
+  # copy of attributes
+  manual_polygon <- attr(df, "manual_polygon")
+  gate_source <- attr(df, "gate_source")
   # capture all extra arguments
   args_list <- list(...)
   # Arguments for get_hull_all_gates
@@ -106,6 +109,11 @@ magicPlot<-function(df, type = "dens", polygons_coords_list = NULL, show_legend 
     col <- densCols(df[, c(1, 2)], colramp = colPalette, 
                     nbin = 200)
     df <- cbind(df, col)
+
+    # restore attributes lost with cbind (because cbind make a new object dropping the old attributes)
+    attr(df, "manual_polygon") <- manual_polygon
+    attr(df, "gate_source") <- gate_source
+
     df$col <- as.character(df$col)
     if (is.null(polygons_coords_list) == T) {
       list_df_hull<- do.call(get_hull_all_gates,c(list(gated_df=df,concavity_val = concavity_val), args_get_hull))
