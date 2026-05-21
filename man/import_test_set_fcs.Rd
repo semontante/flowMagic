@@ -25,7 +25,6 @@ flowSet.
 }
 \description{
 Read the ungated fcs files into a flowSet.
-The ungated fcs are assumed to be already cleaned,compensated,and transformed.
 }
 \examples{
 \donttest{import_test_set()}

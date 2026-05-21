@@ -4,18 +4,20 @@
 \alias{merge_magicGating_labels}
 \title{merge_magicGating_labels}
 \usage{
-merge_magicGating_labels(list_out_1, list_out_2)
+merge_magicGating_labels(list_out_1, list_out_2, gated_data_only = F)
 }
 \arguments{
 \item{list_out_1}{List of Dataframes to update.}
 
-\item{list_out_2}{List of Dataframes to merge with list_out_1 dataframes.s}
+\item{list_out_2}{List of Dataframes to merge with list_out_1 dataframes.}
+
+\item{gated_data_only}{Input contains only gated data,not polygons.Default to False.}
 }
 \value{
 list of Dataframes
 }
 \description{
-function to merge magicGating outputs when gating multiple gates in templates.
+function to merge list of gated data when gating multiple gates.
 }
 \examples{
 \donttest{merge_magicGating_labels()}

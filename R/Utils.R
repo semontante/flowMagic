@@ -963,16 +963,16 @@ magicGating<-function(fs,sample_id=1,channel_x,channel_y, gs_node=NULL, label_po
 #' function to merge list of gated data when gating multiple gates.
 #' @param list_out_1 List of Dataframes to update.
 #' @param list_out_2 List of Dataframes to merge with list_out_1 dataframes.
-#' @param from_gs Gated data imported from gs. Default to False.
+#' @param gated_data_only Input contains only gated data,not polygons.Default to False.
 #' @return list of Dataframes 
 #' @keywords flowMagic
 #' @export
 #' @examples 
 #' \donttest{merge_magicGating_labels()}
 
-merge_magicGating_labels<-function(list_out_1,list_out_2,from_gs=F){
+merge_magicGating_labels<-function(list_out_1,list_out_2,gated_data_only=F){
   list_new_out<-list()
-  if(from_gs==T){
+  if(gated_data_only==T){
     all_samples_names<-names(list_out_1)
     for(s in all_samples_names){
       print(sprintf("combining sample:%s",s))
