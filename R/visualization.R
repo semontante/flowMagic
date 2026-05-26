@@ -447,3 +447,180 @@ magicPlot_fs<-function(fs,sample_id,channel_x,channel_y,...){
   return(out)
 }
 
+#' magicPlot_gs_node
+#'
+#' Plot selected channels from one GatingSet node.
+#'
+#' This function extracts one sample and one population node from a `GatingSet`
+#' as a `flowFrame`, then plots two selected channels using `magicPlot_fs()`.
+#' Unlike `magic_plot_gs_gates()`, this function does not overlay multiple gate
+#' labels. It simply plots the events contained in the selected node.
+#'
+#' @param gs_input A `GatingSet` object.
+#' @param node_name Character. Name of the population node to extract, such as
+#'   `"root"`, `"Singlets"`, or `"Live_cells"`.
+#' @param sample_id Sample identifier used to select one sample from the
+#'   `GatingSet`. This can be a sample name or an index, depending on
+#'   `get_flowframe_from_gs()`.
+#' @param channel_x Character. Name of the channel to plot on the x-axis.
+#' @param channel_y Character. Name of the channel to plot on the y-axis.
+#' @param ... Additional arguments passed to `magicPlot_fs()`.
+#'
+#' @return A plot object returned by `magicPlot_fs()`.
+#'
+#' @keywords flowMagic plotting GatingSet
+#' @export
+#'
+#' @examples
+#' \donttest{
+#' magicPlot_gs_node(
+#'   gs_input = gs,
+#'   node_name = "Live_cells",
+#'   sample_id = "sample_01.fcs",
+#'   channel_x = "FSC-A",
+#'   channel_y = "LIVE DEAD Blue-A"
+#' )
+#' }
+
+magicPlot_gs_node <- function(gs_input, node_name, sample_id, channel_x, channel_y, ...) {
+  
+  # Extract the selected sample and node from the GatingSet.
+  # The returned object is a flowFrame containing the events in node_name.
+  ff <- flowMagic::get_flowframe_from_gs(
+    gs = gs_input,
+    node_name = node_name,
+    sample_id = sample_id
+  )
+  
+  # Plot the selected x/y channels from the extracted flowFrame.
+  # Additional plotting options are passed to magicPlot_fs() through ... .
+  out <- flowMagic::magicPlot_fs(
+    fs = ff,
+    channel_x = channel_x,
+    channel_y = channel_y,
+    ...
+  )
+  
+  return(out)
+}
+
+#' magicPlot_gs_gates
+#'
+#' Plot one sample from a GatingSet with one or more gated populations overlaid.
+#'
+#' This function extracts one or more gated populations from a single sample in a
+#' `GatingSet` and visualizes them using `magicPlot()`. If multiple gate names are
+#' supplied, the extracted gated data are merged so the selected populations are
+#' displayed together on the same bivariate plot. Each population is labeled using
+#' its node name.
+#'
+#' @param gs A `GatingSet` object.
+#' @param sample_id Character. Name of the sample to plot. Must be present in
+#'   `sampleNames(gs)`.
+#' @param gate_names Character vector. One or more GatingSet node names to
+#'   extract and display.
+#' @param size_points Numeric. Point size passed to `magicPlot()`. Default is
+#'   `0.5`.
+#' @param concavity_val Numeric. Concavity parameter available for downstream
+#'   polygon plotting. Default is `50`.
+#' @param ... Additional arguments passed to `magicPlot()`, such as `type`,
+#'   `size_axis_text`, `size_title_x`, or `size_title_y`.
+#'
+#' @return A `ggplot` object showing the selected sample and gated populations.
+#'
+#' @keywords flowMagic plotting GatingSet
+#' @export
+#'
+#' @examples
+#' \donttest{
+#' # Plot one gate
+#' p1 <- magicPlot_gs_gates(
+#'   gs = gs,
+#'   sample_id = "sample_01.fcs",
+#'   gate_names = "Live_cells",
+#'   size_points = 0.5
+#' )
+#'
+#' # Plot multiple gates together
+#' p2 <- magicPlot_gs_gates(
+#'   gs = gs,
+#'   sample_id = "sample_01.fcs",
+#'   gate_names = c("Live_cells", "Dead_cells"),
+#'   type = "ML",
+#'   size_points = 0.5
+#' )
+#' }
+
+
+magicPlot_gs_gates <- function(gs,
+                                 sample_id,
+                                 gate_names,
+                                 size_points = 0.5,
+                                 concavity_val=50,
+                                 ...) {
+  
+  message("$$$ Plot GatingSet sample $$$")
+  message(sprintf("Sample: %s", sample_id))
+  message(sprintf("Gates: %s", paste(gate_names, collapse = ", ")))
+  
+  if (!(sample_id %in% sampleNames(gs))) {
+    stop("sample_id is not present in sampleNames(gs): ", sample_id)
+  }
+  
+  list_gates <- list()
+  
+  for (i in seq_along(gate_names)) {
+    
+    current_gate <- gate_names[i]
+    current_label <- current_gate
+    
+    message(sprintf(
+      "Extracting gate %s and assigning label %s",
+      current_gate,
+      current_label
+    ))
+    
+    list_gated_i <- get_list_df_gated_plots(
+      gs = gs[sample_id],
+      gate_name = current_gate,
+      label_pop = current_label
+    )
+    
+    list_gates[[current_gate]] <- list_gated_i
+  }
+  
+  if (length(list_gates) == 1) {
+    
+    list_gated_data <- list_gates[[1]]
+    
+  } else {
+    
+    message("Merging selected gates into one plot.")
+    
+    list_gated_data <- Reduce(
+      f = function(x, y) {
+        merge_magicGating_labels(
+          list_out_1 = x,
+          list_out_2 = y,
+          gated_data_only  = TRUE
+        )
+      },
+      x = list_gates
+    )
+  }
+  
+  df_plot <- list_gated_data[[sample_id]]
+  
+  message(sprintf("Plot selected sample: %s", sample_id))
+  
+  p <- magicPlot(
+    df = df_plot,
+    size_points = size_points,
+    concavity_val=concavity_val,
+    ...
+  )
+  
+  p <- p + ggplot2::ggtitle(sample_id)
+  
+  return(p)
+}
