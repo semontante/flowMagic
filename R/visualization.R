@@ -624,3 +624,716 @@ magicPlot_gs_gates <- function(gs,
   
   return(p)
 }
+
+
+#' magicPlot_gs_hierarchy
+#'
+#' Plot all gates from one GatingSet sample as a hierarchy-style figure.
+#'
+#' This function generates a wrapped figure containing one bivariate plot for
+#' each gating step in a `GatingSet` hierarchy. For each subplot, the title
+#' indicates the parent population and the gate labels indicate the child
+#' population or populations shown on that plot.
+#'
+#' Gates that share the same bivariate dimensions are automatically grouped into
+#' the same subplot. For example, if `NK_cells`, `B_cells`, and `T_cells` are
+#' sibling gates drawn on the same two channels, they are displayed together in
+#' one plot. Gates that do not share dimensions with sibling gates are plotted
+#' individually.
+#'
+#' The hierarchy order is determined from `get_hierarchy_all_pops()`, and the
+#' final plots are combined using `patchwork::wrap_plots()`.
+#'
+#' @param gs A `GatingSet` object.
+#'
+#' @param sample_id Character. Name of the sample to plot. The value must be
+#'   present in `sampleNames(gs)`.
+#'
+#' @param n_col_wrap Integer. Number of columns used to arrange the wrapped
+#'   hierarchy figure. Default is `4`.
+#'
+#' @param size_points Numeric. Point size passed to `magicPlot_gs_gates()` and
+#'   ultimately to `magicPlot()`. Default is `0.5`.
+#'
+#' @param size_title Numeric or `NULL`. Size of the title for each subplot. Each
+#'   subplot title indicates the parent population, for example
+#'   `"Parent pop: CD45+"`. If `NULL` and `auto_size = TRUE`, the value is
+#'   computed automatically from the grid size. If `NULL` and
+#'   `auto_size = FALSE`, the default value is `10`.
+#'
+#' @param concavity_val Numeric. Concavity value used when polygon boundaries
+#'   are estimated from gated events. This value is passed to
+#'   `magicPlot_gs_gates()` and then to `magicPlot()`. Larger values generally
+#'   produce smoother polygon boundaries. Default is `50`.
+#'
+#' @param add_labels Logical. If `TRUE`, gate names are printed inside the
+#'   polygon gates. This is passed to `magicPlot()`. Labels are only shown for
+#'   plotting modes that support polygon labels, such as `type = "dens"`.
+#'   Default is `TRUE`.
+#'
+#' @param size_pol_name Numeric or `NULL`. Size of the gate labels printed inside
+#'   polygon gates. If `NULL` and `auto_size = TRUE`, the value is computed
+#'   automatically from the grid size. If `NULL` and `auto_size = FALSE`, the
+#'   default value is `4`.
+#'
+#' @param auto_size Logical. If `TRUE`, automatically estimates text sizes for
+#'   axis tick labels, axis titles, polygon labels, and subplot titles based on
+#'   the number of rows and columns in the wrapped figure. User-supplied values
+#'   passed through `...`, such as `size_axis_text`, `size_title_x`, or
+#'   `size_title_y`, are respected and not overwritten. Default is `TRUE`.
+#'
+#' @param return_plot_list Logical. If `FALSE`, return only the wrapped plot. If
+#'   `TRUE`, return a list containing the wrapped plot and intermediate objects
+#'   used to build it. Default is `FALSE`.
+#'
+#' @param path_output Character or `NULL`. Full file path where the wrapped
+#'   hierarchy plot should be saved. If `NULL`, no file is exported. The file
+#'   format is inferred by `ggplot2::ggsave()` from the file extension, for
+#'   example `.tiff`, `.png`, or `.pdf`. Default is `NULL`.
+#'
+#' @param plot_width Numeric. Width, in inches, assigned to each individual
+#'   subplot when exporting the full wrapped figure. The final exported width is
+#'   calculated as `plot_width * number_of_columns`. Default is `4`.
+#'
+#' @param plot_height Numeric. Height, in inches, assigned to each individual
+#'   subplot when exporting the full wrapped figure. The final exported height is
+#'   calculated as `plot_height * number_of_rows`. Default is `4`.
+#'
+#' @param dpi Numeric. Resolution used when exporting raster image formats such
+#'   as `.png` or `.tiff`. Default is `300`.
+#'
+#' @param ... Additional plotting arguments passed to `magicPlot_gs_gates()` and
+#'   then to `magicPlot()`. Common examples include `type`, `size_axis_text`,
+#'   `size_title_x`, `size_title_y`, `show_legend`, `x_lim1`, `x_lim2`,
+#'   `y_lim1`, and `y_lim2`.
+#'
+#' @return If `return_plot_list = FALSE`, a wrapped `patchwork` plot object. If
+#'   `return_plot_list = TRUE`, a list with the following elements:
+#'   \describe{
+#'     \item{plot}{The final wrapped hierarchy plot.}
+#'     \item{plot_list}{A named list of individual `ggplot` objects before wrapping.}
+#'     \item{plot_groups}{A named list describing which gate or gates were plotted in each subplot.}
+#'     \item{plot_titles}{A named list containing the parent population title for each subplot.}
+#'     \item{df_tree}{The hierarchy table returned by `get_hierarchy_all_pops()` and used to build the figure.}
+#'   }
+#'
+#' @details
+#' The function uses `get_hierarchy_all_pops()` to obtain a hierarchy table. The
+#' table is walked row by row so that plots follow the gating hierarchy order.
+#' If a child population has an empty `Dimensions` value, it is plotted alone.
+#' If multiple child populations share the same `Dimensions` value, they are
+#' grouped into the same subplot and shown together.
+#'
+#' The plotting itself is delegated to `magicPlot_gs_gates()`. This wrapper
+#' determines which gates should appear in each subplot, then calls
+#' `magicPlot_gs_gates()` repeatedly and combines the resulting plots.
+#'
+#' @keywords flowMagic plotting GatingSet hierarchy
+#' @export
+#'
+#' @examples
+#' \donttest{
+#' # Plot the full hierarchy for one sample
+#' p <- magicPlot_gs_hierarchy(
+#'   gs = gs,
+#'   sample_id = "sample_01.fcs",
+#'   n_col_wrap = 3,
+#'   type = "dens"
+#' )
+#'
+#' # Plot and export the hierarchy figure as a TIFF file
+#' p <- magicPlot_gs_hierarchy(
+#'   gs = gs,
+#'   sample_id = "sample_01.fcs",
+#'   n_col_wrap = 3,
+#'   type = "dens",
+#'   path_output = "~/main/Results/sample_01_hierarchy.tiff",
+#'   plot_width = 4,
+#'   plot_height = 4,
+#'   dpi = 300
+#' )
+#'
+#' # Manually control text sizes instead of using automatic sizing
+#' p <- magicPlot_gs_hierarchy(
+#'   gs = gs,
+#'   sample_id = "sample_01.fcs",
+#'   n_col_wrap = 3,
+#'   auto_size = FALSE,
+#'   size_title = 10,
+#'   size_pol_name = 4,
+#'   size_axis_text = 8,
+#'   size_title_x = 10,
+#'   size_title_y = 10,
+#'   type = "dens"
+#' )
+#' }
+
+magicPlot_gs_hierarchy <- function(gs,
+                                   sample_id,
+                                   n_col_wrap = 4,
+                                   size_points = 0.5,
+                                   size_title = NULL,
+                                   concavity_val = 50,
+                                   add_labels = TRUE,
+                                   size_pol_name = NULL,
+                                   auto_size = TRUE,
+                                   return_plot_list = FALSE,
+                                   path_output = NULL,
+                                   plot_width = 4,
+                                   plot_height = 4,
+                                   dpi = 300,
+                                   ...) {
+  
+  # =========================================================================
+  # 1. Start workflow and validate the selected sample
+  # =========================================================================
+  # This function creates a hierarchy-style summary figure from a GatingSet.
+  #
+  # For one selected sample, it:
+  #   1. reads the gating hierarchy,
+  #   2. identifies which gates should be plotted alone,
+  #   3. identifies which sibling gates share the same bivariate dimensions
+  #      and should therefore be plotted together,
+  #   4. generates one plot per gating step,
+  #   5. combines all plots into one wrapped figure,
+  #   6. optionally exports the wrapped figure to disk.
+  #
+  # In each subplot:
+  #   - the title is the parent population,
+  #   - the polygon labels are the child gate names.
+  #
+  # Example:
+  #   title: "Parent pop: CD45+"
+  #   labels inside plot: "NK_cells", "B_cells", "T_cells"
+  
+  message("$$$ Plot GatingSet hierarchy $$$")
+  message(sprintf("Sample: %s", sample_id))
+  
+  # Check that the selected sample exists in the GatingSet.
+  # This is important because later we use gs[[sample_id]].
+  if (!(sample_id %in% sampleNames(gs))) {
+    stop("sample_id is not present in sampleNames(gs): ", sample_id)
+  }
+  
+  
+  # =========================================================================
+  # 2. Extract hierarchy information from the selected GatingHierarchy
+  # =========================================================================
+  # get_hierarchy_all_pops() is expected to return a list containing df_tree.
+  #
+  # df_tree should contain at least these columns:
+  #   Mother     : parent population
+  #   Children   : child gate/population
+  #   Dimensions : empty if the child gate is plotted alone,
+  #                or a shared ID such as "same_dims_1" when multiple sibling
+  #                gates should be plotted together.
+  #
+  # Example rows:
+  #
+  #   Mother   Children   Dimensions
+  #   root     Live       ""
+  #   CD45+    NK_cells   same_dims_1
+  #   CD45+    B_cells    same_dims_1
+  #   CD45+    T_cells    same_dims_1
+  #
+  # In this example, Live is plotted alone, while NK_cells, B_cells, and
+  # T_cells are plotted together because they share the same Dimensions ID.
+  
+  message("Get hierarchy information")
+  
+  hierarchy_info <- flowMagic::get_hierarchy_all_pops(gs[[sample_id]])
+  df_tree <- hierarchy_info$df_tree
+  
+  # The root node is not itself a gate drawn inside another population.
+  # If it appears as a child, remove it from the plotting table.
+  df_tree <- df_tree[df_tree$Children != "root", ]
+  
+  # Stop if no actual gated populations are available.
+  if (nrow(df_tree) == 0) {
+    stop("No non-root populations found in the GatingSet hierarchy.")
+  }
+  
+  
+  # =========================================================================
+  # 3. Build plotting groups by walking through df_tree in hierarchy order
+  # =========================================================================
+  # We now convert df_tree into two parallel lists:
+  #
+  #   plot_groups:
+  #     tells the function which gate or gates should appear in each subplot.
+  #
+  #   plot_titles:
+  #     tells the function what title each subplot should have.
+  #
+  # The names of plot_groups are internal plot IDs. They are mostly useful for
+  # storing and returning the plots.
+  #
+  # Example:
+  #
+  #   plot_groups[["Live_cells"]] <- "Live_cells"
+  #   plot_titles[["Live_cells"]] <- "root"
+  #
+  #   plot_groups[["NK_cells_B_cells_T_cells"]] <- c("NK_cells", "B_cells", "T_cells")
+  #   plot_titles[["NK_cells_B_cells_T_cells"]] <- "CD45+"
+  #
+  # The function iterates row-by-row through df_tree to preserve the biological
+  # hierarchy order: root-to-leaf.
+  #
+  # used_dims keeps track of same-dimension groups that were already added.
+  # Without used_dims, grouped gates would be plotted repeatedly, once per row.
+  
+  plot_groups <- list()
+  plot_titles <- list()
+  used_dims <- character(0)
+  
+  message("Build plot groups following df_tree order")
+  
+  for (i in seq_len(nrow(df_tree))) {
+    
+    # Extract parent, child, and dimension-group information for this row.
+    mother_name <- df_tree$Mother[i]
+    child_name <- df_tree$Children[i]
+    dim_id <- df_tree$Dimensions[i]
+    
+    
+    # -----------------------------------------------------------------------
+    # 3A. Single-gate case
+    # -----------------------------------------------------------------------
+    # If dim_id is empty or NA, this gate does not belong to a group of sibling
+    # gates drawn on the same bivariate dimensions. Therefore, it gets its own
+    # subplot.
+    
+    if (is.na(dim_id) || dim_id == "") {
+      
+      # Store the single gate as its own plotting group.
+      plot_groups[[child_name]] <- child_name
+      
+      # The plot title should be the parent population, not the child gate.
+      plot_titles[[child_name]] <- mother_name
+      
+      message(sprintf(
+        "Added single plot: mother = %s, gate = %s",
+        mother_name,
+        child_name
+      ))
+      
+      
+      # -----------------------------------------------------------------------
+      # 3B. Grouped-gate case
+      # -----------------------------------------------------------------------
+      # If dim_id is not empty, this child belongs to a group of sibling gates
+      # that share the same bivariate dimensions.
+      #
+      # Example:
+      #   CD45+ -> NK_cells, B_cells, T_cells
+      #
+      # These gates should be overlaid together in the same subplot.
+      
+    } else {
+      
+      # Add this same-dimension group only once.
+      # The first time this dim_id appears, we collect all gates with this dim_id.
+      # Later rows with the same dim_id are skipped.
+      if (!(dim_id %in% used_dims)) {
+        
+        # Select all gates belonging to this same-dimension group.
+        df_dim <- df_tree[df_tree$Dimensions == dim_id, ]
+        
+        # These are the child gates that will be plotted together.
+        gate_names_current <- df_dim$Children
+        
+        # All rows in the same-dimension group should share the same parent.
+        # Use the first parent name as the subplot title.
+        mother_name_current <- df_dim$Mother[1]
+        
+        # Build an internal name for this grouped subplot.
+        # This name is used as the list key in plot_groups and plot_list.
+        group_name <- paste(gate_names_current, collapse = "_")
+        
+        # Store the grouped gates and their parent title.
+        plot_groups[[group_name]] <- gate_names_current
+        plot_titles[[group_name]] <- mother_name_current
+        
+        # Mark this dimension group as used.
+        used_dims <- c(used_dims, dim_id)
+        
+        message(sprintf(
+          "Added grouped plot: mother = %s, gates = %s",
+          mother_name_current,
+          paste(gate_names_current, collapse = ", ")
+        ))
+      }
+    }
+  }
+  
+  
+  # =========================================================================
+  # 4. Compute wrapped-grid dimensions
+  # =========================================================================
+  # The number of plots determines the number of rows needed in the final figure.
+  #
+  # n_col_wrap controls the maximum number of columns.
+  # If there are fewer plots than n_col_wrap, the number of columns is reduced.
+  #
+  # These values are used for:
+  #   - patchwork layout,
+  #   - automatic text-size scaling,
+  #   - exported figure size.
+  
+  n_plots <- length(plot_groups)
+  n_cols <- min(n_col_wrap, n_plots)
+  n_rows <- ceiling(n_plots / n_cols)
+  
+  message(sprintf("Number of hierarchy plots: %s", n_plots))
+  message(sprintf("Grid: %s columns x %s rows", n_cols, n_rows))
+  
+  
+  # =========================================================================
+  # 5. Collect optional user arguments from ...
+  # =========================================================================
+  # The ... argument allows users to pass additional plotting options without
+  # adding every possible magicPlot() option to this wrapper.
+  #
+  # For example, the user may call:
+  #
+  #   magicPlot_gs_hierarchy(
+  #     gs = gs,
+  #     sample_id = "sample_01.fcs",
+  #     type = "dens",
+  #     size_axis_text = 10,
+  #     size_title_x = 12,
+  #     size_title_y = 12,
+  #     show_legend = FALSE
+  #   )
+  #
+  # In this function, those extra arguments are captured by ...
+  # This line converts them into a normal named list:
+  #
+  #   args_list <- list(...)
+  #
+  # If the user supplied:
+  #
+  #   type = "dens", size_axis_text = 10
+  #
+  # then args_list becomes:
+  #
+  #   list(type = "dens", size_axis_text = 10)
+  #
+  # We use a list because it can be inspected, modified, and then passed to
+  # another function later.
+  
+  args_list <- list(...)
+  
+  
+  # =========================================================================
+  # 6. Automatically scale plot text sizes, if requested
+  # =========================================================================
+  # When many plots are shown in one grid, text sizes need to be adjusted.
+  #
+  # auto_size = TRUE fills in reasonable defaults for:
+  #   - axis tick labels,
+  #   - x-axis title,
+  #   - y-axis title,
+  #   - polygon gate labels,
+  #   - subplot title.
+  #
+  # Important:
+  #   User-provided values are not overwritten.
+  #
+  # Example:
+  #   If the user passes size_axis_text = 12 through ...,
+  #   this function keeps that value and does not replace it.
+  
+  if (auto_size == TRUE) {
+    
+    message("Apply automatic plot-size scaling")
+    
+    # Use the larger grid dimension as a simple measure of layout complexity.
+    # A 4 x 4 grid has scale_factor = 4.
+    # A larger scale_factor leads to slightly smaller text.
+    scale_factor <- max(n_cols, n_rows)
+    
+    # Axis tick label size.
+    # Only set it automatically if the user did not provide size_axis_text.
+    if (!("size_axis_text" %in% names(args_list))) {
+      args_list$size_axis_text <- max(7, round(20 / sqrt(scale_factor), 1))
+    }
+    
+    # X-axis title size.
+    # Only set it automatically if the user did not provide size_title_x.
+    if (!("size_title_x" %in% names(args_list))) {
+      args_list$size_title_x <- max(9, round(24 / sqrt(scale_factor), 1))
+    }
+    
+    # Y-axis title size.
+    # Only set it automatically if the user did not provide size_title_y.
+    if (!("size_title_y" %in% names(args_list))) {
+      args_list$size_title_y <- max(9, round(24 / sqrt(scale_factor), 1))
+    }
+    
+    # Gate label size printed inside the polygon.
+    # This is a formal argument of magicPlot_gs_hierarchy(), so it is checked
+    # directly rather than inside args_list.
+    if (is.null(size_pol_name)) {
+      size_pol_name <- max(4.5, round(8 / sqrt(scale_factor), 1))
+    }
+    
+    # Subplot title size, for example "Parent pop: CD45+".
+    if (is.null(size_title)) {
+      size_title <- max(10, round(17 / sqrt(scale_factor), 1))
+    }
+    
+    message(sprintf("Auto-size axis text: %s", args_list$size_axis_text))
+    message(sprintf("Auto-size x title: %s", args_list$size_title_x))
+    message(sprintf("Auto-size y title: %s", args_list$size_title_y))
+    message(sprintf("Auto-size gate label: %s", size_pol_name))
+    message(sprintf("Auto-size panel title: %s", size_title))
+    
+    
+    # -------------------------------------------------------------------------
+    # If auto_size is disabled, use simple defaults for the values that were not
+    # supplied directly.
+    # -------------------------------------------------------------------------
+    
+  } else {
+    
+    if (is.null(size_pol_name)) {
+      size_pol_name <- 4
+    }
+    
+    if (is.null(size_title)) {
+      size_title <- 10
+    }
+  }
+  
+  
+  # =========================================================================
+  # 7. Generate one ggplot object per hierarchy step
+  # =========================================================================
+  # This section loops through plot_groups and creates each subplot.
+  #
+  # Each element of plot_groups is passed to magicPlot_gs_gates().
+  #
+  # Example 1: single gate
+  #   current_gate_names = "Live_cells"
+  #
+  # Example 2: grouped gates
+  #   current_gate_names = c("NK_cells", "B_cells", "T_cells")
+  #
+  # magicPlot_gs_gates() handles the extraction and plotting of these gates.
+  
+  plot_list <- list()
+  
+  for (i in seq_along(plot_groups)) {
+    
+    current_plot_name <- names(plot_groups)[i]
+    current_gate_names <- plot_groups[[i]]
+    current_title <- plot_titles[[current_plot_name]]
+    
+    message(sprintf(
+      "---- Plotting mother %s with gates: %s ----",
+      current_title,
+      paste(current_gate_names, collapse = ", ")
+    ))
+    
+    
+    # -----------------------------------------------------------------------
+    # 7A. Build the argument list for magicPlot_gs_gates()
+    # -----------------------------------------------------------------------
+    # We need to call magicPlot_gs_gates() many times, once per subplot.
+    #
+    # Some arguments are controlled by this wrapper:
+    #   - gs
+    #   - sample_id
+    #   - current_gate_names
+    #   - size_points
+    #   - concavity_val
+    #   - add_labels
+    #   - size_pol_name
+    #
+    # Other arguments come from the user through ... and are stored in args_list.
+    #
+    # Example:
+    #   args_list might contain:
+    #     list(type = "dens", size_axis_text = 10)
+    #
+    # The c() function combines both lists into one complete argument list.
+    #
+    # After this block, args_gates may look like:
+    #
+    #   list(
+    #     gs = gs,
+    #     sample_id = "sample_01.fcs",
+    #     gate_names = c("NK_cells", "B_cells", "T_cells"),
+    #     size_points = 0.5,
+    #     concavity_val = 50,
+    #     add_labels = TRUE,
+    #     size_pol_name = 4,
+    #     type = "dens",
+    #     size_axis_text = 10
+    #   )
+    
+    args_gates <- c(
+      list(
+        gs = gs,
+        sample_id = sample_id,
+        gate_names = current_gate_names,
+        size_points = size_points,
+        concavity_val = concavity_val,
+        add_labels = add_labels,
+        size_pol_name = size_pol_name
+      ),
+      args_list
+    )
+    
+    
+    # -----------------------------------------------------------------------
+    # 7B. Call magicPlot_gs_gates() using do.call()
+    # -----------------------------------------------------------------------
+    # Because the function arguments are stored inside the list args_gates,
+    # we use do.call().
+    #
+    # do.call(function_name, argument_list) means:
+    #   "Call this function using the named values stored in this list."
+    #
+    # In other words:
+    #
+    #   do.call(flowMagic::magicPlot_gs_gates, args_gates)
+    #
+    # is equivalent to manually writing:
+    #
+    #   flowMagic::magicPlot_gs_gates(
+    #     gs = gs,
+    #     sample_id = sample_id,
+    #     gate_names = current_gate_names,
+    #     size_points = size_points,
+    #     concavity_val = concavity_val,
+    #     add_labels = add_labels,
+    #     size_pol_name = size_pol_name,
+    #     type = "dens",
+    #     size_axis_text = 10
+    #   )
+    #
+    # The advantage is that args_list can be modified earlier by auto_size
+    # before we pass it onward.
+    
+    # args_gates now contains the complete set of arguments that will be passed
+    # to magicPlot_gs_gates().
+    #
+    # It combines:
+    #   1. arguments controlled directly by magicPlot_gs_hierarchy(), such as
+    #      gs, sample_id, gate_names, size_points, concavity_val, add_labels,
+    #      and size_pol_name;
+    #   2. optional plotting arguments passed by the user through ..., stored in
+    #      args_list, such as type, size_axis_text, size_title_x, size_title_y,
+    #      show_legend, x/y limits, etc.
+    #
+    # Not every argument of magicPlot_gs_hierarchy() is included in args_gates.
+    # For example, plot_width, plot_height, dpi, and path_output are used only for
+    # exporting the final wrapped figure, so they are not passed to
+    # magicPlot_gs_gates().
+    
+    p <- do.call(flowMagic::magicPlot_gs_gates, args_gates)
+    
+    
+    # -----------------------------------------------------------------------
+    # 7C. Add subplot title
+    # -----------------------------------------------------------------------
+    # The title should describe the parent population.
+    # The gate names themselves are printed inside the polygons when
+    # add_labels = TRUE.
+    
+    p <- p +
+      ggplot2::ggtitle(sprintf("Parent pop: %s", current_title)) +
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(size = size_title)
+      )
+    
+    plot_list[[current_plot_name]] <- p
+  }
+  
+  
+  # =========================================================================
+  # 8. Combine all subplots into one wrapped figure
+  # =========================================================================
+  # patchwork::wrap_plots() arranges the list of ggplot objects into a grid.
+  # The order of plot_list follows plot_groups, which was built in df_tree order.
+  # Therefore, the final plot follows the gating hierarchy order.
+  
+  out <- patchwork::wrap_plots(
+    plot_list,
+    ncol = n_col_wrap
+  )
+  
+  
+  # =========================================================================
+  # 9. Optionally export the wrapped figure to disk
+  # =========================================================================
+  # path_output is treated as the full output file path.
+  #
+  # Example:
+  #   path_output = "~/main/Results/hierarchy_plot.tiff"
+  #
+  # ggsave() infers the export format from the file extension.
+  #
+  # The exported image size is computed from:
+  #   plot_width  * number of columns
+  #   plot_height * number of rows
+  #
+  # Example:
+  #   If n_cols = 3, n_rows = 4, plot_width = 4, plot_height = 4:
+  #   final export size = 12 x 16 inches.
+  
+  if (!is.null(path_output)) {
+    
+    message("$$$ Export hierarchy plot to disk $$$")
+    
+    export_width <- plot_width * n_cols
+    export_height <- plot_height * n_rows
+    
+    message(sprintf("Export size: %.2f x %.2f inches", export_width, export_height))
+    message(sprintf("Export file: %s", path_output))
+    
+    ggplot2::ggsave(
+      filename = path_output,
+      plot = out,
+      width = export_width,
+      height = export_height,
+      dpi = dpi,
+      units = "in"
+    )
+    
+    message("Export completed.")
+  }
+  
+  
+  # =========================================================================
+  # 10. Return output
+  # =========================================================================
+  # By default, return only the wrapped plot.
+  #
+  # If return_plot_list = TRUE, return a list with useful intermediate objects:
+  #
+  #   plot        : final wrapped patchwork plot
+  #   plot_list   : individual ggplot objects before wrapping
+  #   plot_groups : gate names used in each subplot
+  #   plot_titles : parent population title for each subplot
+  #   df_tree     : hierarchy table used to build the plot
+  #
+  # These intermediate objects are useful for debugging or for developing a
+  # more advanced tree-layout version later.
+  
+  if (return_plot_list == TRUE) {
+    return(
+      list(
+        plot = out,
+        plot_list = plot_list,
+        plot_groups = plot_groups,
+        plot_titles = plot_titles,
+        df_tree = df_tree
+      )
+    )
+  }
+  
+  return(out)
+}
