@@ -1699,16 +1699,14 @@ get_hierarchy_all_pops<-function(gh,export_visnet=F,path.output="None"){
   
   visnet <- visNetwork(
     edges = df_tree_edges,
-    nodes = df_tree_nodes
+    nodes = df_tree_nodes,
+    main = paste0("Gating hierarchy: ", sample_id)
   )
   
   visnet <- visnet %>%
     visEdges(arrows = "to") %>%
     visHierarchicalLayout() %>%
-    visNodes(borderWidth = 2) %>%
-    visLayout(
-          main = paste0("Gating hierarchy: ", sample_id)
-    )
+    visNodes(borderWidth = 2) 
   
   visnet <- visnet %>%
     visOptions(
