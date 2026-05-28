@@ -1267,10 +1267,26 @@ format_channel_info <- function(channels, df_metadata) {
         return("No gate channels detected for this node.")
     }
 
+    # Remove missing or empty channel names before doing anything else.
+    #
+    # This prevents an empty channel name from later becoming:
+    #   : NA
+    channels <- channels[!is.na(channels) & channels != ""]
+
+    # If all channels were missing or empty, return a clear message.
+    if (length(channels) == 0) {
+        return("No gate channels detected for this node.")
+    }
+
     # Make sure the metadata contains the required columns.
     if (!all(c("name", "desc") %in% colnames(df_metadata))) {
         stop("df_metadata must contain columns named 'name' and 'desc'.")
     }
+
+    # Convert columns to character so that paste0(), ifelse(), and matching
+    # behave predictably.
+    df_metadata$name <- as.character(df_metadata$name)
+    df_metadata$desc <- as.character(df_metadata$desc)
 
     # Keep only the metadata rows whose channel name appears in `channels`.
     #
@@ -1288,6 +1304,14 @@ format_channel_info <- function(channels, df_metadata) {
     #
     # This should usually be empty, but it is useful as a fallback.
     missing_channels <- setdiff(channels, matched_metadata$name)
+
+    # Remove missing or empty missing channels before formatting them.
+    #
+    # Without this, an empty missing channel could become:
+    #   : NA
+    missing_channels <- missing_channels[
+        !is.na(missing_channels) & missing_channels != ""
+    ]
 
     # Convert columns to character so that paste0() and ifelse()
     # behave predictably.
@@ -1314,13 +1338,27 @@ format_channel_info <- function(channels, df_metadata) {
     #
     # Example:
     #   SomeMissingChannel: NA
-    missing_channels <- paste0(missing_channels, ": NA")
+    if (length(missing_channels) > 0) {
+        missing_channels <- paste0(missing_channels, ": NA")
+    } else {
+        missing_channels <- character(0)
+    }
 
     # Combine formatted metadata labels with any missing channel names.
     channel_labels <- c(
         matched_metadata$channel_label,
         missing_channels
     )
+
+    # Remove any accidental empty labels.
+    #
+    # This specifically prevents an extra final line such as:
+    #   : NA
+    channel_labels <- channel_labels[
+        !is.na(channel_labels) &
+            channel_labels != "" &
+            channel_labels != ": NA"
+    ]
 
     # Return one character string, with one channel per line.
     paste(channel_labels, collapse = "\n")
