@@ -1525,10 +1525,17 @@ get_hierarchy_all_pops<-function(gh,export_visnet=F,path.output="None"){
   # Get one flowFrame from the gating hierarchy / gating set.
   # This is only used to access the parameter metadata:
   # ff@parameters@data
+
+  sample_id <- flowWorkspace::sampleNames(gh)
+
+  if (length(sample_id) != 1 || is.na(sample_id)) {
+    stop("length(sample_id) is different from 1, only 1 sample name expected for the GatingHierarchy object ")
+  }
+
   ff <- flowMagic::get_flowframe_from_gs(
     gs = gh,
     node_name = "root",
-    sample_id = 1
+    sample_id = sample_id
   )
   
   # Extract metadata for the current flowFrame.
