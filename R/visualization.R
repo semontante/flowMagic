@@ -432,18 +432,135 @@ magicPlot_template<-function(df,size_points=1){
 #' @examples 
 #' \donttest{magicPlot_fs()}
 
-magicPlot_fs<-function(fs,sample_id,channel_x,channel_y,...){
-  if(class(fs)=="flowFrame"){
-    ff<-fs
-  }else if(class(fs)=="flowSet"){
-    ff<-fs[[sample_id]]
-  }else{
-    stop("Error input: fs needs to be an object of either flowSet or flowFrame class")
+magicPlot_fs <- function(fs, sample_id = NULL, channel_x, channel_y, ...) {
+  
+  # -------------------------------------------------------------------------
+  # 1. Extract the selected flowFrame
+  # -------------------------------------------------------------------------
+  # The input can be either:
+  #
+  #   1. flowFrame
+  #      A flowFrame already represents one sample, so it can be used directly.
+  #
+  #   2. flowSet
+  #      A flowSet contains multiple flowFrames. In this case, sample_id is
+  #      required so the function knows which sample to plot.
+  
+  if (inherits(fs, "flowFrame")) {
+    
+    ff <- fs
+    
+  } else if (inherits(fs, "flowSet")) {
+    
+    if (is.null(sample_id)) {
+      stop("sample_id must be provided when fs is a flowSet.")
+    }
+    
+    ff <- fs[[sample_id]]
+    
+  } else {
+    
+    stop("Error input: fs needs to be an object of either flowSet or flowFrame class.")
   }
-  expr_matrix_ff <- exprs(ff) # get expression matrix of selected flowFrame
-  df_exprs<-as.data.frame(expr_matrix_ff) # convert to dataframes.
-  df_exprs_selected_channels<-df_exprs[,c(channel_x,channel_y)]
-  out<-flowMagic::magicPlot(df = df_exprs_selected_channels,...)
+  
+  
+  # -------------------------------------------------------------------------
+  # 2. Extract expression matrix and select plotting channels
+  # -------------------------------------------------------------------------
+  # flowCore::exprs() extracts the expression matrix from the selected
+  # flowFrame. The matrix is converted to a data frame, then reduced to only
+  # the two channels requested by the user.
+  
+  expr_matrix_ff <- flowCore::exprs(ff)
+  df_exprs <- as.data.frame(expr_matrix_ff)
+  df_exprs_selected_channels <- df_exprs[, c(channel_x, channel_y)]
+  
+  
+  # -------------------------------------------------------------------------
+  # 3. Extract channel metadata from the flowFrame
+  # -------------------------------------------------------------------------
+  # The flowFrame stores parameter metadata in its parameters slot.
+  #
+  # This metadata usually contains:
+  #   - name: the channel name, for example "BV510-A"
+  #   - desc: the marker name, for example "CD8"
+  #
+  # This information is used to create axis labels in the format:
+  #
+  #   channel: marker
+  #
+  # Example:
+  #   BV510-A: CD8
+  #
+  # If a channel does not have a marker description, format_channel_info()
+  # returns:
+  #
+  #   channel: NA
+  #
+  # Example:
+  #   FSC-A: NA
+  
+  df_metadata <- flowCore::pData(flowCore::parameters(ff))
+  
+  
+  # -------------------------------------------------------------------------
+  # 4. Automatically build x-axis and y-axis labels
+  # -------------------------------------------------------------------------
+  # format_channel_info() expects a character vector of channel names and the
+  # metadata table.
+  #
+  # Here we pass one channel at a time, so each returned label is a single-line
+  # character string.
+  
+  x_lab_auto <- flowMagic::format_channel_info(
+    channels = channel_x,
+    df_metadata = df_metadata
+  )
+  
+  y_lab_auto <- flowMagic::format_channel_info(
+    channels = channel_y,
+    df_metadata = df_metadata
+  )
+  
+  
+  # -------------------------------------------------------------------------
+  # 5. Collect optional arguments passed to magicPlot()
+  # -------------------------------------------------------------------------
+  # Users may still want to manually override the automatically generated axis
+  # labels.
+  #
+  # Example:
+  #   magicPlot_fs(..., x_lab = "custom x label", y_lab = "custom y label")
+  #
+  # To avoid passing x_lab or y_lab twice, we collect ... into args_list and add
+  # automatic labels only if the user did not already provide them.
+  
+  args_list <- list(...)
+  
+  if (!("x_lab" %in% names(args_list))) {
+    args_list$x_lab <- x_lab_auto
+  }
+  
+  if (!("y_lab" %in% names(args_list))) {
+    args_list$y_lab <- y_lab_auto
+  }
+  
+  
+  # -------------------------------------------------------------------------
+  # 6. Plot using magicPlot()
+  # -------------------------------------------------------------------------
+  # magicPlot() is the core plotting function. This wrapper prepares the input
+  # data and metadata-based labels, then passes everything to magicPlot().
+  #
+  # do.call() is used because the plotting arguments are stored in a list.
+  
+  args_magicPlot <- c(
+    list(df = df_exprs_selected_channels),
+    args_list
+  )
+  
+  out <- do.call(flowMagic::magicPlot, args_magicPlot)
+  
   return(out)
 }
 

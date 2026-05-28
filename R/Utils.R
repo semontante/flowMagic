@@ -1297,15 +1297,24 @@ format_channel_info <- function(channels, df_metadata) {
     # Create a readable label for each channel.
     #
     # If desc exists:
-    #   BV480-A = CD19
+    #   BV480-A: CD19
     #
     # If desc is missing:
-    #   FSC-A
+    #   FSC-A: NA
     matched_metadata$channel_label <- ifelse(
         is.na(matched_metadata$desc) | matched_metadata$desc == "",
-        matched_metadata$name,
-        paste0(matched_metadata$name, " = ", matched_metadata$desc)
+        paste0(matched_metadata$name, ": NA"),
+        paste0(matched_metadata$name, ": ", matched_metadata$desc)
     )
+
+    # Format channels that were not found in the metadata table.
+    #
+    # If a channel is missing from df_metadata, still return it in the same
+    # channel: marker format, using NA as the marker value.
+    #
+    # Example:
+    #   SomeMissingChannel: NA
+    missing_channels <- paste0(missing_channels, ": NA")
 
     # Combine formatted metadata labels with any missing channel names.
     channel_labels <- c(
