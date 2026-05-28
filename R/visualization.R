@@ -670,11 +670,34 @@ magicPlot_gs_node <- function(gs_input, node_name, sample_id, channel_x, channel
 
 
 magicPlot_gs_gates <- function(gs,
-                                 sample_id,
-                                 gate_names,
-                                 size_points = 0.5,
-                                 concavity_val=50,
-                                 ...) {
+                               sample_id,
+                               gate_names,
+                               size_points = 0.5,
+                               concavity_val = 50,
+                               ...) {
+  
+  # -------------------------------------------------------------------------
+  # 1. Start workflow and validate input
+  # -------------------------------------------------------------------------
+  # This function plots one or more gates from a selected sample in a GatingSet.
+  #
+  # If more than one gate is provided, the gates are merged into one plotting
+  # data frame so they can be displayed together on the same bivariate plot.
+  #
+  # The axis labels are generated automatically in the format:
+  #
+  #   channel: marker
+  #
+  # Example:
+  #   BV510-A: CD8
+  #   Alexa Fluor 700-A: CD4
+  #
+  # If no marker description is available, the format becomes:
+  #
+  #   channel: NA
+  #
+  # Example:
+  #   FSC-A: NA
   
   message("$$$ Plot GatingSet sample $$$")
   message(sprintf("Sample: %s", sample_id))
@@ -683,6 +706,15 @@ magicPlot_gs_gates <- function(gs,
   if (!(sample_id %in% sampleNames(gs))) {
     stop("sample_id is not present in sampleNames(gs): ", sample_id)
   }
+  
+  
+  # -------------------------------------------------------------------------
+  # 2. Extract gated data for each selected gate
+  # -------------------------------------------------------------------------
+  # Each gate is extracted separately using get_list_df_gated_plots().
+  #
+  # The gate name itself is used as the label_pop so that, when plotted,
+  # the polygon label corresponds to the gate name.
   
   list_gates <- list()
   
@@ -706,6 +738,15 @@ magicPlot_gs_gates <- function(gs,
     list_gates[[current_gate]] <- list_gated_i
   }
   
+  
+  # -------------------------------------------------------------------------
+  # 3. Merge gates if more than one gate should be plotted together
+  # -------------------------------------------------------------------------
+  # If only one gate is provided, use it directly.
+  #
+  # If multiple gates are provided, merge them into a single gated data object
+  # so they can be shown together in one bivariate plot.
+  
   if (length(list_gates) == 1) {
     
     list_gated_data <- list_gates[[1]]
@@ -719,23 +760,118 @@ magicPlot_gs_gates <- function(gs,
         merge_magicGating_labels(
           list_out_1 = x,
           list_out_2 = y,
-          gated_data_only  = TRUE
+          gated_data_only = TRUE
         )
       },
       x = list_gates
     )
   }
   
+  
+  # -------------------------------------------------------------------------
+  # 4. Extract final plotting data for the selected sample
+  # -------------------------------------------------------------------------
+  # list_gated_data is a named list keyed by sample name.
+  # We extract the plotting data corresponding to sample_id.
+  
   df_plot <- list_gated_data[[sample_id]]
   
   message(sprintf("Plot selected sample: %s", sample_id))
   
-  p <- magicPlot(
-    df = df_plot,
-    size_points = size_points,
-    concavity_val=concavity_val,
-    ...
+  
+  # -------------------------------------------------------------------------
+  # 5. Determine the two plotting channels
+  # -------------------------------------------------------------------------
+  # The first two columns of df_plot correspond to the x and y channels used
+  # in the bivariate plot. The third column contains the gate labels/classes.
+  
+  channel_x <- colnames(df_plot)[1]
+  channel_y <- colnames(df_plot)[2]
+  
+  
+  # -------------------------------------------------------------------------
+  # 6. Extract metadata from the selected sample to build axis labels
+  # -------------------------------------------------------------------------
+  # To create labels such as:
+  #
+  #   BV510-A: CD8
+  #
+  # we need the parameter metadata of the selected sample.
+  #
+  # We extract the root population as a flowFrame because it contains the
+  # parameter information for the sample.
+  
+  ff_root <- flowMagic::get_flowframe_from_gs(
+    gs = gs,
+    node_name = "root",
+    sample_id = sample_id
   )
+  
+  df_metadata <- flowCore::pData(flowCore::parameters(ff_root))
+  
+  
+  # -------------------------------------------------------------------------
+  # 7. Automatically build x-axis and y-axis labels
+  # -------------------------------------------------------------------------
+  # format_channel_info() takes one or more channels and returns labels in the
+  # format:
+  #
+  #   channel: marker
+  #
+  # When only one channel is passed, it returns a single-line label string.
+  
+  x_lab_auto <- flowMagic::format_channel_info(
+    channels = channel_x,
+    df_metadata = df_metadata
+  )
+  
+  y_lab_auto <- flowMagic::format_channel_info(
+    channels = channel_y,
+    df_metadata = df_metadata
+  )
+  
+  
+  # -------------------------------------------------------------------------
+  # 8. Collect optional plotting arguments passed through ...
+  # -------------------------------------------------------------------------
+  # Users may still want to manually override the axis labels:
+  #
+  #   magicPlot_gs_gates(..., x_lab = "custom x", y_lab = "custom y")
+  #
+  # Therefore, automatic labels are only added if x_lab and y_lab were not
+  # already supplied by the user.
+  
+  args_list <- list(...)
+  
+  if (!("x_lab" %in% names(args_list))) {
+    args_list$x_lab <- x_lab_auto
+  }
+  
+  if (!("y_lab" %in% names(args_list))) {
+    args_list$y_lab <- y_lab_auto
+  }
+  
+  
+  # -------------------------------------------------------------------------
+  # 9. Generate the plot using magicPlot()
+  # -------------------------------------------------------------------------
+  # We build a full argument list for magicPlot(), combining:
+  #
+  #   - the required arguments controlled by this wrapper
+  #   - the optional arguments supplied through ...
+  #
+  # do.call() is used because the arguments are stored inside a list.
+  
+  args_magicPlot <- c(
+    list(
+      df = df_plot,
+      size_points = size_points,
+      concavity_val = concavity_val
+    ),
+    args_list
+  )
+  
+  p <- do.call(flowMagic::magicPlot, args_magicPlot)
   
   p <- p + ggplot2::ggtitle(sample_id)
   
