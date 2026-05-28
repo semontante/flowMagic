@@ -1148,7 +1148,7 @@ name_pop_gating<-function(gh){
 #' @return A character vector containing the channel names used by the gate.
 #' If the population is `"root"`, if no gate is found, or if the channels cannot
 #' be extracted, an empty character vector is returned.
-#'
+#' @export
 #' @examples
 #' \dontrun{
 #' get_gate_channels(gs[[1]], "B_cells")
@@ -1242,7 +1242,7 @@ get_gate_channels <- function(gs, pop) {
 #'
 #' @return A single character string containing formatted channel information,
 #' with one channel per line.
-#'
+#' @export
 #' @examples
 #' \dontrun{
 #' ff <- flowMagic::get_flowframe_from_gs(
