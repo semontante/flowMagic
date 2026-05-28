@@ -4,22 +4,67 @@
 \alias{get_flowframe_from_gs}
 \title{get_flowframe_from_gs}
 \usage{
-get_flowframe_from_gs(gs, node_name, sample_id)
+get_flowframe_from_gs(gs, node_name, sample_id = NULL)
 }
 \arguments{
-\item{gs}{GatingSet}
+\item{gs}{A \code{GatingSet} or \code{GatingHierarchy} object. If a \code{GatingSet} is
+provided, \code{sample_id} must also be provided. If a \code{GatingHierarchy} is
+provided, \code{sample_id} is ignored.}
 
-\item{node_name}{Name of the Gating tree node whose gating data needs to be extracted.}
+\item{node_name}{Character. Name of the population node to extract, such as
+\code{"root"}, \code{"Live_cells"}, \code{"Singlets"}, or another node present in the
+gating hierarchy.}
 
-\item{sample_id}{Name or index of the sample to extract.}
+\item{sample_id}{Character or \code{NULL}. Sample name to extract when \code{gs} is a
+\code{GatingSet}. The value must be present in \code{sampleNames(gs)}. Default is
+\code{NULL}, which is allowed only when \code{gs} is already a \code{GatingHierarchy}.}
 }
 \value{
-List.
+A \code{flowFrame} object containing the events from the selected
+population node.
 }
 \description{
-function to get flowframe from gs (converting cytoframe to flowframe)
+Extract a population from a GatingSet or GatingHierarchy as a flowFrame.
+}
+\details{
+This function extracts the events belonging to a selected population node from
+either a \code{GatingSet} or a \code{GatingHierarchy}. The extracted data are returned as
+a \code{flowFrame}, which can then be used by downstream flowMagic functions.
+
+If \code{gs} is a \code{GatingSet}, the user must provide \code{sample_id} because a
+\code{GatingSet} contains multiple samples. If \code{gs} is already a
+\code{GatingHierarchy}, \code{sample_id} is not needed because a \code{GatingHierarchy}
+represents one sample.
+
+The function uses \code{inherits()} to check whether the input object is a
+\code{GatingSet} or a \code{GatingHierarchy}. This is preferred over direct
+\code{class()} comparisons because Bioconductor/S4 objects may have multiple
+classes or inherit from other classes.
+
+Internally, the selected population is first extracted using
+\code{flowWorkspace::gh_pop_get_data()}. The resulting object is usually a
+\code{cytoframe}, which is then converted to a \code{flowFrame} using
+\code{cytoframe_to_flowFrame()}.
 }
 \examples{
-\donttest{get_flowframe_from_gs()}
+\donttest{
+# Extract from a GatingSet
+ff <- get_flowframe_from_gs(
+  gs = gs,
+  node_name = "Live_cells",
+  sample_id = "sample_01.fcs"
+)
+
+# Extract from a GatingHierarchy
+gh <- gs[["sample_01.fcs"]]
+
+ff <- get_flowframe_from_gs(
+  gs = gh,
+  node_name = "Live_cells"
+)
 }
+}
+\keyword{GatingHierarchy}
+\keyword{GatingSet}
+\keyword{flowFrame}
 \keyword{flowMagic}

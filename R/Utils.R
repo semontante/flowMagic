@@ -676,37 +676,145 @@ get_list_df_gated_plots<-function(gs,gate_name,label_pop=NULL){
 
 #' get_flowframe_from_gs
 #'
-#' function to get flowframe from gs (converting cytoframe to flowframe)
-#' @param gs GatingSet
-#' @param node_name Name of the Gating tree node whose gating data needs to be extracted.
-#' @param sample_id Name or index of the sample to extract.
-#' @return List.
-#' @keywords flowMagic
+#' Extract a population from a GatingSet or GatingHierarchy as a flowFrame.
+#'
+#' This function extracts the events belonging to a selected population node from
+#' either a `GatingSet` or a `GatingHierarchy`. The extracted data are returned as
+#' a `flowFrame`, which can then be used by downstream flowMagic functions.
+#'
+#' If `gs` is a `GatingSet`, the user must provide `sample_id` because a
+#' `GatingSet` contains multiple samples. If `gs` is already a
+#' `GatingHierarchy`, `sample_id` is not needed because a `GatingHierarchy`
+#' represents one sample.
+#'
+#' @param gs A `GatingSet` or `GatingHierarchy` object. If a `GatingSet` is
+#'   provided, `sample_id` must also be provided. If a `GatingHierarchy` is
+#'   provided, `sample_id` is ignored.
+#'
+#' @param node_name Character. Name of the population node to extract, such as
+#'   `"root"`, `"Live_cells"`, `"Singlets"`, or another node present in the
+#'   gating hierarchy.
+#'
+#' @param sample_id Character or `NULL`. Sample name to extract when `gs` is a
+#'   `GatingSet`. The value must be present in `sampleNames(gs)`. Default is
+#'   `NULL`, which is allowed only when `gs` is already a `GatingHierarchy`.
+#'
+#' @return A `flowFrame` object containing the events from the selected
+#'   population node.
+#'
+#' @details
+#' The function uses `inherits()` to check whether the input object is a
+#' `GatingSet` or a `GatingHierarchy`. This is preferred over direct
+#' `class()` comparisons because Bioconductor/S4 objects may have multiple
+#' classes or inherit from other classes.
+#'
+#' Internally, the selected population is first extracted using
+#' `flowWorkspace::gh_pop_get_data()`. The resulting object is usually a
+#' `cytoframe`, which is then converted to a `flowFrame` using
+#' `cytoframe_to_flowFrame()`.
+#'
+#' @keywords flowMagic GatingSet GatingHierarchy flowFrame
 #' @export
-#' @examples 
-#' \donttest{get_flowframe_from_gs()}
+#'
+#' @examples
+#' \donttest{
+#' # Extract from a GatingSet
+#' ff <- get_flowframe_from_gs(
+#'   gs = gs,
+#'   node_name = "Live_cells",
+#'   sample_id = "sample_01.fcs"
+#' )
+#'
+#' # Extract from a GatingHierarchy
+#' gh <- gs[["sample_01.fcs"]]
+#'
+#' ff <- get_flowframe_from_gs(
+#'   gs = gh,
+#'   node_name = "Live_cells"
+#' )
+#' }
 
-get_flowframe_from_gs<-function(gs,node_name,sample_id){
-  # Get flowFrame
-  ff <- flowWorkspace::gh_pop_get_data(gs[[sample_id]], node_name)
-  # ff is a cytoframe object not compatible with flowDensity
-  # we need to build a flowFrame from the cytoframe
-  # Note: as(ff, "flowFrame") does not work because the cytoframe 
-  # is only a visual representation of data not real data
+get_flowframe_from_gs <- function(gs, node_name, sample_id = NULL) {
   
-  # Extract expression data
-  # exprs_mat <- flowCore::exprs(ff)  # or exprs(ff_temp)
+  # -------------------------------------------------------------------------
+  # 1. Detect whether the input is a GatingSet or a GatingHierarchy
+  # -------------------------------------------------------------------------
+  # This function accepts two possible input types:
+  #
+  #   1. GatingSet
+  #      A GatingSet contains multiple samples.
+  #      In this case, the user must provide sample_id so the function knows
+  #      which sample/GatingHierarchy to extract.
+  #
+  #   2. GatingHierarchy
+  #      A GatingHierarchy already represents one sample.
+  #      In this case, sample_id is not needed.
+  #
+  # We use inherits() instead of class() because Bioconductor/S4 objects may
+  # have multiple classes or may inherit from another class.
+  #
+  # For example, class(gs) could theoretically return more than one value:
+  #
+  #   class(gs)
+  #   # "SomeSpecialGatingSet" "GatingSet"
+  #
+  # A strict test such as class(gs) == "GatingSet" may fail or return a vector.
+  # inherits(gs, "GatingSet") asks the safer question:
+  #
+  #   "Does this object behave as, or inherit from, a GatingSet?"
+  #
+  # This makes the function more robust for package code.
   
-  # Extract parameter data
-  # param_data <- flowCore::pData(parameters(ff)) 
+  if (inherits(gs, "GatingSet")) {
+    
+    # -----------------------------------------------------------------------
+    # 2A. Input is a GatingSet
+    # -----------------------------------------------------------------------
+    # A GatingSet contains multiple samples, so sample_id is required.
+    
+    if (is.null(sample_id)) {
+      stop("sample_id must be provided when gs is a GatingSet.")
+    }
+    
+    if (!(sample_id %in% sampleNames(gs))) {
+      stop("sample_id is not present in sampleNames(gs): ", sample_id)
+    }
+    
+    # Extract the GatingHierarchy corresponding to the selected sample.
+    gh <- gs[[sample_id]]
+    
+  } else if (inherits(gs, "GatingHierarchy")) {
+    
+    # -----------------------------------------------------------------------
+    # 2B. Input is already a GatingHierarchy
+    # -----------------------------------------------------------------------
+    # A GatingHierarchy already contains one sample, so sample_id is ignored.
+    
+    gh <- gs
+    
+  } else {
+    
+    stop("gs must be either a GatingSet or a GatingHierarchy.")
+  }
   
-  # Extract metadata/keywords
-  # desc <- flowCore::keyword(ff)
   
-  # ff <- flowFrame(exprs = exprs_mat, parameters = Biobase::AnnotatedDataFrame(param_data), description = desc)
+  # -------------------------------------------------------------------------
+  # 3. Extract the selected population/node from the GatingHierarchy
+  # -------------------------------------------------------------------------
+  # gh_pop_get_data() returns the events belonging to node_name.
+  # The returned object is usually a cytoframe.
   
-  ff<-cytoframe_to_flowFrame(cf = ff)
-
+  cf <- flowWorkspace::gh_pop_get_data(gh, node_name)
+  
+  
+  # -------------------------------------------------------------------------
+  # 4. Convert cytoframe to flowFrame
+  # -------------------------------------------------------------------------
+  # Some downstream flowMagic functions expect a flowFrame.
+  # Therefore, convert the cytoframe using cytoframe_to_flowFrame().
+  
+  ff <- cytoframe_to_flowFrame(cf = cf)
+  
   return(ff)
 }
 
@@ -1002,3 +1110,209 @@ merge_magicGating_labels<-function(list_out_1,list_out_2,gated_data_only=F){
   return(list_new_out)
 }
 
+#' name_pop_gating
+#' 
+#' function to get the name of all the pops of the gating hierarchy.
+#' @param gh GatingHierarchy.
+#' @return Vector of characters.
+#' @keywords flowMagic
+#' @export
+#' @examples 
+#' \donttest{name_pop_gating()}
+
+
+name_pop_gating<-function(gh){
+  sample_name<-sampleNames(gh)
+  nodes_list<-flowWorkspace::gs_get_pop_paths(gh)
+  vector_pops<-sapply(1:length(nodes_list), function(i){
+    splitted_nodes<-strsplit(gs_get_pop_paths(gh)[i],"/")[[1]]
+    last_node<-splitted_nodes[length(splitted_nodes)]
+    return(last_node)
+  })
+  return(vector_pops)
+}
+
+
+#' Extract gate channels for a population
+#'
+#' This helper function gets the gate used to define a population and extracts
+#' the flow cytometry channels used by that gate.
+#'
+#' In some cases, `flowWorkspace::gs_pop_get_gate()` returns the gate directly.
+#' In other cases, it returns a list with one gate per sample. This function
+#' handles that by using the first gate in the list.
+#'
+#' @param gs A `GatingSet` or `GatingHierarchy` object.
+#' @param pop Character. Name of the population/node.
+#'
+#' @return A character vector containing the channel names used by the gate.
+#' If the population is `"root"`, if no gate is found, or if the channels cannot
+#' be extracted, an empty character vector is returned.
+#'
+#' @examples
+#' \dontrun{
+#' get_gate_channels(gs[[1]], "B_cells")
+#' # [1] "BV480-A" "BV650-A"
+#' }
+#'
+#' @importFrom flowWorkspace gs_pop_get_gate
+#' @importFrom flowCore parameters
+#'
+
+get_gate_channels <- function(gs, pop) {
+
+    # The root population is the starting point of the hierarchy.
+    # It is not defined by a gate, so it has no gate channels.
+    if (pop == "root") {
+        return(character(0))
+    }
+
+    # Try to get the gate object for this population.
+    #
+    # flowWorkspace::gs_pop_get_gate() may return:
+    # 1. a gate object directly, or
+    # 2. a list containing gate objects, usually one per sample.
+    #
+    # If there is an error, return NULL instead of stopping the function.
+    gate <- tryCatch(
+        flowWorkspace::gs_pop_get_gate(gs, pop),
+        error = function(e) NULL
+    )
+
+    # If no gate was found, return an empty character vector.
+    if (is.null(gate)) {
+        return(character(0))
+    }
+
+    # If the result is a list, use the first gate in the list.
+    #
+    # Example:
+    # gate <- flowWorkspace::gs_pop_get_gate(gs[[1]], "B_cells")
+    # class(gate)
+    # [1] "list"
+    #
+    # names(gate)
+    # [1] "Af inflamed lung.fcs"
+    #
+    # gate[[1]] is then the actual polygonGate object.
+    if (is.list(gate) && length(gate) > 0) {
+        gate <- gate[[1]]
+    }
+
+    # Extract the channels used by the gate.
+    #
+    # For example, for a polygonGate defining B_cells,
+    # this may return:
+    # "BV480-A" "BV650-A"
+    channels <- tryCatch(
+        as.character(flowCore::parameters(gate)),
+        error = function(e) character(0)
+    )
+
+    # Remove missing or empty channel names.
+    channels <- channels[!is.na(channels) & channels != ""]
+
+    # Return each channel only once.
+    unique(channels)
+}
+
+
+#' Format gate channel information
+#'
+#' This helper function takes channel names used by a gate and matches them
+#' to the metadata stored in a flowFrame parameter table.
+#'
+#' The metadata table usually comes from:
+#'
+#' `ff@parameters@data`
+#'
+#' It should contain at least the columns `name` and `desc`.
+#'
+#' For channels with a marker description, the function returns:
+#'
+#' `channel = marker`
+#'
+#' For channels without a marker description, such as scatter channels, the
+#' function returns only the channel name.
+#'
+#' @param channels Character vector. Channel names used by a gate.
+#' For example, `c("BV480-A", "BV650-A")`.
+#' @param df_metadata Data frame. FlowFrame parameter metadata, usually from
+#' `ff@parameters@data`. Must contain columns `name` and `desc`.
+#'
+#' @return A single character string containing formatted channel information,
+#' with one channel per line.
+#'
+#' @examples
+#' \dontrun{
+#' ff <- flowMagic::get_flowframe_from_gs(
+#'     gs = gs,
+#'     node_name = "root",
+#'     sample_id = 1
+#' )
+#'
+#' df_metadata <- ff@parameters@data
+#'
+#' format_channel_info(
+#'     channels = c("BV480-A", "BV650-A"),
+#'     df_metadata = df_metadata
+#' )
+#' # "BV480-A = CD19\nBV650-A = NK1.1"
+#' }
+#'
+format_channel_info <- function(channels, df_metadata) {
+
+    # If no channels were detected for this gate, return a clear message.
+    if (length(channels) == 0) {
+        return("No gate channels detected for this node.")
+    }
+
+    # Make sure the metadata contains the required columns.
+    if (!all(c("name", "desc") %in% colnames(df_metadata))) {
+        stop("df_metadata must contain columns named 'name' and 'desc'.")
+    }
+
+    # Keep only the metadata rows whose channel name appears in `channels`.
+    #
+    # Example:
+    # channels = c("BV480-A", "BV650-A")
+    #
+    # This keeps metadata rows for BV480-A and BV650-A only.
+    matched_metadata <- df_metadata[
+        df_metadata$name %in% channels,
+        c("name", "desc")
+    ]
+
+    # Identify channels that were used by the gate but were not found
+    # in the metadata table.
+    #
+    # This should usually be empty, but it is useful as a fallback.
+    missing_channels <- setdiff(channels, matched_metadata$name)
+
+    # Convert columns to character so that paste0() and ifelse()
+    # behave predictably.
+    matched_metadata$name <- as.character(matched_metadata$name)
+    matched_metadata$desc <- as.character(matched_metadata$desc)
+
+    # Create a readable label for each channel.
+    #
+    # If desc exists:
+    #   BV480-A = CD19
+    #
+    # If desc is missing:
+    #   FSC-A
+    matched_metadata$channel_label <- ifelse(
+        is.na(matched_metadata$desc) | matched_metadata$desc == "",
+        matched_metadata$name,
+        paste0(matched_metadata$name, " = ", matched_metadata$desc)
+    )
+
+    # Combine formatted metadata labels with any missing channel names.
+    channel_labels <- c(
+        matched_metadata$channel_label,
+        missing_channels
+    )
+
+    # Return one character string, with one channel per line.
+    paste(channel_labels, collapse = "\n")
+}

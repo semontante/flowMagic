@@ -1337,3 +1337,343 @@ magicPlot_gs_hierarchy <- function(gs,
   
   return(out)
 }
+
+
+#' get_hierarchy_all_pops
+#'
+#' function to plot hierarchy of all nodes/cell populations from a GatingHierarchy object.
+#' @param gh GatingHierarchy.
+#' @param export_visnet If true, it export visnetwork object.
+#' @param path.output Path to save visnetwork object. Default to None.
+#' @return List of Dataframes.
+#' @keywords flowMagic
+#' @export
+#' @examples 
+#' \donttest{get_hierarchy_all_pops()}
+
+
+get_hierarchy_all_pops<-function(gh,export_visnet=F,path.output="None"){
+  start<-Sys.time()
+  ##### check loading of necessary libraries #############
+  if (("package:stringr" %in% search()) == F) {
+    warning("stringr library not loaded, attempt to loading...")
+    library(stringr)
+  }
+  if (("package:data.tree" %in% search()) == F) {
+    warning("data.tree library not loaded, attempt to loading...")
+    library(data.tree)
+  }
+  if (("package:visNetwork" %in% search()) == F) {
+    warning("visNetwork library not loaded, attempt to loading...")
+    library(visNetwork)
+  }
+
+  if (("package:randomcoloR" %in% search()) == F) {
+    warning("randomcoloR library not loaded, attempt to loading...")
+    library(randomcoloR)
+  }
+
+  if (("package:flowWorkspace" %in% search()) == F) {
+    warning("flowWorkspace library not loaded, attempt to loading...")
+    library(flowWorkspace)
+  }
+
+  if (("package:flowCore" %in% search()) == F) {
+    warning("flowCore library not loaded, attempt to loading...")
+    library(flowCore)
+  }
+  ################################ get info about the hierarchy #####################
+  all_pops<-name_pop_gating(gh)
+  print("------- list all pops in gh--------")
+  print(all_pops)
+  print("-----------------------------------")
+  print(paste0("total number of pops:",length(all_pops)))
+  ################## calculating the hierarchy of the input gh #######################
+  # make df that contains the hierarchy info
+  print("########### make df with hierarchy info ########")
+  df<-data.frame(Children=character(),Mother=character(),stringsAsFactors=FALSE)
+  for(i in 1:length(all_pops)){
+    pop<-all_pops[i]
+    # get children info current pop
+    pops_multiclass<-get_pop_multiclass(gh,pop) 
+    s<-strsplit(pops_multiclass,":")
+    # analyze info children current pop
+    for (t in 1:length(s)){
+      mother<-s[[t]][1]
+      mother<-strsplit(mother,"mother_")[[1]][2]
+      all_children_info<-s[[t]][2]
+      all_children_info<-strsplit(all_children_info,";")[[1]]
+      for (children_info in all_children_info){
+        new_row<-cbind(mother,children_info)
+        df<-rbind(df,new_row)
+      }
+    }
+  }
+  # reset indices dataframe
+  rownames(df)<-NULL
+  df <- data.frame(lapply(df, as.character), stringsAsFactors=FALSE)
+  colnames(df)<-c("Mother","Children")
+  # remove no children entry
+  inds<-which(df$Children=="no_children")
+  df<-df[-inds,]
+  # rearrange df
+  df_v2<-data.frame(Children=character(),Mother=character(),stringsAsFactors=FALSE)
+  for (i in 1:nrow(df)){
+    row_i<-df$Children[i]
+    ind<-grep("#",row_i)
+    if(length(ind)>0){
+      str<-strsplit(row_i,"#")[[1]][1]
+      str<-strsplit(str,",")[[1]]
+      for (pop in str){
+        new_row<-data.frame(df$Mother[i],pop)
+        names(new_row)<-c("Mother","Children")
+        df_v2<-rbind(df_v2,new_row)
+      }
+    }else{
+      new_row<-data.frame(df$Mother[i],df$Children[i])
+      names(new_row)<-c("Mother","Children")
+      df_v2<-rbind(df_v2,new_row)
+    }
+  }
+  #------------------- make string hierarchical path column ----------------------------------------
+  print("##### make path column #######")
+  #define pathstring for each row of df
+  pathString_col<-data.frame(pathString=character(),stringsAsFactors=FALSE)
+  for (i in 1:nrow(df_v2)){
+    row_i_child<-as.character(df_v2$Children[i])
+    row_i_mother<-df_v2$Mother[i]
+    path_i<-paste(gs_pop_get_parent(gh,row_i_child,path="full"),row_i_child,sep="/")
+    if(i>1){
+      path_i<-paste0("root",path_i)
+    }
+    path_i<-data.frame(path_i,stringsAsFactors=FALSE)
+    names(path_i)<-c("pathString")
+    pathString_col<-rbind(pathString_col,path_i)
+  }
+  if(nrow(df_v2)!=nrow(pathString_col)){
+    stop("error extraction gating hierarchy:nrow(df_v2)!=nrow(pathString_col)")
+  }
+  # ----------------------- make dimension info column ------------------
+  print("##### make Dimensions column #######")
+  inds<-grep("same_dims",df$Children)
+  dim_col<-character(nrow(df_v2))
+  counter<-0
+  for (ind in inds){
+    counter<-counter+1
+    child_ind<-df$Children[ind]
+    str<-strsplit(child_ind,"#")[[1]][1]
+    str<-strsplit(str,",")[[1]]
+    logic<-df_v2$Children %in% str
+    inds<-which(logic==T)
+    dim_col[inds]<-sprintf("same_dims_%s",counter)
+  }
+  df_v2$Dimensions<-dim_col
+  #--------------------- generate hierarchical tree df ----------------------------
+  print("##### build final hierarchical pop tree ######")
+  df_tree<-cbind(df_v2,pathString_col)
+  df_tree$Mother<-as.character(df_tree$Mother)
+  df_tree$Children<-as.character(df_tree$Children)
+  df_tree$Dimensions<-as.character(df_tree$Dimensions)
+  df_tree_v2<-df_tree
+  df_tree_v2$Mother[1]<-"root2"
+  df_tree_v2$pathString<-str_replace(df_tree_v2$pathString,"root","root2")
+  hierarchical_tree <- as.Node(df_tree_v2,df_tree_v2$Mother,df_tree_v2$Children)
+  df_tree_levels<-ToDataFrameTree(hierarchical_tree, "level")
+  #------------------ make visNetwork hierarchy plot ---------------
+  print("######## make hierarchical visNetwork ######")
+  # nodes colored in the same way share the same dims (stay in same plot)
+  # convert df_tree in the two visnet dfs
+  # ---- make edges df
+  df_tree_edges<-df_tree[,c(1,2)]
+  colnames(df_tree_edges)<-c("from","to")
+  # ---- make nodes df
+  colors_v<-rep("white",nrow(df_tree)) # white is the default color for the nodes 
+  # the populations single children or with different dims (separate plots)
+  unique_dim<-unique(df_tree$Dimensions) # "" entry refers to situation with pops with different dims,
+  # so separate plots (we color them with default color)
+  ind<-which(unique_dim=="")
+  if(all(unique_dim=="")==F){
+    if(length(ind)!=0){
+      unique_dim<-unique_dim[-ind]
+    }
+    n <- length(unique_dim)
+    palette <- distinctColorPalette(n)
+    set.seed(123)
+    inds_col<-sample(1:length(palette),length(unique_dim)) # generate random indices
+    i<-0
+    for(dim in unique_dim){
+      i<-i+1
+      inds<-which(df_tree$Dimensions==dim)
+      colors_v[inds]<-palette[inds_col[i]]
+    }
+  }
+  df_tree_nodes<-cbind(df_tree$Children,df_tree$Children,colors_v)
+  df_tree_nodes<-as.data.frame(df_tree_nodes)
+  colnames(df_tree_nodes)<-c("id","label","color.background")
+  # add root row
+  root_row<-data.frame("root","root","white")
+  colnames(root_row)<-c("id","label","color.background")
+  df_tree_nodes<-rbind(root_row,df_tree_nodes)
+  # add border color
+  colorboder<-rep("black",nrow(df_tree_nodes))
+  df_tree_nodes<-cbind(df_tree_nodes,colorboder)
+  colnames(df_tree_nodes)<-c("id","label","color.background","color.border")
+  # ------------------------------------------------------------
+  # Add channel information as node hover text
+  # ------------------------------------------------------------
+  
+  # Get one flowFrame from the gating hierarchy / gating set.
+  # This is only used to access the parameter metadata:
+  # ff@parameters@data
+  ff <- flowMagic::get_flowframe_from_gs(
+    gs = gh,
+    node_name = "root",
+    sample_id = 1
+  )
+  
+  # Extract metadata for the current flowFrame.
+  # This contains columns such as:
+  # name, desc, range, minRange, maxRange
+  df_metadata <- ff@parameters@data
+  
+  # Add a title column to df_tree_nodes.
+  #
+  # In visNetwork, a column named `title` automatically becomes
+  # the hover tooltip for each node.
+  #
+  # For each population:
+  # 1. get the gate channels used to define that population
+  # 2. convert those channels into readable labels using df_metadata
+  # 3. store the result as HTML tooltip text
+
+  df_tree_nodes$title <- sapply(
+    df_tree_nodes$label,
+    function(pop) {
+      
+      channels <- get_gate_channels(
+        gs = gh,
+        pop = pop
+      )
+      
+      channel_info <- format_channel_info(
+        channels = channels,
+        df_metadata = df_metadata
+      )
+      
+      paste0(
+        "<b>Population:</b> ",
+        pop,
+        "<br><br><b>Channels used for this gate:</b><br>",
+        gsub("\n", "<br>", channel_info)
+      )
+    }
+  )
+  
+  # ------------------------------------------------------------
+  # Build visNetwork
+  # ------------------------------------------------------------
+  
+  visnet <- visNetwork(
+    edges = df_tree_edges,
+    nodes = df_tree_nodes
+  )
+  
+  visnet <- visnet %>%
+    visEdges(arrows = "to") %>%
+    visHierarchicalLayout() %>%
+    visNodes(borderWidth = 2)
+  
+  visnet <- visnet %>%
+    visOptions(
+      highlightNearest = TRUE,
+      nodesIdSelection = TRUE
+    )
+  
+  # ------------------------------------------------------------
+  # Copy the node label when clicking a node
+  # ------------------------------------------------------------
+
+  visnet <- visnet %>%
+    visEvents(
+      selectNode = "
+        function(params) {
+
+          // This function runs whenever the user selects/clicks a node
+          // in the visNetwork plot.
+
+          // params contains information about what was selected.
+          // params.nodes is a list of selected node IDs.
+          // If the user clicked somewhere empty, params.nodes may be empty.
+
+          if (!params.nodes || params.nodes.length === 0) {
+            // If there are no selected nodes, stop here.
+            // This prevents errors when the user clicks empty space.
+            return;
+          }
+
+          // Get the ID of the first selected node.
+          // Usually only one node is selected, so we use params.nodes[0].
+          var nodeId = params.nodes[0];
+
+          // Use the node ID to get the full node information
+          // from the visNetwork internal node dataset.
+          //
+          // this = the visNetwork object
+          // this.body.data.nodes = the table of nodes used by the plot
+          // get(nodeId) = retrieve the node with this ID
+          var node = this.body.data.nodes.get(nodeId);
+
+          // Continue only if:
+          // 1. the node was found
+          // 2. the node has a label
+          //
+          // This protects against errors if something unexpected happens.
+          if (node && node.label) {
+
+            // Create a temporary invisible text box.
+            // JavaScript can copy text from a selected text box.
+            var textarea = document.createElement('textarea');
+
+            // Put the node label into the temporary text box.
+            // This is the text we want to copy.
+            textarea.value = node.label;
+
+            // Add the temporary text box to the web page.
+            // It has to be part of the page before we can select/copy from it.
+            document.body.appendChild(textarea);
+
+            // Select the text inside the temporary text box.
+            // This is like highlighting the text manually with the mouse.
+            textarea.select();
+
+            try {
+              // Copy the selected text to the clipboard.
+              // This is the actual copy step.
+              document.execCommand('copy');
+
+            } catch (err) {
+              // If automatic copying fails, show a small backup box.
+              // The user can manually copy the node label from this box.
+              window.prompt('Copy this text:', node.label);
+            }
+
+            // Remove the temporary text box from the page.
+            // The user never needs to see it.
+            document.body.removeChild(textarea);
+          }
+        }
+        "
+    )
+  
+  #-------------------- export visnetwork -------------------------
+  if(export_visnet==T){
+    dir.create(paste0(path.output,"/visnet_plot/"),recursive = F)
+  }
+  end<-Sys.time()
+  time_taken<-end-start
+  print("Time of execution:")
+  print(time_taken)
+  print("Done")
+  return(list(df_tree=df_tree,df_tree_levels=df_tree_levels,visnet=visnet,hierarchical_tree=hierarchical_tree))
+}
+
