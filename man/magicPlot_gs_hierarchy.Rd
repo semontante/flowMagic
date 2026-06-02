@@ -7,7 +7,7 @@
 magicPlot_gs_hierarchy(
   gs,
   sample_id,
-  n_col_wrap = 4,
+  n_col_wrap = NULL,
   size_points = 0.5,
   size_title = NULL,
   concavity_val = 50,
@@ -16,8 +16,8 @@ magicPlot_gs_hierarchy(
   auto_size = TRUE,
   return_plot_list = FALSE,
   path_output = NULL,
-  plot_width = 4,
-  plot_height = 4,
+  plot_width = NULL,
+  plot_height = NULL,
   dpi = 300,
   ...
 )
@@ -28,8 +28,11 @@ magicPlot_gs_hierarchy(
 \item{sample_id}{Character. Name of the sample to plot. The value must be
 present in \code{sampleNames(gs)}.}
 
-\item{n_col_wrap}{Integer. Number of columns used to arrange the wrapped
-hierarchy figure. Default is \code{4}.}
+\item{n_col_wrap}{Integer or \code{NULL}. Number of columns used to arrange the
+wrapped hierarchy figure. If \code{NULL}, the number of columns is selected
+automatically from the number of hierarchy plots using
+\code{ceiling(sqrt(n_plots))}, producing a compact near-square layout. Default
+is \code{NULL}.}
 
 \item{size_points}{Numeric. Point size passed to \code{magicPlot_gs_gates()} and
 ultimately to \code{magicPlot()}. Default is \code{0.5}.}
@@ -70,13 +73,21 @@ hierarchy plot should be saved. If \code{NULL}, no file is exported. The file
 format is inferred by \code{ggplot2::ggsave()} from the file extension, for
 example \code{.tiff}, \code{.png}, or \code{.pdf}. Default is \code{NULL}.}
 
-\item{plot_width}{Numeric. Width, in inches, assigned to each individual
-subplot when exporting the full wrapped figure. The final exported width is
-calculated as \code{plot_width * number_of_columns}. Default is \code{4}.}
+\item{plot_width}{Numeric or \code{NULL}. Width, in inches, assigned to each
+individual subplot when exporting the full wrapped figure. The final
+exported width is calculated as \code{plot_width * number_of_columns}. If
+\code{NULL}, the value is selected automatically from the number of columns in
+the wrapped figure. This argument affects only exported files created with
+\code{path_output}; it does not change the interactive RStudio Plot pane
+display. Default is \code{NULL}.}
 
-\item{plot_height}{Numeric. Height, in inches, assigned to each individual
-subplot when exporting the full wrapped figure. The final exported height is
-calculated as \code{plot_height * number_of_rows}. Default is \code{4}.}
+\item{plot_height}{Numeric or \code{NULL}. Height, in inches, assigned to each
+individual subplot when exporting the full wrapped figure. The final
+exported height is calculated as \code{plot_height * number_of_rows}. If
+\code{NULL}, the value is selected automatically from the number of rows in the
+wrapped figure. This argument affects only exported files created with
+\code{path_output}; it does not change the interactive RStudio Plot pane
+display. Default is \code{NULL}.}
 
 \item{dpi}{Numeric. Resolution used when exporting raster image formats such
 as \code{.png} or \code{.tiff}. Default is \code{300}.}
@@ -84,7 +95,7 @@ as \code{.png} or \code{.tiff}. Default is \code{300}.}
 \item{...}{Additional plotting arguments passed to \code{magicPlot_gs_gates()} and
 then to \code{magicPlot()}. Common examples include \code{type}, \code{size_axis_text},
 \code{size_title_x}, \code{size_title_y}, \code{show_legend}, \code{x_lim1}, \code{x_lim2},
-\code{y_lim1}, and \code{y_lim2}.}
+\code{y_lim1}, \code{y_lim2}, and \code{aspect_ratio}.}
 }
 \value{
 If \code{return_plot_list = FALSE}, a wrapped \code{patchwork} plot object. If
@@ -95,6 +106,10 @@ If \code{return_plot_list = FALSE}, a wrapped \code{patchwork} plot object. If
 \item{plot_groups}{A named list describing which gate or gates were plotted in each subplot.}
 \item{plot_titles}{A named list containing the parent population title for each subplot.}
 \item{df_tree}{The hierarchy table returned by \code{get_hierarchy_all_pops()} and used to build the figure.}
+\item{n_cols}{Final number of columns used in the wrapped plot.}
+\item{n_rows}{Final number of rows used in the wrapped plot.}
+\item{plot_width}{Width, in inches, assigned to each subplot for export.}
+\item{plot_height}{Height, in inches, assigned to each subplot for export.}
 }
 }
 \description{
@@ -121,13 +136,28 @@ If a child population has an empty \code{Dimensions} value, it is plotted alone.
 If multiple child populations share the same \code{Dimensions} value, they are
 grouped into the same subplot and shown together.
 
+If \code{n_col_wrap = NULL}, the number of columns is selected automatically from
+the number of generated hierarchy plots. The automatically selected layout is
+intended to avoid very wide or very narrow wrapped figures.
+
+If \code{plot_width} or \code{plot_height} are \code{NULL}, they are selected automatically
+for export based on the final number of columns and rows. These values are
+used only when \code{path_output} is provided.
+
 The plotting itself is delegated to \code{magicPlot_gs_gates()}. This wrapper
 determines which gates should appear in each subplot, then calls
 \code{magicPlot_gs_gates()} repeatedly and combines the resulting plots.
 }
 \examples{
 \donttest{
-# Plot the full hierarchy for one sample
+# Plot the full hierarchy for one sample using automatic layout
+p <- magicPlot_gs_hierarchy(
+  gs = gs,
+  sample_id = "sample_01.fcs",
+  type = "dens"
+)
+
+# Plot the full hierarchy with a user-defined number of columns
 p <- magicPlot_gs_hierarchy(
   gs = gs,
   sample_id = "sample_01.fcs",
@@ -135,14 +165,24 @@ p <- magicPlot_gs_hierarchy(
   type = "dens"
 )
 
-# Plot and export the hierarchy figure as a TIFF file
+# Plot and export the hierarchy figure as a TIFF file.
+# plot_width and plot_height are selected automatically if left as NULL.
+p <- magicPlot_gs_hierarchy(
+  gs = gs,
+  sample_id = "sample_01.fcs",
+  type = "dens",
+  path_output = "~/main/Results/sample_01_hierarchy.tiff",
+  dpi = 300
+)
+
+# Plot and export using manual export dimensions
 p <- magicPlot_gs_hierarchy(
   gs = gs,
   sample_id = "sample_01.fcs",
   n_col_wrap = 3,
   type = "dens",
   path_output = "~/main/Results/sample_01_hierarchy.tiff",
-  plot_width = 4,
+  plot_width = 5,
   plot_height = 4,
   dpi = 300
 )

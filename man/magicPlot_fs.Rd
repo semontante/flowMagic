@@ -4,7 +4,7 @@
 \alias{magicPlot_fs}
 \title{magicPlot_fs}
 \usage{
-magicPlot_fs(fs, sample_id, channel_x, channel_y, ...)
+magicPlot_fs(fs, sample_id = NULL, channel_x, channel_y, ...)
 }
 \arguments{
 \item{fs}{object of class flowSet or flowFrame.}
