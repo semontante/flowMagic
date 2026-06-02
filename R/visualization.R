@@ -902,8 +902,11 @@ magicPlot_gs_gates <- function(gs,
 #' @param sample_id Character. Name of the sample to plot. The value must be
 #'   present in `sampleNames(gs)`.
 #'
-#' @param n_col_wrap Integer. Number of columns used to arrange the wrapped
-#'   hierarchy figure. Default is `4`.
+#' @param n_col_wrap Integer or `NULL`. Number of columns used to arrange the
+#'   wrapped hierarchy figure. If `NULL`, the number of columns is selected
+#'   automatically from the number of hierarchy plots using
+#'   `ceiling(sqrt(n_plots))`, producing a compact near-square layout. Default
+#'   is `NULL`.
 #'
 #' @param size_points Numeric. Point size passed to `magicPlot_gs_gates()` and
 #'   ultimately to `magicPlot()`. Default is `0.5`.
@@ -944,13 +947,21 @@ magicPlot_gs_gates <- function(gs,
 #'   format is inferred by `ggplot2::ggsave()` from the file extension, for
 #'   example `.tiff`, `.png`, or `.pdf`. Default is `NULL`.
 #'
-#' @param plot_width Numeric. Width, in inches, assigned to each individual
-#'   subplot when exporting the full wrapped figure. The final exported width is
-#'   calculated as `plot_width * number_of_columns`. Default is `4`.
+#' @param plot_width Numeric or `NULL`. Width, in inches, assigned to each
+#'   individual subplot when exporting the full wrapped figure. The final
+#'   exported width is calculated as `plot_width * number_of_columns`. If
+#'   `NULL`, the value is selected automatically from the number of columns in
+#'   the wrapped figure. This argument affects only exported files created with
+#'   `path_output`; it does not change the interactive RStudio Plot pane
+#'   display. Default is `NULL`.
 #'
-#' @param plot_height Numeric. Height, in inches, assigned to each individual
-#'   subplot when exporting the full wrapped figure. The final exported height is
-#'   calculated as `plot_height * number_of_rows`. Default is `4`.
+#' @param plot_height Numeric or `NULL`. Height, in inches, assigned to each
+#'   individual subplot when exporting the full wrapped figure. The final
+#'   exported height is calculated as `plot_height * number_of_rows`. If
+#'   `NULL`, the value is selected automatically from the number of rows in the
+#'   wrapped figure. This argument affects only exported files created with
+#'   `path_output`; it does not change the interactive RStudio Plot pane
+#'   display. Default is `NULL`.
 #'
 #' @param dpi Numeric. Resolution used when exporting raster image formats such
 #'   as `.png` or `.tiff`. Default is `300`.
@@ -958,7 +969,7 @@ magicPlot_gs_gates <- function(gs,
 #' @param ... Additional plotting arguments passed to `magicPlot_gs_gates()` and
 #'   then to `magicPlot()`. Common examples include `type`, `size_axis_text`,
 #'   `size_title_x`, `size_title_y`, `show_legend`, `x_lim1`, `x_lim2`,
-#'   `y_lim1`, and `y_lim2`.
+#'   `y_lim1`, `y_lim2`, and `aspect_ratio`.
 #'
 #' @return If `return_plot_list = FALSE`, a wrapped `patchwork` plot object. If
 #'   `return_plot_list = TRUE`, a list with the following elements:
@@ -968,6 +979,10 @@ magicPlot_gs_gates <- function(gs,
 #'     \item{plot_groups}{A named list describing which gate or gates were plotted in each subplot.}
 #'     \item{plot_titles}{A named list containing the parent population title for each subplot.}
 #'     \item{df_tree}{The hierarchy table returned by `get_hierarchy_all_pops()` and used to build the figure.}
+#'     \item{n_cols}{Final number of columns used in the wrapped plot.}
+#'     \item{n_rows}{Final number of rows used in the wrapped plot.}
+#'     \item{plot_width}{Width, in inches, assigned to each subplot for export.}
+#'     \item{plot_height}{Height, in inches, assigned to each subplot for export.}
 #'   }
 #'
 #' @details
@@ -976,6 +991,14 @@ magicPlot_gs_gates <- function(gs,
 #' If a child population has an empty `Dimensions` value, it is plotted alone.
 #' If multiple child populations share the same `Dimensions` value, they are
 #' grouped into the same subplot and shown together.
+#'
+#' If `n_col_wrap = NULL`, the number of columns is selected automatically from
+#' the number of generated hierarchy plots. The automatically selected layout is
+#' intended to avoid very wide or very narrow wrapped figures.
+#'
+#' If `plot_width` or `plot_height` are `NULL`, they are selected automatically
+#' for export based on the final number of columns and rows. These values are
+#' used only when `path_output` is provided.
 #'
 #' The plotting itself is delegated to `magicPlot_gs_gates()`. This wrapper
 #' determines which gates should appear in each subplot, then calls
@@ -986,7 +1009,14 @@ magicPlot_gs_gates <- function(gs,
 #'
 #' @examples
 #' \donttest{
-#' # Plot the full hierarchy for one sample
+#' # Plot the full hierarchy for one sample using automatic layout
+#' p <- magicPlot_gs_hierarchy(
+#'   gs = gs,
+#'   sample_id = "sample_01.fcs",
+#'   type = "dens"
+#' )
+#'
+#' # Plot the full hierarchy with a user-defined number of columns
 #' p <- magicPlot_gs_hierarchy(
 #'   gs = gs,
 #'   sample_id = "sample_01.fcs",
@@ -994,14 +1024,24 @@ magicPlot_gs_gates <- function(gs,
 #'   type = "dens"
 #' )
 #'
-#' # Plot and export the hierarchy figure as a TIFF file
+#' # Plot and export the hierarchy figure as a TIFF file.
+#' # plot_width and plot_height are selected automatically if left as NULL.
+#' p <- magicPlot_gs_hierarchy(
+#'   gs = gs,
+#'   sample_id = "sample_01.fcs",
+#'   type = "dens",
+#'   path_output = "~/main/Results/sample_01_hierarchy.tiff",
+#'   dpi = 300
+#' )
+#'
+#' # Plot and export using manual export dimensions
 #' p <- magicPlot_gs_hierarchy(
 #'   gs = gs,
 #'   sample_id = "sample_01.fcs",
 #'   n_col_wrap = 3,
 #'   type = "dens",
 #'   path_output = "~/main/Results/sample_01_hierarchy.tiff",
-#'   plot_width = 4,
+#'   plot_width = 5,
 #'   plot_height = 4,
 #'   dpi = 300
 #' )
@@ -1023,7 +1063,7 @@ magicPlot_gs_gates <- function(gs,
 
 magicPlot_gs_hierarchy <- function(gs,
                                    sample_id,
-                                   n_col_wrap = 4,
+                                   n_col_wrap = NULL,
                                    size_points = 0.5,
                                    size_title = NULL,
                                    concavity_val = 50,
@@ -1032,8 +1072,8 @@ magicPlot_gs_hierarchy <- function(gs,
                                    auto_size = TRUE,
                                    return_plot_list = FALSE,
                                    path_output = NULL,
-                                   plot_width = 4,
-                                   plot_height = 4,
+                                   plot_width = NULL,
+                                   plot_height = NULL,
                                    dpi = 300,
                                    ...) {
   
@@ -1223,17 +1263,36 @@ magicPlot_gs_hierarchy <- function(gs,
   # =========================================================================
   # 4. Compute wrapped-grid dimensions
   # =========================================================================
-  # The number of plots determines the number of rows needed in the final figure.
+  # The number of plots determines the number of rows and columns needed in the
+  # final figure.
   #
-  # n_col_wrap controls the maximum number of columns.
-  # If there are fewer plots than n_col_wrap, the number of columns is reduced.
+  # If n_col_wrap is NULL, the function chooses a balanced number of columns
+  # automatically based on the number of hierarchy plots.
   #
-  # These values are used for:
-  #   - patchwork layout,
-  #   - automatic text-size scaling,
-  #   - exported figure size.
+  # The rule:
+  #
+  #   n_col_wrap <- ceiling(sqrt(n_plots))
+  #
+  # gives a compact near-square layout.
+  #
+  # Examples:
+  #   1 plot  -> 1 column
+  #   2 plots -> 2 columns
+  #   3 plots -> 2 columns
+  #   4 plots -> 2 columns
+  #   5 plots -> 3 columns
+  #   9 plots -> 3 columns
+  #   10 plots -> 4 columns
+  #
+  # This avoids forcing a fixed 4-column layout when only one or two plots are
+  # present.
   
   n_plots <- length(plot_groups)
+  
+  if (is.null(n_col_wrap)) {
+    n_col_wrap <- ceiling(sqrt(n_plots))
+  }
+  
   n_cols <- min(n_col_wrap, n_plots)
   n_rows <- ceiling(n_plots / n_cols)
   
@@ -1242,7 +1301,42 @@ magicPlot_gs_hierarchy <- function(gs,
   
   
   # =========================================================================
-  # 5. Collect optional user arguments from ...
+  # 5. Automatically choose export panel width and height, if needed
+  # =========================================================================
+  # plot_width and plot_height are used only when exporting with path_output.
+  # They do not change the size of the plot shown in the RStudio Plot pane.
+  #
+  # If the user does not provide plot_width or plot_height, choose them using
+  # a smooth formula based on the final number of columns and rows.
+  #
+  # Width depends mostly on the number of columns.
+  # Height depends mostly on the number of rows.
+  #
+  # The max()/min() calls keep the values within a reasonable range.
+  #
+  # For width:
+  #   n_cols = 1 -> about 7 inches
+  #   n_cols = 2 -> about 7 inches
+  #   n_cols = 3 -> about 5.7 inches
+  #   n_cols = 4 -> about 5 inches
+  #
+  # For height:
+  #   n_rows = 1 -> about 5.5 inches
+  #   n_rows = 2 -> about 5.5 inches
+  #   n_rows = 3 -> about 4.5 inches
+  #   n_rows = 4 -> about 4 inches
+  
+  if (is.null(plot_width)) {
+    plot_width <- max(5, min(7, round(7 / sqrt(n_cols / 2), 1)))
+  }
+  
+  if (is.null(plot_height)) {
+    plot_height <- max(4, min(5.5, round(5.5 / sqrt(n_rows / 2), 1)))
+  }
+  
+  
+  # =========================================================================
+  # 6. Collect optional user arguments from ...
   # =========================================================================
   # The ... argument allows users to pass additional plotting options without
   # adding every possible magicPlot() option to this wrapper.
@@ -1279,7 +1373,7 @@ magicPlot_gs_hierarchy <- function(gs,
   
   
   # =========================================================================
-  # 6. Automatically scale plot text sizes, if requested
+  # 7. Automatically scale plot text sizes, if requested
   # =========================================================================
   # When many plots are shown in one grid, text sizes need to be adjusted.
   #
@@ -1307,33 +1401,33 @@ magicPlot_gs_hierarchy <- function(gs,
     scale_factor <- max(n_cols, n_rows)
     
     # Axis tick label size.
-    # Only set it automatically if the user did not provide size_axis_text.
+    # Keep this between 7 and 10 to avoid very large text in small grids.
     if (!("size_axis_text" %in% names(args_list))) {
-      args_list$size_axis_text <- max(7, round(20 / sqrt(scale_factor), 1))
+      args_list$size_axis_text <- max(7, min(10, round(12 / sqrt(scale_factor), 1)))
     }
     
     # X-axis title size.
-    # Only set it automatically if the user did not provide size_title_x.
+    # Keep this between 9 and 13.
     if (!("size_title_x" %in% names(args_list))) {
-      args_list$size_title_x <- max(9, round(24 / sqrt(scale_factor), 1))
+      args_list$size_title_x <- max(9, min(13, round(15 / sqrt(scale_factor), 1)))
     }
     
     # Y-axis title size.
-    # Only set it automatically if the user did not provide size_title_y.
+    # Keep this between 9 and 13.
     if (!("size_title_y" %in% names(args_list))) {
-      args_list$size_title_y <- max(9, round(24 / sqrt(scale_factor), 1))
+      args_list$size_title_y <- max(9, min(13, round(15 / sqrt(scale_factor), 1)))
     }
     
     # Gate label size printed inside the polygon.
-    # This is a formal argument of magicPlot_gs_hierarchy(), so it is checked
-    # directly rather than inside args_list.
+    # Keep this between 3 and 4.5.
     if (is.null(size_pol_name)) {
-      size_pol_name <- max(4.5, round(8 / sqrt(scale_factor), 1))
+      size_pol_name <- max(3, min(4.5, round(5 / sqrt(scale_factor), 1)))
     }
     
-    # Subplot title size, for example "Parent pop: CD45+".
+    # Subplot title size.
+    # Keep this between 9 and 12.
     if (is.null(size_title)) {
-      size_title <- max(10, round(17 / sqrt(scale_factor), 1))
+      size_title <- max(9, min(12, round(13 / sqrt(scale_factor), 1)))
     }
     
     message(sprintf("Auto-size axis text: %s", args_list$size_axis_text))
@@ -1361,7 +1455,7 @@ magicPlot_gs_hierarchy <- function(gs,
   
   
   # =========================================================================
-  # 7. Generate one ggplot object per hierarchy step
+  # 8. Generate one ggplot object per hierarchy step
   # =========================================================================
   # This section loops through plot_groups and creates each subplot.
   #
@@ -1391,7 +1485,7 @@ magicPlot_gs_hierarchy <- function(gs,
     
     
     # -----------------------------------------------------------------------
-    # 7A. Build the argument list for magicPlot_gs_gates()
+    # 8A. Build the argument list for magicPlot_gs_gates()
     # -----------------------------------------------------------------------
     # We need to call magicPlot_gs_gates() many times, once per subplot.
     #
@@ -1441,7 +1535,7 @@ magicPlot_gs_hierarchy <- function(gs,
     
     
     # -----------------------------------------------------------------------
-    # 7B. Call magicPlot_gs_gates() using do.call()
+    # 8B. Call magicPlot_gs_gates() using do.call()
     # -----------------------------------------------------------------------
     # Because the function arguments are stored inside the list args_gates,
     # we use do.call().
@@ -1490,7 +1584,7 @@ magicPlot_gs_hierarchy <- function(gs,
     
     
     # -----------------------------------------------------------------------
-    # 7C. Add subplot title
+    # 8C. Add subplot title
     # -----------------------------------------------------------------------
     # The title should describe the parent population.
     # The gate names themselves are printed inside the polygons when
@@ -1507,20 +1601,23 @@ magicPlot_gs_hierarchy <- function(gs,
   
   
   # =========================================================================
-  # 8. Combine all subplots into one wrapped figure
+  # 9. Combine all subplots into one wrapped figure
   # =========================================================================
   # patchwork::wrap_plots() arranges the list of ggplot objects into a grid.
   # The order of plot_list follows plot_groups, which was built in df_tree order.
   # Therefore, the final plot follows the gating hierarchy order.
+  #
+  # Use n_cols instead of n_col_wrap because n_cols is the final resolved number
+  # of columns after automatic layout selection.
   
   out <- patchwork::wrap_plots(
     plot_list,
-    ncol = n_col_wrap
+    ncol = n_cols
   )
   
   
   # =========================================================================
-  # 9. Optionally export the wrapped figure to disk
+  # 10. Optionally export the wrapped figure to disk
   # =========================================================================
   # path_output is treated as the full output file path.
   #
@@ -1561,7 +1658,7 @@ magicPlot_gs_hierarchy <- function(gs,
   
   
   # =========================================================================
-  # 10. Return output
+  # 11. Return output
   # =========================================================================
   # By default, return only the wrapped plot.
   #
@@ -1572,6 +1669,8 @@ magicPlot_gs_hierarchy <- function(gs,
   #   plot_groups : gate names used in each subplot
   #   plot_titles : parent population title for each subplot
   #   df_tree     : hierarchy table used to build the plot
+  #   n_cols      : final number of columns used in the wrapped plot
+  #   n_rows      : final number of rows used in the wrapped plot
   #
   # These intermediate objects are useful for debugging or for developing a
   # more advanced tree-layout version later.
@@ -1583,14 +1682,17 @@ magicPlot_gs_hierarchy <- function(gs,
         plot_list = plot_list,
         plot_groups = plot_groups,
         plot_titles = plot_titles,
-        df_tree = df_tree
+        df_tree = df_tree,
+        n_cols = n_cols,
+        n_rows = n_rows,
+        plot_width = plot_width,
+        plot_height = plot_height
       )
     )
   }
   
   return(out)
 }
-
 
 #' get_hierarchy_all_pops
 #'
