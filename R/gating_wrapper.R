@@ -368,17 +368,32 @@ magic_template_train <- function(gs_input,
     
     args_list[names(args_list) %in% fun_args]
   }
-  
-  args_magicGating <- get_matching_args(
-    args_list = args_all,
-    fun = flowMagic::magicGating
-  )
-  
+
+  # Arguments for magicGating().
+  #
+  # Important:
+  # magicGating() has ... and internally forwards some of those arguments to
+  # magicPlot_template().
+  #
+  # Therefore, for magicGating(), we keep arguments that match either:
+  #   1. magicGating() formal arguments
+  #   2. magicPlot_template() formal arguments
+  #
+  # This is needed so arguments like size_points are not removed here.
+  args_magicGating_names <- unique(c(
+    names(formals(flowMagic::magicGating)),
+    names(formals(flowMagic::magicPlot_template))
+  ))
+
+  args_magicGating <- args_all[
+    names(args_all) %in% args_magicGating_names
+  ]
+
   args_get_train_data <- get_matching_args(
     args_list = args_all,
     fun = flowMagic::get_train_data
   )
-  
+
   args_magicTrain <- get_matching_args(
     args_list = args_all,
     fun = flowMagic::magicTrain
