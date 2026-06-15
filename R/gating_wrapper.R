@@ -312,7 +312,9 @@ magic_template_train <- function(gs_input,
   #     New templates are drawn interactively.
   #
   #   input_template_obj != NULL and use_existing_templates = FALSE
-  #     Existing templates are loaded, but new templates are drawn interactively.
+  #     Existing templates are loaded, and new templates are drawn interactively.
+  #     Newly gated samples are added to the existing template object.
+  #     Samples with matching names are replaced.
   #
   #   input_template_obj != NULL and use_existing_templates = TRUE
   #     No new interactive gating is performed. The saved templates in
@@ -354,6 +356,7 @@ magic_template_train <- function(gs_input,
   #
   # These arguments may belong to:
   #   - magicGating()
+  #   - magicPlot_template(), through magicGating()
   #   - get_train_data()
   #   - magicTrain()
   #
@@ -368,7 +371,7 @@ magic_template_train <- function(gs_input,
     
     args_list[names(args_list) %in% fun_args]
   }
-
+  
   # Arguments for magicGating().
   #
   # Important:
@@ -384,16 +387,16 @@ magic_template_train <- function(gs_input,
     names(formals(flowMagic::magicGating)),
     names(formals(flowMagic::magicPlot_template))
   ))
-
+  
   args_magicGating <- args_all[
     names(args_all) %in% args_magicGating_names
   ]
-
+  
   args_get_train_data <- get_matching_args(
     args_list = args_all,
     fun = flowMagic::get_train_data
   )
-
+  
   args_magicTrain <- get_matching_args(
     args_list = args_all,
     fun = flowMagic::magicTrain
@@ -458,6 +461,8 @@ magic_template_train <- function(gs_input,
       message("Existing template object provided.")
       message("use_existing_templates = FALSE, so new interactive templates will be drawn.")
       message("Existing templates will be used as the starting template object.")
+      message("Newly gated samples will be added to the existing templates.")
+      message("Samples with matching names will be replaced.")
       
       all_list_out_obj <- input_template_obj$all_list_out_obj
       
@@ -501,10 +506,43 @@ magic_template_train <- function(gs_input,
         args_magicGating
       )
       
-      all_list_out_obj[[n]] <- do.call(
+      new_list_out_obj <- do.call(
         flowMagic::magicGating,
         args_gating_current
       )
+      
+      # ---------------------------------------------------------------------
+      # Add new template samples to an existing template object
+      # ---------------------------------------------------------------------
+      # If all_list_out_obj[[n]] already exists, this means we are adding new
+      # manually gated samples to an existing template gate.
+      #
+      # In that case:
+      #   - old samples are kept,
+      #   - new samples are added,
+      #   - samples with matching names are replaced.
+      #
+      # If all_list_out_obj[[n]] does not exist yet, store the newly created gate
+      # object directly.
+      
+      if (!is.null(all_list_out_obj[[n]])) {
+        
+        old_gated_data <- all_list_out_obj[[n]]$list_gated_data
+        new_gated_data <- new_list_out_obj$list_gated_data
+        
+        old_poly_gates <- all_list_out_obj[[n]]$list_poly_gates
+        new_poly_gates <- new_list_out_obj$list_poly_gates
+        
+        old_gated_data[names(new_gated_data)] <- new_gated_data
+        old_poly_gates[names(new_poly_gates)] <- new_poly_gates
+        
+        all_list_out_obj[[n]]$list_gated_data <- old_gated_data
+        all_list_out_obj[[n]]$list_poly_gates <- old_poly_gates
+        
+      } else {
+        
+        all_list_out_obj[[n]] <- new_list_out_obj
+      }
     }
   }
   
