@@ -575,7 +575,8 @@ magic_template_train <- function(gs_input,
       function(x, y) {
         flowMagic::merge_magicGating_labels(
           list_out_1 = x,
-          list_out_2 = y
+          list_out_2 = y,
+          gated_data_only=T
         )
       },
       all_gated_data
