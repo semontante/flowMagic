@@ -525,7 +525,12 @@ magic_template_train <- function(gs_input,
       # If all_list_out_obj[[n]] does not exist yet, store the newly created gate
       # object directly.
       
-      if (!is.null(all_list_out_obj[[n]])) {
+      # Important:
+      # We cannot directly test !is.null(all_list_out_obj[[n]]) when the list is
+      # still empty, because all_list_out_obj[[n]] would give "subscript out of
+      # bounds". Therefore, first check whether n exists in the list.
+
+      if (n <= length(all_list_out_obj) && !is.null(all_list_out_obj[[n]])) {
         
         old_gated_data <- all_list_out_obj[[n]]$list_gated_data
         new_gated_data <- new_list_out_obj$list_gated_data
