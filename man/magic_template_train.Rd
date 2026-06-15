@@ -10,10 +10,14 @@ magic_template_train(
   samples_id,
   channel_x,
   channel_y,
-  size_points = 0.5,
   n_gates = 1,
-  input_list_out_final = NULL,
+  input_template_obj = NULL,
+  use_existing_templates = FALSE,
   train_model = "rf",
+  prop_down = NULL,
+  n_points_per_plot = NULL,
+  seed = 123,
+  return_train_data = TRUE,
   ...
 )
 }
@@ -24,34 +28,66 @@ magic_template_train(
 data are extracted for template gating.}
 
 \item{samples_id}{Character vector. Sample names to manually gate as template
-samples.}
+samples. All values must be present in \code{sampleNames(gs_input)}. Duplicate
+sample names are not allowed.}
 
 \item{channel_x}{Character. Name of the channel to plot on the x-axis.}
 
 \item{channel_y}{Character. Name of the channel to plot on the y-axis.}
 
-\item{size_points}{Numeric. Point size used in the interactive gating plot.
-Default is \code{0.5}.}
-
 \item{n_gates}{Integer. Number of template gates to draw per selected sample.
 Each gate is assigned a label from \code{1} to \code{n_gates}. Default is \code{1}.}
 
-\item{input_list_out_final}{Optional list. Existing template data object,
-usually from a previous call to \code{magic_template_train()$list_out_final}.
-If supplied, newly gated templates are added to this existing template set.
-Samples with matching names are replaced.}
+\item{input_template_obj}{Optional list. Existing template-training object,
+usually returned by a previous call to \code{magic_template_train()}. The object
+must contain \code{all_list_out_obj} if \code{use_existing_templates = TRUE}.}
+
+\item{use_existing_templates}{Logical. If \code{FALSE}, interactive gating is
+performed and new templates are drawn. If \code{TRUE}, \code{input_template_obj} must
+be supplied and the stored templates in
+\code{input_template_obj$all_list_out_obj} are reused without redrawing gates.
+This is useful for reproducing training from previously saved templates.
+Default is \code{FALSE}.}
 
 \item{train_model}{Character. Model type passed to \code{magicTrain()}. Default is
 \code{"rf"}.}
 
-\item{...}{Additional arguments passed to \code{magicGating()}.}
+\item{prop_down}{Numeric or \code{NULL}. Proportion of events to keep when building
+the training dataframe with \code{get_train_data()}. If \code{NULL}, no proportion is
+specified explicitly. Default is \code{NULL}.}
+
+\item{n_points_per_plot}{Numeric, integer, or \code{NULL}. Approximate number of
+points to keep per gated dataset when building the training dataframe with
+\code{get_train_data()}. This is useful to avoid training on all events. If
+\code{NULL}, no fixed number of points is specified. Default is \code{NULL}.}
+
+\item{seed}{Integer. Random seed set immediately before calling
+\code{get_train_data()}. This makes downsampling reproducible when \code{prop_down}
+or \code{n_points_per_plot} is used. Default is \code{123}.}
+
+\item{return_train_data}{Logical. If \code{TRUE}, return the training dataframe in
+the \code{ref_train} element. If \code{FALSE}, \code{ref_train} is set to \code{NULL} before
+returning the output. Default is \code{TRUE}.}
+
+\item{...}{Additional arguments passed to internal functions. Arguments are
+automatically matched to the formal arguments of \code{magicGating()},
+\code{get_train_data()}, or \code{magicTrain()}. This allows users to pass valid
+options for those functions without adding every possible argument to this
+wrapper.}
 }
 \value{
-A list with five elements: \code{ref_model_info}, the trained model
-information returned by \code{magicTrain()}; \code{ref_train}, the training data
-returned by \code{get_train_data()}; \code{list_out_final}, the complete merged
-template set; \code{list_out_new}, the newly generated template data; and
-\code{all_list_out_obj}, the raw outputs from each call to \code{magicGating()}.
+A list with four elements:
+\describe{
+\item{ref_model_info}{The trained model information returned by
+\code{magicTrain()}.}
+\item{ref_train}{The training dataframe returned by \code{get_train_data()}, or
+\code{NULL} if \code{return_train_data = FALSE}.}
+\item{list_out_final}{The complete merged template-gated data used to
+build the training dataframe.}
+\item{all_list_out_obj}{The raw template-gating outputs from each call to
+\code{magicGating()}. This object can be saved and later reused with
+\code{input_template_obj} and \code{use_existing_templates = TRUE}.}
+}
 }
 \description{
 Build a template training set from manually gated samples and train a
@@ -64,11 +100,37 @@ gate is drawn, the labeled outputs are merged into a single template data
 object. The resulting templates are converted into training data using
 \code{get_train_data()} and used to train a model with \code{magicTrain()}.
 
-Existing template data can be supplied through \code{input_list_out_final}, allowing
-users to add new manually gated templates without redrawing previous ones.
+Existing template objects can be supplied through \code{input_template_obj}. This
+allows users either to reuse the same manually gated templates for
+reproducible training, or to use an existing template object as the starting
+point before drawing new interactive templates.
+
+The function first checks that all selected samples exist in the input
+\code{GatingSet} and that \code{samples_id} does not contain duplicated sample names.
+Duplicate sample names are not allowed because sample names are used as list
+names in downstream template objects.
+
+If \code{use_existing_templates = FALSE}, the function calls \code{magicGating()}
+interactively once for each template gate. The labels assigned to the gates
+are \code{"1"}, \code{"2"}, ..., up to \code{n_gates}.
+
+If \code{use_existing_templates = TRUE}, no interactive gating is performed. The
+function reuses \code{input_template_obj$all_list_out_obj}, allowing the same
+manually drawn templates to be used again for reproducible model training.
+
+After template generation or reuse, template-gated data are merged with
+\code{merge_magicGating_labels()} when more than one gate is present. The merged
+object is then passed to \code{get_train_data()}. The arguments \code{prop_down} and
+\code{n_points_per_plot} control how many events are used for training. The seed is
+set immediately before \code{get_train_data()} to make this downsampling
+reproducible.
+
+The resulting training dataframe is passed to \code{magicTrain()} to build the
+classification model.
 }
 \examples{
 \donttest{
+# Train a template model by drawing two manual gates
 train_out <- magic_template_train(
   gs_input = gs,
   parent_node = "root",
@@ -76,18 +138,40 @@ train_out <- magic_template_train(
   channel_x = "FSC-A",
   channel_y = "LIVE DEAD Blue-A",
   n_gates = 2,
-  train_model = "rf"
+  train_model = "rf",
+  n_points_per_plot = 5000,
+  seed = 123
 )
 
-# Add additional template samples later
-train_out2 <- magic_template_train(
+# Save the full template-training object for reproducibility
+saveRDS(train_out, "template_training_root.rds")
+
+# Reuse the same templates later without redrawing gates
+old_template <- readRDS("template_training_root.rds")
+
+train_out_reproduced <- magic_template_train(
   gs_input = gs,
   parent_node = "root",
-  samples_id = c("sample_03.fcs"),
+  samples_id = c("sample_01.fcs", "sample_02.fcs"),
+  channel_x = "FSC-A",
+  channel_y = "LIVE DEAD Blue-A",
+  input_template_obj = old_template,
+  use_existing_templates = TRUE,
+  train_model = "rf",
+  n_points_per_plot = 5000,
+  seed = 123
+)
+
+# Use a proportion instead of a fixed number of points
+train_out_prop <- magic_template_train(
+  gs_input = gs,
+  parent_node = "root",
+  samples_id = c("sample_01.fcs", "sample_02.fcs"),
   channel_x = "FSC-A",
   channel_y = "LIVE DEAD Blue-A",
   n_gates = 2,
-  input_list_out_final = train_out$list_out_final
+  prop_down = 0.25,
+  seed = 123
 )
 }
 }

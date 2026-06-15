@@ -140,39 +140,107 @@ magic_manual_gating<-function(gs_input,parent_node,new_child_node,samples_id,
 #' object. The resulting templates are converted into training data using
 #' `get_train_data()` and used to train a model with `magicTrain()`.
 #'
-#' Existing template data can be supplied through `input_list_out_final`, allowing
-#' users to add new manually gated templates without redrawing previous ones.
+#' Existing template objects can be supplied through `input_template_obj`. This
+#' allows users either to reuse the same manually gated templates for
+#' reproducible training, or to use an existing template object as the starting
+#' point before drawing new interactive templates.
 #'
 #' @param gs_input A `GatingSet` object.
+#'
 #' @param parent_node Character. Name of the parent node from which expression
 #'   data are extracted for template gating.
+#'
 #' @param samples_id Character vector. Sample names to manually gate as template
-#'   samples.
+#'   samples. All values must be present in `sampleNames(gs_input)`. Duplicate
+#'   sample names are not allowed.
+#'
 #' @param channel_x Character. Name of the channel to plot on the x-axis.
+#'
 #' @param channel_y Character. Name of the channel to plot on the y-axis.
-#' @param size_points Numeric. Point size used in the interactive gating plot.
-#'   Default is `0.5`.
+#'
 #' @param n_gates Integer. Number of template gates to draw per selected sample.
 #'   Each gate is assigned a label from `1` to `n_gates`. Default is `1`.
-#' @param input_list_out_final Optional list. Existing template data object,
-#'   usually from a previous call to `magic_template_train()$list_out_final`.
-#'   If supplied, newly gated templates are added to this existing template set.
-#'   Samples with matching names are replaced.
+#'
+#' @param input_template_obj Optional list. Existing template-training object,
+#'   usually returned by a previous call to `magic_template_train()`. The object
+#'   must contain `all_list_out_obj` if `use_existing_templates = TRUE`.
+#'
+#' @param use_existing_templates Logical. If `FALSE`, interactive gating is
+#'   performed and new templates are drawn. If `TRUE`, `input_template_obj` must
+#'   be supplied and the stored templates in
+#'   `input_template_obj$all_list_out_obj` are reused without redrawing gates.
+#'   This is useful for reproducing training from previously saved templates.
+#'   Default is `FALSE`.
+#'
 #' @param train_model Character. Model type passed to `magicTrain()`. Default is
 #'   `"rf"`.
-#' @param ... Additional arguments passed to `magicGating()`.
 #'
-#' @return A list with five elements: `ref_model_info`, the trained model
-#'   information returned by `magicTrain()`; `ref_train`, the training data
-#'   returned by `get_train_data()`; `list_out_final`, the complete merged
-#'   template set; `list_out_new`, the newly generated template data; and
-#'   `all_list_out_obj`, the raw outputs from each call to `magicGating()`.
+#' @param prop_down Numeric or `NULL`. Proportion of events to keep when building
+#'   the training dataframe with `get_train_data()`. If `NULL`, no proportion is
+#'   specified explicitly. Default is `NULL`.
+#'
+#' @param n_points_per_plot Numeric, integer, or `NULL`. Approximate number of
+#'   points to keep per gated dataset when building the training dataframe with
+#'   `get_train_data()`. This is useful to avoid training on all events. If
+#'   `NULL`, no fixed number of points is specified. Default is `NULL`.
+#'
+#' @param seed Integer. Random seed set immediately before calling
+#'   `get_train_data()`. This makes downsampling reproducible when `prop_down`
+#'   or `n_points_per_plot` is used. Default is `123`.
+#'
+#' @param return_train_data Logical. If `TRUE`, return the training dataframe in
+#'   the `ref_train` element. If `FALSE`, `ref_train` is set to `NULL` before
+#'   returning the output. Default is `TRUE`.
+#'
+#' @param ... Additional arguments passed to internal functions. Arguments are
+#'   automatically matched to the formal arguments of `magicGating()`,
+#'   `get_train_data()`, or `magicTrain()`. This allows users to pass valid
+#'   options for those functions without adding every possible argument to this
+#'   wrapper.
+#'
+#' @return A list with four elements:
+#'   \describe{
+#'     \item{ref_model_info}{The trained model information returned by
+#'       `magicTrain()`.}
+#'     \item{ref_train}{The training dataframe returned by `get_train_data()`, or
+#'       `NULL` if `return_train_data = FALSE`.}
+#'     \item{list_out_final}{The complete merged template-gated data used to
+#'       build the training dataframe.}
+#'     \item{all_list_out_obj}{The raw template-gating outputs from each call to
+#'       `magicGating()`. This object can be saved and later reused with
+#'       `input_template_obj` and `use_existing_templates = TRUE`.}
+#'   }
+#'
+#' @details
+#' The function first checks that all selected samples exist in the input
+#' `GatingSet` and that `samples_id` does not contain duplicated sample names.
+#' Duplicate sample names are not allowed because sample names are used as list
+#' names in downstream template objects.
+#'
+#' If `use_existing_templates = FALSE`, the function calls `magicGating()`
+#' interactively once for each template gate. The labels assigned to the gates
+#' are `"1"`, `"2"`, ..., up to `n_gates`.
+#'
+#' If `use_existing_templates = TRUE`, no interactive gating is performed. The
+#' function reuses `input_template_obj$all_list_out_obj`, allowing the same
+#' manually drawn templates to be used again for reproducible model training.
+#'
+#' After template generation or reuse, template-gated data are merged with
+#' `merge_magicGating_labels()` when more than one gate is present. The merged
+#' object is then passed to `get_train_data()`. The arguments `prop_down` and
+#' `n_points_per_plot` control how many events are used for training. The seed is
+#' set immediately before `get_train_data()` to make this downsampling
+#' reproducible.
+#'
+#' The resulting training dataframe is passed to `magicTrain()` to build the
+#' classification model.
 #'
 #' @keywords flowMagic template training machine-learning gating
 #' @export
 #'
 #' @examples
 #' \donttest{
+#' # Train a template model by drawing two manual gates
 #' train_out <- magic_template_train(
 #'   gs_input = gs,
 #'   parent_node = "root",
@@ -180,28 +248,75 @@ magic_manual_gating<-function(gs_input,parent_node,new_child_node,samples_id,
 #'   channel_x = "FSC-A",
 #'   channel_y = "LIVE DEAD Blue-A",
 #'   n_gates = 2,
-#'   train_model = "rf"
+#'   train_model = "rf",
+#'   n_points_per_plot = 5000,
+#'   seed = 123
 #' )
 #'
-#' # Add additional template samples later
-#' train_out2 <- magic_template_train(
+#' # Save the full template-training object for reproducibility
+#' saveRDS(train_out, "template_training_root.rds")
+#'
+#' # Reuse the same templates later without redrawing gates
+#' old_template <- readRDS("template_training_root.rds")
+#'
+#' train_out_reproduced <- magic_template_train(
 #'   gs_input = gs,
 #'   parent_node = "root",
-#'   samples_id = c("sample_03.fcs"),
+#'   samples_id = c("sample_01.fcs", "sample_02.fcs"),
+#'   channel_x = "FSC-A",
+#'   channel_y = "LIVE DEAD Blue-A",
+#'   input_template_obj = old_template,
+#'   use_existing_templates = TRUE,
+#'   train_model = "rf",
+#'   n_points_per_plot = 5000,
+#'   seed = 123
+#' )
+#'
+#' # Use a proportion instead of a fixed number of points
+#' train_out_prop <- magic_template_train(
+#'   gs_input = gs,
+#'   parent_node = "root",
+#'   samples_id = c("sample_01.fcs", "sample_02.fcs"),
 #'   channel_x = "FSC-A",
 #'   channel_y = "LIVE DEAD Blue-A",
 #'   n_gates = 2,
-#'   input_list_out_final = train_out$list_out_final
+#'   prop_down = 0.25,
+#'   seed = 123
 #' )
 #' }
 
-magic_template_train <- function(gs_input, parent_node, samples_id,
-                                 channel_x, channel_y,
-                                 size_points = 0.5,
+magic_template_train <- function(gs_input,
+                                 parent_node,
+                                 samples_id,
+                                 channel_x,
+                                 channel_y,
                                  n_gates = 1,
-                                 input_list_out_final = NULL,
+                                 input_template_obj = NULL,
+                                 use_existing_templates = FALSE,
                                  train_model = "rf",
+                                 prop_down = NULL,
+                                 n_points_per_plot = NULL,
+                                 seed = 123,
+                                 return_train_data = TRUE,
                                  ...) {
+  
+  # =========================================================================
+  # 1. Start workflow
+  # =========================================================================
+  # This function creates or reuses manual template gates, converts the gated
+  # events into a training dataframe, and trains a classifier.
+  #
+  # Reproducibility modes:
+  #
+  #   input_template_obj = NULL
+  #     New templates are drawn interactively.
+  #
+  #   input_template_obj != NULL and use_existing_templates = FALSE
+  #     Existing templates are loaded, but new templates are drawn interactively.
+  #
+  #   input_template_obj != NULL and use_existing_templates = TRUE
+  #     No new interactive gating is performed. The saved templates in
+  #     input_template_obj$all_list_out_obj are reused.
   
   message("$$$ Starting template training workflow $$$")
   message(sprintf("Parent node: %s", parent_node))
@@ -209,133 +324,310 @@ magic_template_train <- function(gs_input, parent_node, samples_id,
   message(sprintf("Number of template gates to draw per sample: %s", n_gates))
   message(sprintf("Number of samples selected for template gating: %s", length(samples_id)))
   
-  if (!is.null(input_list_out_final)) {
-    message("Existing template object detected.")
-    message(sprintf("Existing templates: %s", length(input_list_out_final)))
-    message("New templates will be added to the existing template set.")
-  } else {
-    message("No existing template object provided. A new template set will be created.")
+  # Check that selected samples exist in the GatingSet.
+  missing_samples <- setdiff(samples_id, sampleNames(gs_input))
+  
+  if (length(missing_samples) > 0) {
+    stop(
+      "These samples are not present in sampleNames(gs_input): ",
+      paste(missing_samples, collapse = ", ")
+    )
   }
   
-  message("$$$ Perform interactive template gating $$$")
+  # Check duplicated samples.
+  # Duplicated sample names can break downstream list handling because sample
+  # names are used as list names.
+  if (anyDuplicated(samples_id)) {
+    duplicated_samples <- unique(samples_id[duplicated(samples_id)])
+    stop(
+      "samples_id contains duplicated sample names: ",
+      paste(duplicated_samples, collapse = ", "),
+      ". Please provide each sample only once."
+    )
+  }
   
-  all_list_out_obj <- list()
   
-  for (n in 1:n_gates) {
+  # =========================================================================
+  # 2. Collect optional arguments from ...
+  # =========================================================================
+  # Users may pass additional arguments for the internal functions through ...
+  #
+  # These arguments may belong to:
+  #   - magicGating()
+  #   - get_train_data()
+  #   - magicTrain()
+  #
+  # We split them automatically by checking the formal arguments of each
+  # function. This avoids passing arguments to functions that do not use them.
+  
+  args_all <- list(...)
+  
+  get_matching_args <- function(args_list, fun) {
     
-    message(sprintf("---- Gating template/gate %s of %s ----", n, n_gates))
-    message(sprintf("Current label assigned to this gate: %s", as.character(n)))
+    fun_args <- names(formals(fun))
     
-    list_out_n <- magicGating(
-      fs = gs_input,
-      gs_node = parent_node,
-      sample_id = samples_id,
-      channel_x = channel_x,
-      channel_y = channel_y,
-      size_points = size_points,
-      label_pol = as.character(n),
-      ...
+    args_list[names(args_list) %in% fun_args]
+  }
+  
+  args_magicGating <- get_matching_args(
+    args_list = args_all,
+    fun = flowMagic::magicGating
+  )
+  
+  args_get_train_data <- get_matching_args(
+    args_list = args_all,
+    fun = flowMagic::get_train_data
+  )
+  
+  args_magicTrain <- get_matching_args(
+    args_list = args_all,
+    fun = flowMagic::magicTrain
+  )
+  
+  # Warn the user if some arguments in ... were not used by any internal
+  # function. This helps catch spelling mistakes.
+  used_args <- unique(c(
+    names(args_magicGating),
+    names(args_get_train_data),
+    names(args_magicTrain)
+  ))
+  
+  unused_args <- setdiff(names(args_all), used_args)
+  
+  if (length(unused_args) > 0) {
+    warning(
+      "These arguments in ... were not matched to magicGating(), ",
+      "get_train_data(), or magicTrain(): ",
+      paste(unused_args, collapse = ", ")
+    )
+  }
+  
+  
+  # =========================================================================
+  # 3. Prepare or reuse template object
+  # =========================================================================
+  # This section decides whether templates are drawn interactively or reused from
+  # input_template_obj.
+  
+  if (!is.null(input_template_obj) && use_existing_templates == TRUE) {
+    
+    message("Existing template object provided.")
+    message("use_existing_templates = TRUE, so interactive gating will be skipped.")
+    message("Templates stored in input_template_obj$all_list_out_obj will be reused.")
+    
+    all_list_out_obj <- input_template_obj$all_list_out_obj
+    
+    if (is.null(all_list_out_obj)) {
+      stop("input_template_obj does not contain all_list_out_obj.")
+    }
+    
+    if (length(all_list_out_obj) == 0) {
+      stop("input_template_obj$all_list_out_obj is empty.")
+    }
+    
+    # When reusing existing templates, update n_gates so that downstream
+    # messages reflect the actual number of stored gates.
+    n_gates <- length(all_list_out_obj)
+    
+    message(sprintf("Number of existing template gates reused: %s", n_gates))
+    
+  } else {
+    
+    if (is.null(input_template_obj)) {
+      
+      message("No existing template object provided. A new template set will be created.")
+      all_list_out_obj <- list()
+      
+    } else {
+      
+      message("Existing template object provided.")
+      message("use_existing_templates = FALSE, so new interactive templates will be drawn.")
+      message("Existing templates will be used as the starting template object.")
+      
+      all_list_out_obj <- input_template_obj$all_list_out_obj
+      
+      if (is.null(all_list_out_obj)) {
+        all_list_out_obj <- list()
+      }
+    }
+    
+    
+    # =========================================================================
+    # 4. Perform interactive template gating
+    # =========================================================================
+    # Each template gate is drawn by calling magicGating().
+    #
+    # label_pol is set automatically:
+    #   gate 1 -> label "1"
+    #   gate 2 -> label "2"
+    #   etc.
+    #
+    # Additional arguments that belong to magicGating() are passed through
+    # args_magicGating.
+    
+    message("$$$ Perform interactive template gating $$$")
+    
+    for (n in seq_len(n_gates)) {
+      
+      label_current <- as.character(n)
+      
+      message(sprintf("---- Gating template/gate %s of %s ----", n, n_gates))
+      message(sprintf("Current label assigned to this gate: %s", label_current))
+      
+      args_gating_current <- c(
+        list(
+          fs = gs_input,
+          gs_node = parent_node,
+          sample_id = samples_id,
+          channel_x = channel_x,
+          channel_y = channel_y,
+          label_pol = label_current
+        ),
+        args_magicGating
+      )
+      
+      all_list_out_obj[[n]] <- do.call(
+        flowMagic::magicGating,
+        args_gating_current
+      )
+    }
+  }
+  
+  
+  # =========================================================================
+  # 5. Merge template-gated data
+  # =========================================================================
+  # magicGating() returns one object per template gate.
+  #
+  # If there is only one template gate:
+  #   use the list_gated_data directly.
+  #
+  # If there is more than one template gate:
+  #   merge labels across template gates using merge_magicGating_labels().
+  
+  message("$$$ Merge template gated data $$$")
+  
+  if (length(all_list_out_obj) == 1) {
+    
+    list_out_final <- all_list_out_obj[[1]]$list_gated_data
+    
+  } else {
+    
+    all_gated_data <- lapply(
+      all_list_out_obj,
+      function(x) x$list_gated_data
     )
     
-    all_list_out_obj[[as.character(n)]] <- list_out_n
-    
-    message(sprintf("Finished gating label %s.", n))
-  }
-  
-  message("$$$ Combining template labels $$$")
-  
-  if (n_gates == 1) {
-    
-    message("Only one gate was drawn. No label merging needed.")
-    list_out_new <- all_list_out_obj[[1]]$list_gated_data
-    
-  } else {
-    
-    message(sprintf("Merging labels from %s gates.", n_gates))
-    
-    all_gated_data <- lapply(all_list_out_obj, function(x) x$list_gated_data)
-    
-    list_out_new <- Reduce(
-      f = function(x, y) {
-        merge_magicGating_labels(
+    list_out_final <- Reduce(
+      function(x, y) {
+        flowMagic::merge_magicGating_labels(
           list_out_1 = x,
           list_out_2 = y,
-          gated_data_only  = TRUE
+          from_gs = TRUE
         )
       },
-      x = all_gated_data
+      all_gated_data
     )
-    
-    message("Finished merging template labels.")
   }
   
-  message("$$$ Updating template set $$$")
   
-  if (is.null(input_list_out_final)) {
-    
-    message("Creating new template set from current gated samples.")
-    list_out_final <- list_out_new
-    
-  } else {
-    
-    duplicated_samples <- intersect(
-      names(input_list_out_final),
-      names(list_out_new)
-    )
-    
-    if (length(duplicated_samples) > 0) {
-      warning(
-        "These samples already exist in the template set and will be replaced: ",
-        paste(duplicated_samples, collapse = ", ")
-      )
-    }
-    
-    new_samples <- setdiff(
-      names(list_out_new),
-      names(input_list_out_final)
-    )
-    
-    if (length(new_samples) > 0) {
-      message(
-        "Adding new template samples: ",
-        paste(new_samples, collapse = ", ")
-      )
-    }
-    
-    list_out_final <- input_list_out_final
-    list_out_final[names(list_out_new)] <- list_out_new
-    
-    message(sprintf("Updated template set now contains %s samples.", length(list_out_final)))
-  }
+  # =========================================================================
+  # 6. Build training data
+  # =========================================================================
+  # get_train_data() converts the manually gated data into the final training
+  # dataframe used by magicTrain().
+  #
+  # prop_down and n_points_per_plot are explicit arguments of this wrapper
+  # because they are important for controlling training size.
+  #
+  # seed is set immediately before get_train_data() so that downsampling is
+  # reproducible when prop_down or n_points_per_plot is used.
+  #
+  # Additional arguments that belong to get_train_data() are passed through
+  # args_get_train_data.
   
-  message("$$$ Convert templates to training data $$$")
+  message("$$$ Build training data $$$")
+  message(sprintf("Set seed before get_train_data(): %s", seed))
+  set.seed(seed)
   
-  ref_train <- get_train_data(paths_file = list_out_final)
-  
-  message(sprintf("Training data created with %s events.", nrow(ref_train)))
-  message(sprintf("Training classes detected: %s", paste(sort(unique(ref_train$classes)), collapse = ", ")))
-  
-  message("$$$ Train model $$$")
-  message(sprintf("Training model type: %s", train_model))
-  
-  ref_model_info <- magicTrain(
-    df_train = ref_train,
-    train_model = train_model
+  args_train_data <- c(
+    list(
+      paths_file = list_out_final,
+      prop_down = prop_down,
+      n_points_per_plot = n_points_per_plot
+    ),
+    args_get_train_data
   )
+  
+  ref_train <- do.call(
+    flowMagic::get_train_data,
+    args_train_data
+  )
+  
+  
+  # =========================================================================
+  # 7. Train model
+  # =========================================================================
+  # magicTrain() trains the classifier using the dataframe produced by
+  # get_train_data().
+  #
+  # Additional arguments that belong to magicTrain() are passed through
+  # args_magicTrain.
+  
+  message("$$$ Train template model $$$")
+  
+  args_train_model <- c(
+    list(
+      df_train = ref_train,
+      train_model = train_model
+    ),
+    args_magicTrain
+  )
+  
+  ref_model_info <- do.call(
+    flowMagic::magicTrain,
+    args_train_model
+  )
+  
+  
+  # =========================================================================
+  # 8. Return output
+  # =========================================================================
+  # The returned object contains:
+  #
+  #   ref_model_info:
+  #     trained model object and model metadata returned by magicTrain().
+  #
+  #   ref_train:
+  #     training dataframe used by magicTrain().
+  #
+  #   list_out_final:
+  #     merged manually gated data used to build the training dataframe.
+  #
+  #   all_list_out_obj:
+  #     original template-gating objects returned by magicGating().
+  #
+  # all_list_out_obj is important for reproducibility because it allows the same
+  # templates to be reused later with:
+  #
+  #   input_template_obj = saved_object
+  #   use_existing_templates = TRUE
   
   message("$$$ Template training workflow completed $$$")
   
-  return(
-    list(
-      ref_model_info = ref_model_info,
-      ref_train = ref_train,
-      list_out_final = list_out_final,
-      list_out_new = list_out_new,
-      all_list_out_obj = all_list_out_obj
-    )
+  out <- list(
+    ref_model_info = ref_model_info,
+    ref_train = ref_train,
+    list_out_final = list_out_final,
+    all_list_out_obj = all_list_out_obj
   )
+  
+  if (return_train_data == FALSE) {
+    out$ref_train <- NULL
+  }
+  
+  return(out)
 }
-
 
 #' magic_template_predict
 #'
